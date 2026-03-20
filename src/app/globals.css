@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #FAFAFA;
+  --color-foreground: #0F172A;
+  --color-muted: #F1F5F9;
+  --color-muted-foreground: #64748B;
+  --color-accent: #0052FF;
+  --color-accent-secondary: #4D7CFF;
+  --color-accent-foreground: #FFFFFF;
+  --color-border: #E2E8F0;
+  --color-card: #FFFFFF;
+  --color-ring: #0052FF;
+  
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
+  --font-serif: var(--font-calistoga), ui-serif, Georgia;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular;
+}
+
+@layer base {
+  *, ::after, ::before {
+    border-color: var(--color-border);
+  }
+  
+  body {
+    @apply bg-background text-foreground selection:bg-accent/20 selection:text-accent font-sans;
+  }
+  
+  h1, h2, h3, h4, .display-font {
+    @apply font-serif;
+  }
+}
+
+@layer utilities {
+  .gradient-text {
+    @apply bg-gradient-to-r from-accent to-accent-secondary bg-clip-text text-transparent;
+  }
+
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm;
+  }
+
+  .shadow-accent {
+    box-shadow: 0 4px 14px rgba(0, 82, 255, 0.25);
+  }
+
+  .shadow-accent-lg {
+    box-shadow: 0 8px 24px rgba(0, 82, 255, 0.35);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
