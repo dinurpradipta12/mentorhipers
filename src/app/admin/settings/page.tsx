@@ -38,7 +38,7 @@ export default function AppSettingsCMS() {
     app_name: "Mentorhipers",
     app_logo: "",
     app_favicon: "",
-    tablet_zoom: "1400"
+    tablet_zoom: "0.8"
   });
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export default function AppSettingsCMS() {
           app_name: data.app_name || "Mentorhipers",
           app_logo: data.app_logo || "",
           app_favicon: data.app_favicon || "",
-          tablet_zoom: localStorage.getItem('tablet_viewport_width') || data.tablet_zoom || "1400",
+          tablet_zoom: localStorage.getItem('tablet_zoom_value') || "0.8",
         });
       }
       setIsLoaded(true);
@@ -249,46 +249,47 @@ export default function AppSettingsCMS() {
                      <p className="text-[10px] font-bold text-slate-400 ml-1">Sistem akan memancarkan webhook Realtime untuk mengganti ikon tab browser mentee secara instan ke gambar ini.</p>
                   </div>
 
-                  {/* TABLET VIEWPORT WIDTH SLIDER */}
+                  {/* TABLET ZOOM SLIDER */}
                   <div className="space-y-4 pt-4 border-t border-slate-100">
                      <div className="flex justify-between items-end">
                         <div className="space-y-1">
-                           <label className="text-[11px] font-black text-[#202224] opacity-40 uppercase tracking-[2px] ml-1">Optimasi Tampilan Tablet</label>
-                           <p className="text-[10px] font-bold text-slate-400 ml-1">Atur lebar viewport virtual tablet. Semakin besar nilainya, semakin kecil dan padat tampilan UI. Default: 1400px.</p>
+                           <label className="text-[11px] font-black text-[#202224] opacity-40 uppercase tracking-[2px] ml-1">Skala Tampilan Tablet</label>
+                           <p className="text-[10px] font-bold text-slate-400 ml-1">Perkecil tampilan UI di layar tablet agar lebih lega. Default: 80%.</p>
                         </div>
-                        <span className="text-sm font-black text-[#4880FF] bg-blue-50 px-3 py-1.5 rounded-lg">{settings.tablet_zoom}px</span>
+                        <span className="text-sm font-black text-[#4880FF] bg-blue-50 px-3 py-1.5 rounded-lg">{Math.round(parseFloat(settings.tablet_zoom) * 100)}%</span>
                      </div>
                      <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-bold text-slate-400 shrink-0">Normal</span>
+                        <span className="text-[10px] font-bold text-slate-400 shrink-0">50%</span>
                         <input 
                            type="range"
-                           min="1024"
-                           max="1800"
-                           step="50"
+                           min="0.5"
+                           max="1.0"
+                           step="0.05"
                            value={settings.tablet_zoom}
                            onChange={(e) => {
                               const val = e.target.value;
                               setSettings({...settings, tablet_zoom: val});
-                              localStorage.setItem('tablet_viewport_width', val);
-                              window.dispatchEvent(new CustomEvent('tablet-zoom-change', { detail: { viewportWidth: parseInt(val) } }));
+                              document.documentElement.style.setProperty('--tablet-zoom', val);
+                              localStorage.setItem('tablet_zoom_value', val);
                            }}
                            className="flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#4880FF]"
                         />
-                        <span className="text-[10px] font-bold text-slate-400 shrink-0">Kecil</span>
+                        <span className="text-[10px] font-bold text-slate-400 shrink-0">100%</span>
                      </div>
-                     <div className="flex gap-3">
+                     <div className="flex gap-2 flex-wrap">
                         {[
-                           { label: "Normal (1024)", value: "1024" },
-                           { label: "Default (1400)", value: "1400" },
-                           { label: "Compact (1600)", value: "1600" },
-                           { label: "Mini (1800)", value: "1800" },
+                           { label: "60%", value: "0.6" },
+                           { label: "70%", value: "0.7" },
+                           { label: "80% (Default)", value: "0.8" },
+                           { label: "90%", value: "0.9" },
+                           { label: "100% (Normal)", value: "1.0" },
                         ].map((preset) => (
                            <button
                               key={preset.value}
                               onClick={() => {
                                  setSettings({...settings, tablet_zoom: preset.value});
-                                 localStorage.setItem('tablet_viewport_width', preset.value);
-                                 window.dispatchEvent(new CustomEvent('tablet-zoom-change', { detail: { viewportWidth: parseInt(preset.value) } }));
+                                 document.documentElement.style.setProperty('--tablet-zoom', preset.value);
+                                 localStorage.setItem('tablet_zoom_value', preset.value);
                               }}
                               className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${
                                  settings.tablet_zoom === preset.value

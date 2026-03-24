@@ -33,9 +33,10 @@ export const AppGlobalConfig = () => {
           };
           updateFavicon(data.app_favicon);
         }
-        // TABLET VIEWPORT WIDTH SYNC
-        const storedWidth = localStorage.getItem('tablet_viewport_width') || (data as any).tablet_zoom || "1400";
-        localStorage.setItem('tablet_viewport_width', storedWidth);
+        // TABLET ZOOM SYNC
+        const storedZoom = localStorage.getItem('tablet_zoom_value') || "0.8";
+        document.documentElement.style.setProperty('--tablet-zoom', storedZoom);
+        localStorage.setItem('tablet_zoom_value', storedZoom);
       }
 
       if (mentorRes.data) {
@@ -58,8 +59,8 @@ export const AppGlobalConfig = () => {
         }
         if (payload.new.app_logo) localStorage.setItem('app_logo', payload.new.app_logo);
         if (payload.new.tablet_zoom) {
-          localStorage.setItem('tablet_viewport_width', payload.new.tablet_zoom);
-          window.dispatchEvent(new CustomEvent('tablet-zoom-change', { detail: { viewportWidth: parseInt(payload.new.tablet_zoom) } }));
+          document.documentElement.style.setProperty('--tablet-zoom', payload.new.tablet_zoom);
+          localStorage.setItem('tablet_zoom_value', payload.new.tablet_zoom);
         }
         if (payload.new.app_favicon) {
           localStorage.setItem('app_favicon', payload.new.app_favicon);

@@ -62,4 +62,13 @@
   animation: float 5s ease-in-out infinite;
 }
 
-/* TABLET OPTIMIZATION: Handled via JS viewport meta tag - see TabletZoomOptimizer component */
+/* TABLET OPTIMIZATION */
+:root {
+  --tablet-zoom: 0.8;
+}
+
+@media (min-width: 768px) and (max-width: 1380px) {
+  html {
+    zoom: var(--tablet-zoom);
+  }
+}
