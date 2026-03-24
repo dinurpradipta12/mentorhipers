@@ -31,14 +31,18 @@ export default function AppSettingsCMS() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
+  // Start with empty defaults — same on server AND client to avoid hydration mismatch
   const [settings, setSettings] = useState({
-    app_name: typeof window !== 'undefined' ? (localStorage.getItem('app_name') || "Mentorhipers") : "Mentorhipers",
-    app_logo: typeof window !== 'undefined' ? (localStorage.getItem('app_logo') || "") : "",
-    app_favicon: typeof window !== 'undefined' ? (localStorage.getItem('app_favicon') || "") : "",
+    app_name: "Mentorhipers",
+    app_logo: "",
+    app_favicon: "",
   });
 
   useEffect(() => {
+    setMounted(true);
+    
     // Auth Check
     const session = localStorage.getItem("mh_session");
     if (!session || JSON.parse(session).role !== "admin") {
@@ -47,7 +51,7 @@ export default function AppSettingsCMS() {
     }
 
     const fetchSettings = async () => {
-      const { data, error } = await supabase.from('app_settings').select('*').eq('id', 1).single();
+      const { data } = await supabase.from('app_settings').select('*').eq('id', 1).single();
       if (data) {
         setSettings({
           app_name: data.app_name || "Mentorhipers",

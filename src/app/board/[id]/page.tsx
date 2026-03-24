@@ -11,6 +11,7 @@ import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 import BottomBar from "@/components/layout/BottomBar";
 import NotificationCenter from "@/components/layout/NotificationCenter";
+import AppLoading from "@/components/layout/AppLoading";
 import { SectionLabel } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -625,11 +626,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
   }, [activeTab, boardData.enabled_features]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center font-sans font-extrabold text-slate-400">
-        Loading personal board data...
-      </div>
-    );
+    return <AppLoading />;
   }
 
   return (

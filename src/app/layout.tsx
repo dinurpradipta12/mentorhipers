@@ -1,8 +1,16 @@
-import type { Metadata } from "next";
+import React from "react";
+import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppUpdateNotifier } from "@/components/layout/AppUpdateNotifier";
 import { AppGlobalConfig } from "@/components/layout/AppGlobalConfig";
+
+export const viewport: Viewport = {
+  themeColor: '#4880FF',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,6 +30,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Mentorhipers | Mentoring & Content Planning",
   description: "Personal branding and social media mentoring platform.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Mentorhipers',
+  },
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
