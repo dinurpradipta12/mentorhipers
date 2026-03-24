@@ -451,9 +451,9 @@ export default function AdminDashboardV2() {
            </div>
 
            {/* Layout Grid */}
-           <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               {/* LEFT: Calendar Card */}
-              <div className="xl:col-span-4 lg:col-span-12 space-y-8">
+              <div className="lg:col-span-4 space-y-8">
                  <Card className="rounded-[14px] border-none shadow-[0px_10px_30px_rgba(0,0,0,0.02)] bg-white overflow-hidden p-8">
                     <div className="flex items-center justify-between mb-8">
                        <h3 className="text-[18px] font-extrabold text-[#202224] capitalize">
@@ -533,7 +533,7 @@ export default function AdminDashboardV2() {
               </div>
 
               {/* RIGHT: Mentee Boards section */}
-              <div className="xl:col-span-8 lg:col-span-12 space-y-8 bg-white rounded-[14px] p-6 xl:p-10 shadow-[0px_10px_30px_rgba(0,0,0,0.02)] text-left">
+              <div className="lg:col-span-8 space-y-8 bg-white rounded-[14px] p-6 lg:p-10 shadow-[0px_10px_30px_rgba(0,0,0,0.02)] text-left">
                  <div className="flex items-center justify-between mb-10">
                     <h3 className="text-[28px] font-extrabold text-[#202224] tracking-tight">Active Mentee Boards</h3>
                     <Button 
