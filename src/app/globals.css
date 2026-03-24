@@ -72,3 +72,23 @@
     zoom: var(--tablet-zoom);
   }
 }
+
+.sidebar-logo-container {
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 20px) !important;
+}
+
+@media (max-width: 1380px) {
+  .sidebar-logo-container {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 24px) !important;
+    min-height: 120px;
+  }
+}

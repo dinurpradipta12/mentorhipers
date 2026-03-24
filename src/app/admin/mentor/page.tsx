@@ -337,7 +337,7 @@ export default function MenteeMonitoringPage() {
         transition={{ duration: isLoaded ? 0.3 : 0, ease: "easeInOut" }}
         className="fixed left-0 top-0 bottom-0 bg-white border-r border-[#E0E0E0] flex flex-col z-50 shadow-sm overflow-hidden"
       >
-        <div className="h-[100px] flex items-center justify-center mb-4 mt-2 transition-all overflow-hidden px-5">
+        <div className="sidebar-logo-container">
            {isSidebarOpen ? (
              <div className="w-full h-full flex items-center justify-center">
                 {appSettings.app_logo ? (
