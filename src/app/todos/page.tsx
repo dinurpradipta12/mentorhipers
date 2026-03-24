@@ -3,12 +3,23 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
+interface Todo {
+  id: string;
+  name?: string;
+  title?: string;
+}
+
 export default function App() {
-  const [todos, setTodos] = useState<any[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function getTodos() {
+      if (!supabase) {
+        console.error('Supabase client is not initialized.');
+        setLoading(false);
+        return;
+      }
       try {
         const { data: fetchedTodos, error } = await supabase.from('todos').select();
 
@@ -27,11 +38,11 @@ export default function App() {
     getTodos();
   }, []);
 
-  if (loading) return <div className="p-8 font-serif">Loading your items from Supabase...</div>;
+  if (loading) return <div className="p-8 font-sans font-extrabold">Loading your items from Supabase...</div>;
 
   return (
     <div className="p-12 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-serif mb-8 text-accent">Supabase Todos Inventory</h1>
+      <h1 className="text-3xl font-sans font-extrabold mb-8 text-accent">Supabase Todos Inventory</h1>
       <ul className="space-y-4">
         {todos.length > 0 ? (
           todos.map((todo) => (
@@ -42,7 +53,7 @@ export default function App() {
           ))
         ) : (
           <li className="text-muted-foreground italic font-medium p-6 border-2 border-dashed border-slate-100 rounded-[2rem] text-center">
-            No items found in the 'todos' table.
+            No items found in the &apos;todos&apos; table.
           </li>
         )}
       </ul>

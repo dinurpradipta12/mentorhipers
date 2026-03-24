@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Inter, Calistoga, JetBrains_Mono } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { AppUpdateNotifier } from "@/components/layout/AppUpdateNotifier";
+import { AppGlobalConfig } from "@/components/layout/AppGlobalConfig";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const calistoga = Calistoga({
-  variable: "--font-calistoga",
-  weight: "400",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
 });
 
@@ -31,10 +32,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${calistoga.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
+      className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
     >
       <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]">
         {children}
+        <AppGlobalConfig />
+        <AppUpdateNotifier />
       </body>
     </html>
   );

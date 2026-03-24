@@ -16,8 +16,7 @@
   --radius-2xl: 1rem;
   --radius-3xl: 1.5rem;
   
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
-  --font-serif: var(--font-calistoga), ui-serif, Georgia;
+  --font-sans: var(--font-plus-jakarta), var(--font-inter), ui-sans-serif, system-ui;
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular;
 }
 
@@ -30,8 +29,9 @@
     @apply bg-background text-foreground selection:bg-accent/20 selection:text-accent font-sans;
   }
   
+  /* FORCE ALL HEADINGS TO SANS SERIF */
   h1, h2, h3, h4, .display-font {
-    @apply font-serif;
+    @apply font-sans;
   }
 }
 

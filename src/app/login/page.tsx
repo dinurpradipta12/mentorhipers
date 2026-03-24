@@ -65,13 +65,13 @@ export default function LoginPage() {
       <div className="lg:col-span-5 flex flex-col items-center justify-center p-8 sm:p-20 relative z-10 bg-white">
         <div className="max-w-md w-full">
           <div className="flex items-center gap-2 mb-12">
-            <h1 className="text-3xl font-calistoga tracking-tight">
+            <h1 className="text-3xl font-sans font-extrabold tracking-tight">
               Mentor<span className="gradient-text">hipers</span>
             </h1>
           </div>
 
           <SectionLabel label="Secure Access" className="mb-6" />
-          <h2 className="text-4xl font-calistoga mb-2 leading-tight">
+          <h2 className="text-4xl font-sans font-extrabold mb-2 leading-tight">
             Selamat Datang <span className="gradient-text">Kembali!</span>
           </h2>
           <p className="text-muted-foreground mb-10 text-sm">
@@ -168,9 +168,9 @@ export default function LoginPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
             >
-              <h3 className="text-5xl font-calistoga text-white italic leading-tight">
+              <h3 className="text-5xl font-sans font-extrabold text-white leading-tight">
                 Empowering your <br />
-                <span className="gradient-text italic">Visual Presence.</span>
+                <span className="gradient-text">Visual Presence.</span>
               </h3>
               <p className="text-white/50 text-lg mt-6 max-w-lg leading-relaxed">
                 Platform mentoring visual yang didesain khusus untuk membantu kamu membangun personal brand yang kuat dan berpengaruh di media sosial.
@@ -215,7 +215,7 @@ export default function LoginPage() {
                     <Sparkles className="text-accent-secondary w-5 h-5" />
                     <span className="text-[10px] text-white/30 uppercase font-bold tracking-widest">New Content</span>
                   </div>
-                  <p className="text-sm text-white/90 font-medium mb-4">"10 Strategi Jitu Membangun Personal Brand..."</p>
+                  <p className="text-sm text-white/90 font-medium mb-4">&quot;10 Strategi Jitu Membangun Personal Brand...&quot;</p>
                   <div className="flex -space-x-2">
                     {[1,2,3].map(i => (
                       <div key={i} className="w-7 h-7 rounded-full border-2 border-slate-900 bg-slate-700" />

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Bell, Search, User, Menu } from "lucide-react";
+import { Bell, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Navbar = () => {

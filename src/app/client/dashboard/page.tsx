@@ -4,15 +4,11 @@ import React from "react";
 import Navbar from "@/components/layout/Navbar";
 import BottomBar from "@/components/layout/BottomBar";
 import { SectionLabel } from "@/components/ui/Badge";
-import { Card, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { 
-  Calendar as CalendarIcon, 
   CheckCircle2, 
-  Clock, 
-  ArrowUpRight,
   Zap,
-  DollarSign
+  DollarSign,
+  Clock
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -24,8 +20,8 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <SectionLabel label="Welcome Back" className="mb-4" />
-            <h2 className="text-5xl font-serif tracking-tight text-foreground leading-[1.1]">
-              Halo, <span className="gradient-text font-serif">Mentee Hipers!</span>
+            <h2 className="text-5xl font-sans font-extrabold tracking-tight text-foreground leading-[1.1]">
+              Halo, <span className="gradient-text font-sans font-extrabold">Mentee Hipers!</span>
             </h2>
           </div>
         </div>
@@ -43,7 +39,14 @@ export default function Dashboard() {
   );
 }
 
-const StatCard = ({ icon, label, value, variant }: any) => (
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  variant?: "accent";
+}
+
+const StatCard = ({ icon, label, value, variant }: StatCardProps) => (
   <div className={`p-6 rounded-3xl group transition-all duration-300 ${
     variant === "accent" ? "bg-slate-900 text-white shadow-xl" : "bg-white border border-border shadow-sm"
   }`}>
@@ -51,6 +54,6 @@ const StatCard = ({ icon, label, value, variant }: any) => (
       {icon}
     </div>
     <p className={`text-sm font-medium ${variant === "accent" ? "text-slate-400" : "text-muted-foreground"}`}>{label}</p>
-    <h4 className="text-3xl font-bold mt-1 font-serif">{value}</h4>
+    <h4 className="text-3xl font-bold mt-1 font-sans font-extrabold">{value}</h4>
   </div>
 );

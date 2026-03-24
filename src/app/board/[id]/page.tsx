@@ -2,10 +2,13 @@
 
 import React, { useState, use, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 import BottomBar from "@/components/layout/BottomBar";
+import NotificationCenter from "@/components/layout/NotificationCenter";
 import { SectionLabel } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +21,8 @@ import {
   Target,
   Clock,
   Video,
+  GraduationCap,
+  BookOpen,
   LayoutDashboard,
   Calendar,
   Layers,
@@ -55,7 +60,20 @@ import {
   ExternalLink,
   Columns,
   Filter,
-  ChevronDown
+  ChevronDown,
+  Library, // Added Library icon
+  Music,
+  Route,
+  Milestone,
+  Flag,
+  Check,
+  Star,
+  Link as LinkIcon,
+  Globe,
+  PlusCircle,
+  Hash,
+  Activity,
+  CreditCard
 } from "lucide-react";
 
 // Mock data for a specific client page
@@ -203,8 +221,58 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
       { id: 3, title: "Monetization", description: "Scale, Ads, & Product Ecosystem" }
     ],
     content_plan: [],
-    plan_settings: { allow_edit: false }
+    plan_settings: { allow_edit: false },
+    mentors_note: "Jangan lupa buat cek kembali lighting saat syuting modul 3 ya. Pastikan bayangan di wajah gak terlalu keras. Progress kamu di modul riset sudah bagus banget!",
+    timeline_items: [
+       {
+         id: 1,
+         activity: "Competitor Analysis & Hook Research",
+         detail: "Fokus minggu ini adalah membedah 10 akun kompetitor teratas di niche Anda.",
+         start_day: 10,
+         end_day: 17,
+         color: "bg-accent/40 text-accent"
+       }
+    ],
+    app_settings: {
+      app_name: "Mentorhipers",
+      app_logo: ""
+    },
+    enabled_features: {
+      dashboard: true,
+      content_plan: true,
+      timeline: true,
+      reports: true
+    }
   });
+
+  const [liveStatus, setLiveStatus] = useState("online");
+
+  useEffect(() => {
+    const checkStatus = () => {
+      const { manual_status, busy_slots } = boardData.mentor_persona || {};
+      if (manual_status && manual_status !== "auto") {
+        setLiveStatus(manual_status);
+        return;
+      }
+      
+      let isBusy = false;
+      const now = new Date();
+      if (Array.isArray(busy_slots)) {
+         for(const slot of busy_slots) {
+            const start = new Date(slot.start);
+            const end = new Date(slot.end);
+            if (now >= start && now <= end) {
+               isBusy = true;
+               break;
+            }
+         }
+      }
+      setLiveStatus(isBusy ? "busy" : "online");
+    };
+    checkStatus();
+    const timer = setInterval(checkStatus, 60000); // Check every minute
+    return () => clearInterval(timer);
+  }, [boardData.mentor_persona]);
 
   useEffect(() => {
     const fetchBoardData = async () => {
@@ -223,6 +291,25 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
       }
 
       setIsLoading(true);
+      if (!supabase) {
+        console.error("Supabase client is not initialized. Please check your .env.local file.");
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Fetch Global App Settings
+      const { data: settingsData } = await supabase.from('app_settings').select('*').eq('id', 1).single();
+      if (settingsData) {
+        setBoardData((prev: any) => ({
+          ...prev,
+          app_settings: {
+            app_name: settingsData.app_name || "Mentorhipers",
+            app_logo: settingsData.app_logo || ""
+          }
+        }));
+      }
+
+      // 3. Fetch Client Data
       const { data, error } = await supabase
         .from("clients")
         .select("*")
@@ -230,28 +317,52 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
         .single();
 
       if (data) {
-        setBoardData({
-          ...boardData,
+        setBoardData((prev: any) => ({
+          ...prev,
           name: data.full_name,
           niche: data.niche,
+          start_date: data.start_date,
           end_date: data.end_date,
           profile_url: data.profile_url,
           payment_data: data.payment_data,
-          // Mapping other data if available or using defaults
-          platformStats: data.platform_stats || boardData.platformStats,
+          platformStats: data.platform_stats || prev.platformStats,
           platforms: data.platforms || ["Instagram", "TikTok"],
-          currentPhase: data.current_phase || boardData.currentPhase,
+          currentPhase: data.current_phase || prev.currentPhase,
           tasks: data.tasks || [
             { label: "Onboarding", status: "Active" },
             { label: "Content Strategy", status: "Locked" }
           ],
-          checklist: data.checklist || boardData.checklist,
+          checklist: data.checklist || prev.checklist,
           schedule: data.schedule || [],
-          roadmap: data.roadmap || boardData.roadmap,
-          content_plan: data.content_plan || [],
-          plan_settings: data.plan_settings || { allow_edit: false }
-        });
+          roadmap: data.roadmap || prev.roadmap,
+           content_plan: data.content_plan || [],
+           plan_settings: data.plan_settings || { allow_edit: false },
+            mentors_note: data.mentors_note || prev.mentors_note,
+            timeline_items: data.timeline_items || prev.timeline_items,
+            enabled_features: data.enabled_features || { dashboard: true, content_plan: true, timeline: true, reports: true }
+        }));
       }
+
+      // 3. Fetch Mentor Profile for the card safely
+      const { data: mentorDataResult, error: mentorError } = await supabase.from('mentor_profile').select('*').limit(1);
+      if (mentorDataResult && mentorDataResult.length > 0) {
+        const mentorData = mentorDataResult[0];
+        setBoardData((prev: any) => ({
+          ...prev,
+          mentor_persona: {
+            name: mentorData.name,
+            photo: mentorData.avatar,
+            title: mentorData.headline,
+            skills: mentorData.specialties ? (Array.isArray(mentorData.specialties) ? mentorData.specialties.join(',') : mentorData.specialties) : "Content Specialist",
+            manual_status: mentorData.manual_status || "auto",
+            status_message: mentorData.status_message || "",
+            busy_slots: mentorData.busy_slots || []
+          }
+        }));
+      } else if (mentorError) {
+        console.error("Mentor profile fetch failed:", mentorError);
+      }
+
       setIsLoading(false);
     };
 
@@ -268,13 +379,14 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
           table: 'clients',
           filter: `id=eq.${resolvedParams.id}`
         },
-        (payload) => {
+        (payload: any) => {
           console.log('Admin updated this client data!', payload);
           const updated = payload.new as any;
           setBoardData((prev: any) => ({
             ...prev,
             name: updated.full_name,
             niche: updated.niche,
+            start_date: updated.start_date,
             end_date: updated.end_date,
             profile_url: updated.profile_url,
             payment_data: updated.payment_data,
@@ -286,7 +398,54 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
             roadmap: updated.roadmap || prev.roadmap,
             currentPhase: updated.current_phase || prev.currentPhase,
             content_plan: updated.content_plan || prev.content_plan,
-            plan_settings: updated.plan_settings || prev.plan_settings
+            plan_settings: updated.plan_settings || prev.plan_settings,
+            mentors_note: updated.mentors_note || prev.mentors_note,
+            timeline_items: updated.timeline_items || prev.timeline_items,
+            enabled_features: updated.enabled_features || prev.enabled_features
+          }));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'mentor_profile'
+        },
+        (payload: any) => {
+          console.log('Mentor updated their profile!', payload);
+          const mentorData = payload.new as any;
+          setBoardData((prev: any) => ({
+            ...prev,
+            mentor_persona: {
+              ...prev.mentor_persona,
+              name: mentorData.name || prev.mentor_persona?.name,
+              photo: mentorData.avatar || prev.mentor_persona?.photo,
+              title: mentorData.headline || prev.mentor_persona?.title,
+              skills: mentorData.specialties ? (Array.isArray(mentorData.specialties) ? mentorData.specialties.join(',') : mentorData.specialties) : prev.mentor_persona?.skills,
+              manual_status: mentorData.manual_status || prev.mentor_persona?.manual_status || "auto",
+              status_message: mentorData.status_message !== undefined ? mentorData.status_message : prev.mentor_persona?.status_message,
+              busy_slots: mentorData.busy_slots || prev.mentor_persona?.busy_slots || []
+            }
+          }));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'app_settings'
+        },
+        (payload: any) => {
+          console.log('App settings updated globally!', payload);
+          const settingsData = payload.new as any;
+          setBoardData((prev: any) => ({
+            ...prev,
+            app_settings: {
+              app_name: settingsData.app_name || prev.app_settings?.app_name,
+              app_logo: settingsData.app_logo || prev.app_settings?.app_logo
+            }
           }));
         }
       )
@@ -303,15 +462,26 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
 
     // 2. Sync to Supabase in background
     try {
+      // Column Mapping Map
+      const colMap: any = {
+         name: "full_name",
+         currentPhase: "current_phase",
+         platformStats: "platform_stats",
+         mentors_note: "mentors_note",
+         timeline_items: "timeline_items"
+      };
+
+      const targetCol = colMap[field] || field;
+
       const { error } = await supabase
         .from("clients")
-        .update({ [field === 'name' ? 'full_name' : field === 'content_plan' ? 'content_plan' : field]: value })
+        .update({ [targetCol]: value })
         .eq("id", resolvedParams.id);
 
       if (error) throw error;
-      console.log(`Synced ${field} to Supabase`);
-    } catch (err) {
-      console.error(`Failed to sync ${field}:`, err);
+      console.log(`Synced ${field} to Supabase as ${targetCol}`);
+    } catch (err: any) {
+      console.error(`Failed to sync ${field}:`, err.message || err.details || (typeof err === 'object' ? JSON.stringify(err) : err));
     }
   };
 
@@ -438,9 +608,23 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  // Auto-fallback if active tab is disabled
+  useEffect(() => {
+    if (boardData.enabled_features) {
+      const { dashboard, content_plan, timeline, reports } = boardData.enabled_features;
+      const isCalendarDisabled = activeTab === 'calendar' && !content_plan;
+      const isTimelineDisabled = activeTab === 'timeline' && !timeline;
+      const isReportsDisabled = activeTab === 'reports' && !reports;
+      
+      if (isCalendarDisabled || isTimelineDisabled || isReportsDisabled) {
+         setActiveTab("dashboard");
+      }
+    }
+  }, [activeTab, boardData.enabled_features]);
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center font-serif text-slate-400 italic">
+      <div className="min-h-screen bg-background flex items-center justify-center font-sans font-extrabold text-slate-400">
         Loading personal board data...
       </div>
     );
@@ -467,7 +651,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
             >
               <div className="space-y-4">
                 <SectionLabel label="Setup Your Identity" className="mx-auto" />
-                <h2 className="text-4xl font-serif">Hello, <span className="italic text-accent">{boardData.name}</span></h2>
+                <h2 className="text-4xl font-sans font-extrabold">Hello, <span className="italic text-accent">{boardData.name}</span></h2>
                 <p className="text-slate-500 text-sm leading-relaxed">
                   Selamat datang di portal eksklusif Mentorhipers. Sebelum memulai, silakan pasang foto profil terbaik Anda untuk mempersonalisasi pengalaman mentoring Anda.
                 </p>
@@ -509,11 +693,28 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
 
 
       <main className="mx-auto pt-12 transition-all duration-700 ease-in-out max-w-[1800px] px-4 md:px-8 xl:px-12">
+        {/* TOP BRANDING HEADER (Option A) */}
+        <motion.div 
+           initial={{ opacity: 0, y: -10 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="flex items-center gap-4 mb-10 px-1 opacity-60 hover:opacity-100 transition-opacity"
+        >
+           {boardData.app_settings?.app_logo ? (
+              <img src={boardData.app_settings.app_logo} className="h-8 max-w-[150px] object-contain" alt="App Logo" />
+           ) : (
+              <h1 className="text-[18px] font-extrabold text-[#202224] tracking-tight">
+                 Admin<span className="text-[#4880FF]">Stack</span>
+              </h1>
+           )}
+           <div className="h-4 w-px bg-slate-300 mx-1" />
+           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Mentee Board</span>
+        </motion.div>
+
         {/* Landscape Header Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col xl:flex-row xl:items-end justify-between gap-8 mb-16 relative"
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="flex flex-col xl:flex-row xl:items-end justify-between gap-8 mb-16 relative"
         >
           {/* Decorative background accent */}
           <div className="absolute -top-32 -left-32 w-96 h-96 bg-accent/5 blur-[120px] rounded-full -z-10" />
@@ -527,7 +728,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                 {boardData.profile_url ? (
                   <img src={boardData.profile_url} alt={boardData.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-accent to-accent-secondary flex items-center justify-center text-white text-3xl font-serif">
+                  <div className="w-full h-full bg-gradient-to-br from-accent to-accent-secondary flex items-center justify-center text-white text-3xl font-sans font-extrabold">
                     {getInitials(boardData.name)}
                   </div>
                 )}
@@ -554,7 +755,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
 
-              <h2 className="text-4xl md:text-5xl font-serif tracking-tight text-foreground leading-tight">
+              <h2 className="text-4xl md:text-5xl font-sans font-extrabold tracking-tight text-foreground leading-tight">
                 {boardData.name}
               </h2>
 
@@ -573,10 +774,38 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
           </div>
 
           <div className="flex flex-wrap items-center gap-4 xl:mb-2">
-            <div className="flex flex-col items-center justify-center px-8 py-4 rounded-3xl bg-white border border-border/50 shadow-sm glass-card">
-              <span className="text-[10px] font-bold text-muted-foreground mb-1">Status Pembayaran</span>
-              <span className="text-sm font-bold text-accent">{getPaymentStatus(boardData.payment_data)}</span>
-            </div>
+            <motion.div 
+               whileHover={{ scale: 1.02, y: -2 }}
+               className={`flex items-center gap-6 p-4 pr-6 rounded-[2.5rem] bg-white border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden group`}
+            >
+               {/* Background Glow */}
+               <div className={`absolute -right-8 -top-8 w-24 h-24 blur-3xl opacity-20 pointer-events-none transition-colors duration-1000 ${liveStatus === 'busy' ? 'bg-rose-400' : liveStatus === 'away' ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+               
+               <div className="flex flex-col items-end gap-1 relative z-10 pl-4">
+                  <div className="flex items-center gap-2">
+                     <span className={`text-[9px] font-black uppercase tracking-[0.2em] transition-colors duration-500 ${liveStatus === 'busy' ? 'text-rose-500' : liveStatus === 'away' ? 'text-amber-500' : 'text-emerald-500'}`}>
+                        {liveStatus === 'busy' ? 'Busy Reviewing' : liveStatus === 'away' ? 'Mentor Away' : 'Mentor Online'}
+                     </span>
+                     <div className="relative">
+                        <div className={`w-2 h-2 rounded-full ${liveStatus === 'busy' ? 'bg-rose-500' : liveStatus === 'away' ? 'bg-amber-500' : 'bg-emerald-500'} ${liveStatus === 'online' ? 'animate-pulse' : ''}`} />
+                        {liveStatus === 'online' && <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping opacity-75" />}
+                     </div>
+                  </div>
+                  <p className="text-[11px] font-bold text-slate-400 truncate max-w-[150px] italic">
+                     {boardData.mentor_persona?.status_message || "Ready to help you scale!"}
+                  </p>
+               </div>
+
+               <div className={`w-14 h-14 rounded-2xl bg-white p-1 border-2 transition-all duration-500 relative z-10 ${liveStatus === 'busy' ? 'border-rose-100 shadow-rose-500/10' : liveStatus === 'away' ? 'border-amber-100 shadow-amber-500/10' : 'border-emerald-100 shadow-emerald-500/10'}`}>
+                  {boardData.mentor_persona?.photo ? (
+                     <img src={boardData.mentor_persona.photo} alt="Mentor" className="w-full h-full object-cover rounded-xl" />
+                  ) : (
+                     <div className="w-full h-full bg-slate-50 flex items-center justify-center rounded-xl text-slate-300">
+                        <User className="w-6 h-6" />
+                     </div>
+                  )}
+               </div>
+            </motion.div>
 
             {isAdmin && (
               <Button
@@ -604,71 +833,73 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                 className="space-y-12 pb-12"
               >
                 {/* 1. Growth Pulse Section */}
-                <section>
-                  <div className="flex items-end justify-between mb-8">
-                    <div className="flex flex-col md:flex-row md:items-center gap-6">
-                      <h3 className="text-2xl font-serif">Account <span className="italic text-accent">Stats</span></h3>
-                      <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner">
-                        {boardData.platforms.map((platform: string) => (
-                          <button
-                            key={platform}
-                            onClick={() => setBoardData({ ...boardData, selectedPlatform: platform })}
-                            className={`px-6 py-2 rounded-xl text-[10px] font-bold transition-all ${boardData.selectedPlatform === platform ? "bg-white text-accent shadow-sm ring-1 ring-slate-200" : "text-slate-400 hover:text-slate-600"
-                              }`}
-                          >
-                            {platform}
-                          </button>
-                        ))}
+                {boardData.enabled_features.reports && (
+                  <section>
+                    <div className="flex items-end justify-between mb-8">
+                      <div className="flex flex-col md:flex-row md:items-center gap-6">
+                        <h3 className="text-2xl font-sans font-extrabold">Account <span className="italic text-accent">Stats</span></h3>
+                        <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 shadow-inner">
+                          {boardData.platforms.map((platform: string) => (
+                            <button
+                              key={platform}
+                              onClick={() => setBoardData({ ...boardData, selectedPlatform: platform })}
+                              className={`px-6 py-2 rounded-xl text-[10px] font-bold transition-all ${boardData.selectedPlatform === platform ? "bg-white text-accent shadow-sm ring-1 ring-slate-200" : "text-slate-400 hover:text-slate-600"
+                                }`}
+                            >
+                              {platform}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-xs font-bold text-muted-foreground/60 tracking-widest bg-muted/30 px-4 py-2 rounded-full border border-border/50">
+                        Last 30 Days
                       </div>
                     </div>
-                    <div className="text-xs font-bold text-muted-foreground/60 tracking-widest bg-muted/30 px-4 py-2 rounded-full border border-border/50">
-                      Last 30 Days
-                    </div>
-                  </div>
-                  <div className={`grid grid-cols-1 ${boardData.selectedPlatform.toLowerCase() === 'instagram' ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-6`}>
-                    <StatCard
-                      label="Total Followers"
-                      value={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.followers || "0"}
-                      percent={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.percentages?.followers || 0}
-                      icon={Users}
-                      platform={boardData.selectedPlatform}
-                    />
-                    <StatCard
-                      label="Engagement Rate"
-                      value={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.engagement || "0%"}
-                      percent={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.percentages?.engagement || 0}
-                      icon={Zap}
-                      platform={boardData.selectedPlatform}
-                    />
-                    {boardData.selectedPlatform.toLowerCase() === 'instagram' && (
+                    <div className={`grid grid-cols-1 ${boardData.selectedPlatform.toLowerCase() === 'instagram' ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-6`}>
                       <StatCard
-                        label="Total Reach"
-                        value={boardData.platformStats.instagram.reach}
-                        percent={boardData.platformStats.instagram.percentages.reach}
-                        icon={Target}
-                        platform="Instagram"
+                        label="Total Followers"
+                        value={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.followers || "0"}
+                        percent={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.percentages?.followers || 0}
+                        icon={Users}
+                        platform={boardData.selectedPlatform}
                       />
-                    )}
-                    <StatCard
-                      label="Total Views"
-                      value={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.views || "0"}
-                      percent={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.percentages?.views || 0}
-                      icon={Eye}
-                      platform={boardData.selectedPlatform}
-                    />
-                    <StatCard
-                      label="Total Interaksi"
-                      value={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.interactions || "0"}
-                      percent={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.percentages?.interactions || 0}
-                      icon={MousePointerClick}
-                      platform={boardData.selectedPlatform}
-                    />
-                  </div>
-                </section>
+                      <StatCard
+                        label="Engagement Rate"
+                        value={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.engagement || "0%"}
+                        percent={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.percentages?.engagement || 0}
+                        icon={Zap}
+                        platform={boardData.selectedPlatform}
+                      />
+                      {boardData.selectedPlatform.toLowerCase() === 'instagram' && (
+                        <StatCard
+                          label="Total Reach"
+                          value={boardData.platformStats.instagram.reach}
+                          percent={boardData.platformStats.instagram.percentages.reach}
+                          icon={Target}
+                          platform="Instagram"
+                        />
+                      )}
+                      <StatCard
+                        label="Total Views"
+                        value={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.views || "0"}
+                        percent={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.percentages?.views || 0}
+                        icon={Eye}
+                        platform={boardData.selectedPlatform}
+                      />
+                      <StatCard
+                        label="Total Interaksi"
+                        value={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.interactions || "0"}
+                        percent={boardData.platformStats[boardData.selectedPlatform.toLowerCase()]?.percentages?.interactions || 0}
+                        icon={MousePointerClick}
+                        platform={boardData.selectedPlatform}
+                      />
+                    </div>
+                  </section>
+                )}
 
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
-                  {/* Left Column: 8/12 */}
-                  <div className="xl:col-span-8 space-y-10">
+                <div className="space-y-10">
+                  {/* ROW 1: ROADMAP SECTION (Always Top Focus) */}
+                  <div className="w-full">
                     {/* 2. Mentoring Phase Roadmap */}
                     <Card className="p-10 relative overflow-hidden group border-none bg-white shadow-sm rounded-[3rem]">
                       <div className="absolute top-0 right-0 w-80 h-80 bg-blue-50/50 blur-[120px] rounded-full -mr-40 -mt-40 transition-colors duration-700" />
@@ -676,7 +907,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                       <div className="relative z-10 w-full">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
                           <div>
-                            <h3 className="text-4xl font-serif leading-tight text-slate-900">Mentoring <span className="italic text-accent">Roadmap</span></h3>
+                            <h3 className="text-4xl font-sans font-extrabold leading-tight text-slate-900">Mentoring <span className="italic text-accent">Roadmap</span></h3>
                           </div>
                           <div className="bg-emerald-50/50 px-8 py-4 rounded-full border border-emerald-100 text-emerald-600 font-bold text-xs flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -703,76 +934,131 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                           ))}
                         </div>
 
-                        {/* Current Phase Tasks */}
-                        <div className="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100/50">
-                          <h4 className="text-[10px] font-bold text-slate-400 mb-6 tracking-[0.2em] flex items-center gap-2">
-                            Active in Fase 0{boardData.currentPhase} <ArrowRight className="w-3 h-3" />
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                            {boardData.tasks.map((task, i) => (
-                              <JourneyItem key={i} label={task.label} status={task.status} />
-                            ))}
-                          </div>
-                        </div>
+
                       </div>
                     </Card>
+                  </div>
 
-                    {/* 3. Content Queue */}
-                    <section>
-                      <h3 className="text-xl font-serif mb-6 flex items-center gap-3">
-                        <Layers className="w-5 h-5 text-accent" />
-                        Next <span className="italic">to Post</span>
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {(() => {
-                          const today = new Date();
-                          today.setHours(0, 0, 0, 0);
-                          const next7Days = new Date(today);
-                          next7Days.setDate(today.getDate() + 7);
-                          next7Days.setHours(23, 59, 59, 999);
-
-                          const upcomingContent = boardData.content_plan
-                            .filter((item: any) => {
-                              if (!item.date) return false;
-                              const itemDate = new Date(item.date);
-                              return itemDate >= today && itemDate <= next7Days;
-                            })
-                            .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
-                            .slice(0, 3);
-
-                          if (upcomingContent.length === 0) {
-                            return (
-                              <div className="col-span-3 p-10 rounded-[2.5rem] bg-slate-50 border border-slate-100 border-dashed text-center">
-                                <p className="text-xs font-serif italic text-slate-400">Belum ada konten yang dijadwalkan dalam 7 hari ke depan.</p>
-                                <button onClick={() => setActiveTab("calendar")} className="mt-4 text-[10px] font-black text-accent uppercase tracking-widest hover:underline">Buka Content Plan</button>
+                  {/* ROW 2: HUB CONTENT (Grid 8/4) */}
+                  <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+                    {/* Left Column (8/12): Main Action & Focus */}
+                    <div className="xl:col-span-8 space-y-10">
+                      
+                      {/* Learning Mission & Focus (ONLY IN MENTORING MODE) */}
+                      {boardData.enabled_features.timeline && !boardData.enabled_features.reports && (
+                        <Card className="p-8 rounded-[2.5rem] border-none bg-gradient-to-br from-[#4880FF]/10 to-indigo-50/50 relative overflow-hidden">
+                           <div className="absolute top-0 right-0 w-40 h-40 bg-white/20 blur-3xl rounded-full -mr-20 -mt-20" />
+                           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                              <div className="flex items-center gap-5">
+                                 <div className="w-14 h-14 rounded-2xl bg-[#4880FF] text-white flex items-center justify-center shadow-lg shadow-[#4880FF]/30">
+                                    <Target size={24} />
+                                 </div>
+                                 <div className="text-left">
+                                    <h4 className="text-lg font-black text-slate-900 leading-tight">Learning Goals & <span className="text-accent italic">Mission</span></h4>
+                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Focus Minggu ini: {boardData.roadmap[boardData.currentPhase - 1]?.title || 'Foundation Stage'}</p>
+                                 </div>
                               </div>
-                            );
-                          }
+                              <div className="flex items-center gap-2">
+                                 <div className="px-5 py-2.5 rounded-2xl bg-white/80 backdrop-blur-sm border border-[#4880FF]/10 shadow-sm">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-0.5 text-left">Progress Kurikulum</span>
+                                    <div className="flex items-center gap-3">
+                                       <div className="w-24 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                                          <div className="h-full bg-[#4880FF] rounded-full" style={{ width: `${(boardData.currentPhase / boardData.roadmap.length) * 100}%` }} />
+                                       </div>
+                                       <span className="text-xs font-black text-slate-900">{Math.round((boardData.currentPhase / boardData.roadmap.length) * 100)}%</span>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </Card>
+                      )}
 
-                          const formatQueueDate = (dateStr: string) => {
-                            const d = new Date(dateStr);
-                            const now = new Date();
-                            const todayCheck = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                            const itemDateCheck = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-                            const diffDays = Math.round((itemDateCheck.getTime() - todayCheck.getTime()) / (1000 * 60 * 60 * 24));
+                      {/* Mentee Priority Action Items (Moved to Left Side) */}
+                      <Card className="p-10 rounded-[3rem] border border-border bg-white shadow-sm overflow-hidden relative">
+                        <div className="absolute top-0 right-0 w-60 h-60 bg-emerald-50/30 blur-[80px] rounded-full -mr-32 -mt-32" />
+                        <h4 className="text-sm font-extrabold tracking-widest mb-10 flex items-center gap-3">
+                          <CheckSquare className="w-5 h-5 text-emerald-500" />
+                          Priority <span className="italic">Action Items</span>
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+                          {boardData.checklist.items
+                            .filter((item: any) => {
+                               if (!item.category || item.category === 'general') return true;
+                               if (item.category === 'mentoring' && boardData.enabled_features.timeline) return true;
+                               if (item.category === 'handling' && boardData.enabled_features.content_plan) return true;
+                               return false;
+                            })
+                            .map((item: any) => (
+                              <ActionItem key={item.id} text={item.text} done={item.done} category={item.category} />
+                            ))}
+                        </div>
 
-                            if (diffDays === 0) return "Today";
-                            if (diffDays === 1) return "Tomorrow";
-                            return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                          };
+                        {boardData.checklist.items.length === 0 && (
+                          <div className="py-20 text-center space-y-4 opacity-30">
+                             <CheckSquare size={48} className="mx-auto" />
+                             <p className="text-xs font-bold tracking-widest">TIDAK ADA TUGAS AKTIF</p>
+                          </div>
+                        )}
+                      </Card>
 
-                          return upcomingContent.map((item: any) => (
-                            <ContentQueueItem
-                              key={item.id}
-                              title={item.headline || "Tanpa Judul"}
-                              type={item.platform === "TikTok" ? "Reels" : "Carousel"}
-                              date={formatQueueDate(item.date)}
-                              status={item.status}
-                            />
-                          ));
-                        })()}
-                      </div>
-                    </section>
+                      {/* 3. Content Queue (Only if handling on) */}
+                      {boardData.enabled_features.content_plan && (
+                      <section>
+                        <h3 className="text-xl font-sans font-extrabold mb-6 flex items-center gap-3">
+                          <Layers className="w-5 h-5 text-accent" />
+                          Next <span className="italic">to Post</span>
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          {(() => {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const next7Days = new Date(today);
+                            next7Days.setDate(today.getDate() + 7);
+                            next7Days.setHours(23, 59, 59, 999);
+
+                            const upcomingContent = boardData.content_plan
+                              .filter((item: any) => {
+                                if (!item.date) return false;
+                                const itemDate = new Date(item.date);
+                                return itemDate >= today && itemDate <= next7Days;
+                              })
+                              .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                              .slice(0, 3);
+
+                            if (upcomingContent.length === 0) {
+                              return (
+                                <div className="col-span-3 p-10 rounded-[2.5rem] bg-slate-50 border border-slate-100 border-dashed text-center">
+                                  <p className="text-xs font-sans font-bold text-slate-400">Belum ada konten yang dijadwalkan dalam 7 hari ke depan.</p>
+                                  <button onClick={() => setActiveTab("calendar")} className="mt-4 text-[10px] font-black text-accent uppercase tracking-widest hover:underline">Buka Content Plan</button>
+                                </div>
+                              );
+                            }
+
+                            const formatQueueDate = (dateStr: string) => {
+                              const d = new Date(dateStr);
+                              const now = new Date();
+                              const todayCheck = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                              const itemDateCheck = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                              const diffDays = Math.round((itemDateCheck.getTime() - todayCheck.getTime()) / (1000 * 60 * 60 * 24));
+
+                              if (diffDays === 0) return "Today";
+                              if (diffDays === 1) return "Tomorrow";
+                              return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                            };
+
+                            return upcomingContent.map((item: any) => (
+                              <ContentQueueItem
+                                key={item.id}
+                                title={item.headline || "Tanpa Judul"}
+                                type={item.platform === "TikTok" ? "Reels" : "Carousel"}
+                                date={formatQueueDate(item.date)}
+                                status={item.status}
+                              />
+                            ));
+                          })()}
+                        </div>
+                      </section>
+                    )}
                   </div>
 
                   {/* Right Column: 4/12 */}
@@ -781,10 +1067,10 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                     <Card className="p-8 rounded-[2.5rem] border border-border bg-white shadow-sm relative">
                       <div className="flex items-center justify-between mb-8">
                         <div>
-                          <h4 className="text-sm font-bold tracking-widest flex items-center gap-2">
+                          <h4 className="text-sm font-extrabold tracking-widest flex items-center gap-2">
                             Mentoring <span className="italic">Calendar</span>
                           </h4>
-                          <p className="text-[10px] text-muted-foreground font-medium mt-1">March 2024</p>
+                          <p className="text-[10px] text-muted-foreground font-bold mt-1">March 2024</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <button className="p-2 rounded-xl border border-border hover:bg-slate-50 transition-colors">
@@ -804,7 +1090,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                         {Array.from({ length: 31 }, (_, i) => {
                           const today = new Date();
                           const dayNum = i + 1;
-                          const scheduleForDay = boardData.schedule.find(s => {
+                          const scheduleForDay = boardData.schedule.find((s: any) => {
                             const d = new Date(s.time);
                             return !isNaN(d.getTime()) &&
                               d.getDate() === dayNum &&
@@ -834,7 +1120,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                         </div>
 
                         <div className="space-y-4 relative">
-                          {boardData.schedule.map((item) => (
+                          {boardData.schedule.map((item: any) => (
                             <div key={item.id} className="relative">
                               <ScheduleItem
                                 key={item.id}
@@ -892,33 +1178,15 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                       </div>
                     </Card>
 
-                    {/* 5. Action Items */}
-                    <Card className="p-8 pb-10 rounded-[2.5rem] border border-border bg-white shadow-sm overflow-hidden relative">
-                      <h4 className="text-sm font-bold tracking-widest mb-8 flex items-center gap-3">
-                        <CheckSquare className="w-4 h-4 text-accent" />
-                        Mentor <span className="italic">Checklist</span>
-                      </h4>
-                      <div className="space-y-6">
-                        {boardData.checklist.items.map((item: any) => (
-                          <ActionItem key={item.id} text={item.text} done={item.done} />
-                        ))}
-                      </div>
 
-                      <div className="mt-10 p-5 rounded-2xl bg-muted/30 border border-border/50">
-                        <div className="flex items-start gap-4">
-                          <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0">
-                            <Lightbulb className="w-4 h-4" />
-                          </div>
-                          <p className="text-[11px] leading-relaxed text-muted-foreground italic mt-0.5">
-                            "{boardData.checklist.suggestion}"
-                          </p>
-                        </div>
-                      </div>
-                    </Card>
+
+
                   </div>
                 </div>
-              </motion.div>
+              </div>
+            </motion.div>
             )}
+
             {activeTab === "calendar" && (
               <motion.div
                 key="content-plan"
@@ -935,11 +1203,52 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                 />
               </motion.div>
             )}
+             {activeTab === "timeline" && (
+               <motion.div
+                 key="timeline"
+                 initial={{ opacity: 0, x: 20 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 exit={{ opacity: 0, x: -20 }}
+               >
+                 <MentoringTimelineHub 
+                    data={{ ...boardData, liveStatus }} 
+                    isAdmin={isAdmin}
+                    onUpdate={syncBoardUpdate}
+                 />
+               </motion.div>
+             )}
+             {activeTab === "reports" && (
+                <motion.div
+                  key="goals"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                >
+                  <GoalsRoadmapView 
+                     clientId={resolvedParams.id} 
+                     isAdmin={isAdmin}
+                     paymentData={boardData.payment_data}
+                     getPaymentStatus={getPaymentStatus}
+                  />
+                </motion.div>
+              )}
           </AnimatePresence>
         </div>
       </main>
 
-      <BottomBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomBar 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+        enabledFeatures={boardData.enabled_features}
+        clientInfo={{ 
+          id: resolvedParams.id, 
+          name: boardData.name, 
+          avatar: boardData.profile_url 
+        }} 
+      />
+
+      {/* Real-time Notification Center */}
+      <NotificationCenter clientId={resolvedParams.id} />
 
       {/* Admin Edit Modal */}
       <AnimatePresence>
@@ -958,7 +1267,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                       <Edit3 className="w-6 h-6" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-serif">Quick Update Dashboard</h2>
+                      <h2 className="text-2xl font-sans font-extrabold">Quick Update Dashboard</h2>
                       <p className="text-xs text-muted-foreground font-medium tracking-widest mt-1">Management Mode</p>
                     </div>
                   </div>
@@ -987,47 +1296,51 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                         </select>
                       </div>
 
-                      <div className="p-5 rounded-[2rem] bg-[#E1306C]/5 border border-[#E1306C]/10 space-y-5">
-                        <h4 className="text-[10px] font-bold tracking-[0.2em] text-[#E1306C] flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#E1306C]" /> Instagram
-                        </h4>
-                        <div className="grid grid-cols-1 gap-3">
-                          {['followers', 'engagement', 'reach', 'views', 'interactions'].map((key) => (
-                            <div key={key} className="space-y-1">
-                              <label className="text-[8px] font-bold text-slate-400 ml-1">{key}</label>
-                              <input
-                                className="w-full h-10 rounded-xl bg-white border border-slate-100 px-3 font-bold text-xs shadow-sm"
-                                value={boardData.platformStats.instagram[key as keyof typeof boardData.platformStats.instagram]}
-                                onChange={(e) => setBoardData({
-                                  ...boardData,
-                                  platformStats: { ...boardData.platformStats, instagram: { ...boardData.platformStats.instagram, [key]: e.target.value } }
-                                })}
-                              />
+                      {boardData.enabled_features.reports && (
+                        <>
+                          <div className="p-5 rounded-[2rem] bg-[#E1306C]/5 border border-[#E1306C]/10 space-y-5">
+                            <h4 className="text-[10px] font-bold tracking-[0.2em] text-[#E1306C] flex items-center gap-2">
+                              <div className="w-1.5 h-1.5 rounded-full bg-[#E1306C]" /> Instagram
+                            </h4>
+                            <div className="grid grid-cols-1 gap-3">
+                              {['followers', 'engagement', 'reach', 'views', 'interactions'].map((key) => (
+                                <div key={key} className="space-y-1">
+                                  <label className="text-[8px] font-bold text-slate-400 ml-1">{key}</label>
+                                  <input
+                                    className="w-full h-10 rounded-xl bg-white border border-slate-100 px-3 font-bold text-xs shadow-sm"
+                                    value={boardData.platformStats.instagram[key as keyof typeof boardData.platformStats.instagram]}
+                                    onChange={(e) => setBoardData({
+                                      ...boardData,
+                                      platformStats: { ...boardData.platformStats, instagram: { ...boardData.platformStats.instagram, [key]: e.target.value } }
+                                    })}
+                                  />
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      </div>
+                          </div>
 
-                      <div className="p-5 rounded-[2rem] bg-slate-900/5 border border-slate-200 space-y-5">
-                        <h4 className="text-[10px] font-bold tracking-[0.2em] text-slate-900 flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-slate-900" /> TikTok
-                        </h4>
-                        <div className="grid grid-cols-1 gap-3">
-                          {['followers', 'engagement', 'views', 'interactions'].map((key) => (
-                            <div key={key} className="space-y-1">
-                              <label className="text-[8px] font-bold text-slate-400 ml-1">{key}</label>
-                              <input
-                                className="w-full h-10 rounded-xl bg-white border border-slate-100 px-3 font-bold text-xs shadow-sm"
-                                value={boardData.platformStats.tiktok[key as keyof typeof boardData.platformStats.tiktok]}
-                                onChange={(e) => setBoardData({
-                                  ...boardData,
-                                  platformStats: { ...boardData.platformStats, tiktok: { ...boardData.platformStats.tiktok, [key]: e.target.value } }
-                                })}
-                              />
+                          <div className="p-5 rounded-[2rem] bg-slate-900/5 border border-slate-200 space-y-5">
+                            <h4 className="text-[10px] font-bold tracking-[0.2em] text-slate-900 flex items-center gap-2">
+                              <div className="w-1.5 h-1.5 rounded-full bg-slate-900" /> TikTok
+                            </h4>
+                            <div className="grid grid-cols-1 gap-3">
+                              {['followers', 'engagement', 'views', 'interactions'].map((key) => (
+                                <div key={key} className="space-y-1">
+                                  <label className="text-[8px] font-bold text-slate-400 ml-1">{key}</label>
+                                  <input
+                                    className="w-full h-10 rounded-xl bg-white border border-slate-100 px-3 font-bold text-xs shadow-sm"
+                                    value={boardData.platformStats.tiktok[key as keyof typeof boardData.platformStats.tiktok]}
+                                    onChange={(e) => setBoardData({
+                                      ...boardData,
+                                      platformStats: { ...boardData.platformStats, tiktok: { ...boardData.platformStats.tiktok, [key]: e.target.value } }
+                                    })}
+                                  />
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      </div>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     {/* Column 2: Content Management */}
@@ -1039,7 +1352,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                           <button onClick={addScheduleItem} className="p-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100"><Plus className="w-4 h-4" /></button>
                         </div>
                         <div className="space-y-4">
-                          {boardData.schedule.map((item) => (
+                          {boardData.schedule.map((item: any) => (
                             <div key={item.id} className="p-5 rounded-[2rem] bg-slate-50 border border-slate-100 space-y-3 group/item hover:bg-white hover:shadow-md transition-all">
                               <div className="flex gap-4">
                                 <div className="flex-1 space-y-2">
@@ -1067,43 +1380,45 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                       </div>
 
                       {/* Roadmap */}
-                      <div className="space-y-5 pt-5 border-t border-slate-100">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-[10px] font-bold tracking-[0.2em] text-accent">Roadmap Manager</h4>
-                          <button
-                            onClick={() => {
-                              const newId = boardData.roadmap.length > 0 ? Math.max(...boardData.roadmap.map((p: any) => p.id)) + 1 : 1;
-                              setBoardData({ ...boardData, roadmap: [...boardData.roadmap, { id: newId, title: "New Phase", description: "Phase desc" }] });
-                            }}
-                            className="p-2 rounded-xl bg-accent/5 text-accent hover:bg-accent/10"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          {boardData.roadmap.map((phase: any, index: number) => (
-                            <div key={phase.id} className="p-4 rounded-[2rem] bg-slate-50 border border-slate-100 group/phase relative hover:bg-white hover:shadow-sm transition-all">
-                              <div className="flex justify-between items-center mb-2">
-                                <span className="text-[8px] font-bold text-slate-300">Phase 0{index + 1}</span>
-                                <button
-                                  onClick={() => setBoardData({ ...boardData, roadmap: boardData.roadmap.filter((p: any) => p.id !== phase.id) })}
-                                  className="text-red-200 hover:text-red-400 opacity-0 group-hover/phase:opacity-100 transition-all"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
+                      {boardData.enabled_features.timeline && (
+                        <div className="space-y-5 pt-5 border-t border-slate-100">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-[10px] font-bold tracking-[0.2em] text-accent">Roadmap Manager</h4>
+                            <button
+                              onClick={() => {
+                                const newId = boardData.roadmap.length > 0 ? Math.max(...boardData.roadmap.map((p: any) => p.id)) + 1 : 1;
+                                setBoardData({ ...boardData, roadmap: [...boardData.roadmap, { id: newId, title: "New Phase", description: "Phase desc" }] });
+                              }}
+                              className="p-2 rounded-xl bg-accent/5 text-accent hover:bg-accent/10"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            {boardData.roadmap.map((phase: any, index: number) => (
+                              <div key={phase.id} className="p-4 rounded-[2rem] bg-slate-50 border border-slate-100 group/phase relative hover:bg-white hover:shadow-sm transition-all">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-[8px] font-bold text-slate-300">Phase 0{index + 1}</span>
+                                  <button
+                                    onClick={() => setBoardData({ ...boardData, roadmap: boardData.roadmap.filter((p: any) => p.id !== phase.id) })}
+                                    className="text-red-200 hover:text-red-400 opacity-0 group-hover/phase:opacity-100 transition-all"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                                <input className="w-full bg-transparent font-bold text-xs mb-1 focus:outline-none" value={phase.title} onChange={(e) => {
+                                  const res = boardData.roadmap.map((p: any) => p.id === phase.id ? { ...p, title: e.target.value } : p);
+                                  setBoardData({ ...boardData, roadmap: res });
+                                }} />
+                                <textarea className="w-full bg-transparent text-[9px] text-slate-400 focus:outline-none resize-none" rows={2} value={phase.description} onChange={(e) => {
+                                  const res = boardData.roadmap.map((p: any) => p.id === phase.id ? { ...p, description: e.target.value } : p);
+                                  setBoardData({ ...boardData, roadmap: res });
+                                }} />
                               </div>
-                              <input className="w-full bg-transparent font-bold text-xs mb-1 focus:outline-none" value={phase.title} onChange={(e) => {
-                                const res = boardData.roadmap.map((p: any) => p.id === phase.id ? { ...p, title: e.target.value } : p);
-                                setBoardData({ ...boardData, roadmap: res });
-                              }} />
-                              <textarea className="w-full bg-transparent text-[9px] text-slate-400 focus:outline-none resize-none" rows={2} value={phase.description} onChange={(e) => {
-                                const res = boardData.roadmap.map((p: any) => p.id === phase.id ? { ...p, description: e.target.value } : p);
-                                setBoardData({ ...boardData, roadmap: res });
-                              }} />
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* Column 3: Mentoring Ops (Right) */}
@@ -1119,7 +1434,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                                 ...boardData,
                                 checklist: {
                                   ...boardData.checklist,
-                                  items: [...boardData.checklist.items, { id: newId, text: "New Task", done: false }]
+                                  items: [...boardData.checklist.items, { id: newId, text: "New Task", done: false, category: "general" }]
                                 }
                               });
                             }}
@@ -1149,6 +1464,24 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                                   setBoardData({ ...boardData, checklist: { ...boardData.checklist, items: res } });
                                 }}
                               />
+                              <div className="flex items-center gap-1 opacity-10 md:opacity-100 group-hover/check:opacity-100 transition-opacity">
+                                {[
+                                  { id: 'general', icon: <Zap size={10} /> },
+                                  { id: 'mentoring', icon: <GraduationCap size={10} /> },
+                                  { id: 'handling', icon: <Video size={10} /> }
+                                ].map((cat) => (
+                                  <button
+                                    key={cat.id}
+                                    onClick={() => {
+                                      const res = boardData.checklist.items.map((i: any) => i.id === check.id ? { ...i, category: cat.id } : i);
+                                      setBoardData({ ...boardData, checklist: { ...boardData.checklist, items: res } });
+                                    }}
+                                    className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${check.category === cat.id ? 'bg-indigo-100 text-indigo-600' : 'text-slate-300 hover:text-slate-400'}`}
+                                  >
+                                    {cat.icon}
+                                  </button>
+                                ))}
+                              </div>
                               <button
                                 onClick={() => {
                                   const res = boardData.checklist.items.filter((i: any) => i.id !== check.id);
@@ -1165,7 +1498,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                         <div className="pt-4 border-t border-indigo-100">
                           <label className="text-[8px] font-bold text-indigo-400 mb-2 block">Mentor's Suggestion</label>
                           <textarea
-                            className="w-full bg-white/50 border border-indigo-100 rounded-2xl p-3 text-[10px] italic text-indigo-700 placeholder:text-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                            className="w-full bg-white/50 border border-indigo-100 rounded-2xl p-3 text-[10px] text-indigo-700 placeholder:text-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
                             rows={3}
                             value={boardData.checklist.suggestion}
                             onChange={(e) => setBoardData({ ...boardData, checklist: { ...boardData.checklist, suggestion: e.target.value } })}
@@ -1175,42 +1508,44 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                       </div>
 
                       {/* Active Phase Tasks Section */}
-                      <div className="space-y-6">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                          <h4 className="text-[10px] font-bold tracking-[0.2em] text-accent">Active Phase Tasks</h4>
-                          <button
-                            onClick={() => setBoardData({ ...boardData, tasks: [...boardData.tasks, { label: "New Task", status: "Locked" }] })}
-                            className="p-1.5 rounded-lg bg-accent/5 text-accent hover:bg-accent/10"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                        <div className="space-y-3">
-                          {boardData.tasks.map((task: any, index: number) => (
-                            <div key={index} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 group/task relative hover:bg-white hover:shadow-sm transition-all">
-                              <input className="w-full bg-transparent font-bold text-[10px] focus:outline-none" value={task.label} onChange={(e) => {
-                                const res = boardData.tasks.map((t: any, i: number) => i === index ? { ...t, label: e.target.value } : t);
-                                setBoardData({ ...boardData, tasks: res });
-                              }} />
-                              <div className="flex justify-between items-center">
-                                <select
-                                  className="text-[9px] font-bold bg-white px-2 py-0.5 rounded border border-slate-100 appearance-none focus:outline-none"
-                                  value={task.status}
-                                  onChange={(e) => {
-                                    const res = boardData.tasks.map((t: any, i: number) => i === index ? { ...t, status: e.target.value } : t);
-                                    setBoardData({ ...boardData, tasks: res });
-                                  }}
-                                >
-                                  <option value="Active">Active</option>
-                                  <option value="Done">Done</option>
-                                  <option value="Locked">Locked</option>
-                                </select>
-                                <button onClick={() => setBoardData({ ...boardData, tasks: boardData.tasks.filter((_: any, i: number) => i !== index) })} className="text-red-200 hover:text-red-400 opacity-0 group-hover/task:opacity-100 transition-all text-[10px]">Delete</button>
+                      {boardData.enabled_features.timeline && (
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <h4 className="text-[10px] font-bold tracking-[0.2em] text-accent">Active Phase Tasks</h4>
+                            <button
+                              onClick={() => setBoardData({ ...boardData, tasks: [...boardData.tasks, { label: "New Task", status: "Locked" }] })}
+                              className="p-1.5 rounded-lg bg-accent/5 text-accent hover:bg-accent/10"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="space-y-3">
+                            {boardData.tasks.map((task: any, index: number) => (
+                              <div key={index} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 group/task relative hover:bg-white hover:shadow-sm transition-all">
+                                <input className="w-full bg-transparent font-bold text-[10px] focus:outline-none" value={task.label} onChange={(e) => {
+                                  const res = boardData.tasks.map((t: any, i: number) => i === index ? { ...t, label: e.target.value } : t);
+                                  setBoardData({ ...boardData, tasks: res });
+                                }} />
+                                <div className="flex justify-between items-center">
+                                  <select
+                                    className="text-[9px] font-bold bg-white px-2 py-0.5 rounded border border-slate-100 appearance-none focus:outline-none"
+                                    value={task.status}
+                                    onChange={(e) => {
+                                      const res = boardData.tasks.map((t: any, i: number) => i === index ? { ...t, status: e.target.value } : t);
+                                      setBoardData({ ...boardData, tasks: res });
+                                    }}
+                                  >
+                                    <option value="Active">Active</option>
+                                    <option value="Done">Done</option>
+                                    <option value="Locked">Locked</option>
+                                  </select>
+                                  <button onClick={() => setBoardData({ ...boardData, tasks: boardData.tasks.filter((_: any, i: number) => i !== index) })} className="text-red-200 hover:text-red-400 opacity-0 group-hover/task:opacity-100 transition-all text-[10px]">Delete</button>
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1437,9 +1772,10 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
         {view === "table" && (
           <motion.div
             key="table"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="bg-white rounded-[3rem] border border-white/40 shadow-xl shadow-slate-200/40 overflow-hidden min-h-[600px] flex flex-col w-full"
           >
             <div className="overflow-x-auto custom-scrollbar">
@@ -1453,7 +1789,7 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                     <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100">Content Headline</th>
                     <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 w-56 text-center">Script Link</th>
                     <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 w-56 text-center">Hasil Konten Link</th>
-                    {isAdmin && <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 w-16"></th>}
+                    <th className="px-5 py-4 text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 w-16 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
@@ -1614,10 +1950,9 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                               )}
                             </div>
                         </td>
-                        {isAdmin && (
-                          <td className="px-5 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                         <td className="px-5 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center justify-center gap-2">
-                              {item.isDraft && (
+                              {isAdmin && item.isDraft && (
                                 <button
                                   onClick={() => updateItem(item.id, "isDraft", false)}
                                   className="px-4 py-2 rounded-xl bg-accent text-white font-bold text-[10px] shadow-accent-sm hover:shadow-accent-md hover:scale-105 transition-all"
@@ -1633,15 +1968,16 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                                 <ChevronDown className="w-4 h-4" />
                               </button>
 
-                              <button
-                                onClick={() => removeItem(item.id)}
-                                className="p-3 rounded-xl text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              {isAdmin && (
+                                <button
+                                  onClick={() => removeItem(item.id)}
+                                  className="p-3 rounded-xl text-slate-200 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
                             </div>
                           </td>
-                        )}
                       </tr>
 
                       {/* Dropdown Detail Row */}
@@ -1673,20 +2009,22 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                                         <div>
                                            <label className="text-[10px] font-black text-slate-400 tracking-widest mb-3 block">Pillar</label>
                                            <input 
-                                              className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-accent shadow-sm focus:outline-none"
+                                              className="w-full bg-white border border-slate-100 rounded-xl px-3 py-2 text-xs font-bold text-accent shadow-sm focus:outline-none disabled:opacity-50"
                                               value={item.pillar || ""}
                                               onChange={(e) => updateItem(item.id, "pillar", e.target.value)}
                                               placeholder="Platform pillar..."
+                                              disabled={!canEdit}
                                            />
                                         </div>
                                         <div>
                                            <label className="text-[10px] font-black text-slate-400 tracking-widest mb-3 block">Link Live Posting</label>
                                            <div className="relative">
                                               <input 
-                                                 className="w-full bg-white border border-slate-100 rounded-xl pl-3 pr-8 py-2 text-xs font-bold text-slate-900 shadow-sm focus:outline-none"
+                                                 className="w-full bg-white border border-slate-100 rounded-xl pl-3 pr-8 py-2 text-xs font-bold text-slate-900 shadow-sm focus:outline-none disabled:opacity-50"
                                                  value={item.post_link || ""}
                                                  onChange={(e) => updateItem(item.id, "post_link", e.target.value)}
                                                  placeholder="Paste link..."
+                                                 disabled={!canEdit}
                                               />
                                               {item.post_link && (
                                                  <a href={item.post_link} target="_blank" className="absolute right-2 top-1/2 -translate-y-1/2 text-accent">
@@ -1724,20 +2062,20 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                                      </div>
 
                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                        <MetricItem label="Total Views" value={item.metrics?.views} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, views: v })} />
-                                        <MetricItem label="Likes" value={item.metrics?.likes} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, likes: v })} />
-                                        <MetricItem label="Comments" value={item.metrics?.comments} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, comments: v })} />
-                                        <MetricItem label="Shares" value={item.metrics?.shares} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, shares: v })} />
-                                        <MetricItem label="Saves" value={item.metrics?.saves} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, saves: v })} />
+                                        <MetricItem label="Total Views" value={item.metrics?.views} disabled={!canEdit} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, views: v })} />
+                                        <MetricItem label="Likes" value={item.metrics?.likes} disabled={!canEdit} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, likes: v })} />
+                                        <MetricItem label="Comments" value={item.metrics?.comments} disabled={!canEdit} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, comments: v })} />
+                                        <MetricItem label="Shares" value={item.metrics?.shares} disabled={!canEdit} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, shares: v })} />
+                                        <MetricItem label="Saves" value={item.metrics?.saves} disabled={!canEdit} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, saves: v })} />
                                         
                                         {item.platform === "Instagram" ? (
                                            <>
-                                              <MetricItem label="Reach" value={item.metrics?.reach} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, reach: v })} />
-                                              <MetricItem label="Reposts" value={item.metrics?.reposts} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, reposts: v })} />
+                                              <MetricItem label="Reach" value={item.metrics?.reach} disabled={!canEdit} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, reach: v })} />
+                                              <MetricItem label="Reposts" value={item.metrics?.reposts} disabled={!canEdit} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, reposts: v })} />
                                            </>
                                         ) : (
                                            <>
-                                              <MetricItem label="Retention (s)" value={item.metrics?.retention} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, retention: v })} />
+                                              <MetricItem label="Retention (s)" value={item.metrics?.retention} disabled={!canEdit} onChange={(v: any) => updateItem(item.id, "metrics", { ...item.metrics, retention: v })} />
                                            </>
                                         )}
                                      </div>
@@ -1759,9 +2097,10 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
         {view === "kanban" && (
           <motion.div
             key="kanban"
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-7 gap-4 w-full"
           >
             {["Planning", "Progress Scripting", "Progress Desain", "Pengajuan", "Revisi", "Scheduled", "Uploaded"].map((status) => {
@@ -1831,7 +2170,7 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                           <h5 className="text-[10px] font-black text-slate-800 leading-tight group-hover:text-accent transition-colors line-clamp-2">
                              {item.headline || "Tanpa Judul"}
                           </h5>
-                          <p className="text-[9px] text-slate-400 font-medium italic line-clamp-1 mb-1">
+                          <p className="text-[9px] text-slate-400 font-medium line-clamp-1 mb-1">
                              {item.value || "No Value"}
                           </p>
                           
@@ -1864,9 +2203,10 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
         {view === "calendar" && (
           <motion.div
             key="calendar"
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
             className="bg-white rounded-[3.5rem] border border-white/40 shadow-xl p-10"
           >
             <div className="grid grid-cols-7 gap-3">
@@ -1884,7 +2224,7 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                     }`}>
                     {dayNum > 0 && dayNum <= 31 && (
                       <div className="h-full flex flex-col">
-                        <div className={`text-sm font-serif italic mb-3 ml-1 flex items-center justify-center w-7 h-7 rounded-full transition-all ${isToday ? 'bg-accent text-white not-italic font-bold shadow-accent-sm scale-110' : 'text-slate-300'}`}>
+                        <div className={`text-sm font-sans font-extrabold mb-3 ml-1 flex items-center justify-center w-7 h-7 rounded-full transition-all ${isToday ? 'bg-accent text-white not-italic font-bold shadow-accent-sm scale-110' : 'text-slate-300'}`}>
                           {dayNum}
                         </div>
                         <div className="space-y-2 flex-1 scrollbar-hide overflow-y-auto">
@@ -1961,10 +2301,11 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                           <label className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">Headline Konten</label>
                           <DebouncedInput 
                             isTextArea
-                            className="w-full bg-slate-50/50 border border-slate-100 rounded-3xl p-5 text-lg font-black text-slate-800 placeholder:text-slate-200 focus:bg-white focus:ring-4 ring-accent/5 transition-all outline-none"
+                            className="w-full bg-slate-50/50 border border-slate-100 rounded-3xl p-5 text-lg font-black text-slate-800 placeholder:text-slate-200 focus:bg-white focus:ring-4 ring-accent/5 transition-all outline-none disabled:opacity-50"
                             value={item.headline}
-                            onChange={(val) => updateItem(item.id, "headline", val)}
+                            onChange={(val: string) => updateItem(item.id, "headline", val)}
                             placeholder="Tulis judul yang menarik..."
+                            disabled={!canEdit}
                           />
                        </div>
 
@@ -1973,9 +2314,10 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                           <div className="space-y-3">
                              <label className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">Status</label>
                              <select
-                               className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none"
+                               className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none disabled:opacity-50"
                                value={item.status}
                                onChange={(e) => updateItem(item.id, "status", e.target.value)}
+                               disabled={!canEdit}
                              >
                                 {["Planning", "Progress Scripting", "Progress Desain", "Pengajuan", "Revisi", "Scheduled", "Uploaded"].map(s => (
                                   <option key={s} value={s}>{s}</option>
@@ -1985,9 +2327,10 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                           <div className="space-y-3">
                              <label className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">Platform</label>
                              <select
-                               className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none"
+                               className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none disabled:opacity-50"
                                value={item.platform}
                                onChange={(e) => updateItem(item.id, "platform", e.target.value)}
+                               disabled={!canEdit}
                              >
                                 <option value="Instagram">Instagram</option>
                                 <option value="TikTok">TikTok</option>
@@ -1999,9 +2342,10 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                              <div className="relative group/date">
                                 <input 
                                   type="date"
-                                  className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none cursor-pointer"
+                                  className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                   value={item.date}
                                   onChange={(e) => updateItem(item.id, "date", e.target.value)}
+                                  disabled={!canEdit}
                                 />
                                 <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 group-hover/date:text-accent pointer-events-none transition-colors">
                                    <CalendarIcon className="w-4 h-4" />
@@ -2018,7 +2362,7 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                                isTextArea
                                className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl p-5 text-xs text-slate-600 outline-none focus:bg-white transition-all min-h-[100px]"
                                value={item.objective}
-                               onChange={(val) => updateItem(item.id, "objective", val)}
+                               onChange={(val: string) => updateItem(item.id, "objective", val)}
                                placeholder="Apa tujuan dari konten ini?"
                              />
                           </div>
@@ -2026,10 +2370,11 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                              <label className="text-[10px] font-black text-slate-300 tracking-[0.2em] uppercase">Content Value / Pillar</label>
                              <input 
                                type="text"
-                               className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none focus:bg-white transition-all"
+                               className="w-full bg-slate-50/50 border border-slate-100 rounded-2xl px-5 py-4 text-xs font-bold text-slate-700 outline-none focus:bg-white transition-all disabled:opacity-50"
                                value={item.value}
                                onChange={(e) => updateItem(item.id, "value", e.target.value)}
                                placeholder="Nilai yang ingin disampaikan..."
+                               disabled={!canEdit}
                              />
                           </div>
                        </div>
@@ -2044,20 +2389,22 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
                                 <label className="text-[8px] font-black text-slate-300 tracking-widest ml-1">LINK POSTINGAN LIVE</label>
                                 <input 
                                   type="text"
-                                  className="w-full bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold text-accent shadow-sm focus:ring-4 ring-accent/5 outline-none transition-all"
+                                  className="w-full bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold text-accent shadow-sm focus:ring-4 ring-accent/5 outline-none transition-all disabled:opacity-50"
                                   value={item.post_link}
                                   onChange={(e) => updateItem(item.id, "post_link", e.target.value)}
                                   placeholder="https://..."
+                                  disabled={!canEdit}
                                 />
                              </div>
                              <div className="space-y-2">
                                 <label className="text-[8px] font-black text-slate-300 tracking-widest ml-1">LINK RESULT/HASIL</label>
                                 <input 
                                   type="text"
-                                  className="w-full bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 shadow-sm focus:ring-4 ring-slate-100 outline-none transition-all"
+                                  className="w-full bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 shadow-sm focus:ring-4 ring-slate-100 outline-none transition-all disabled:opacity-50"
                                   value={item.result_link}
                                   onChange={(e) => updateItem(item.id, "result_link", e.target.value)}
                                   placeholder="https://..."
+                                  disabled={!canEdit}
                                 />
                              </div>
                           </div>
@@ -2101,6 +2448,469 @@ const ContentPlanHub = ({ data, isAdmin, onUpdate, view, setView }: any) => {
     </div>
   )
 }
+
+// --- Mentoring Timeline Components ---
+
+// --- Mentoring Timeline Components ---
+
+const MentoringTimelineHub = ({ data, isAdmin, onUpdate }: any) => {
+  // Local drafts for Admin to "Apply" before syncing
+  const [draftItems, setDraftItems] = useState(data.timeline_items || []);
+  const [draftRoadmap, setDraftRoadmap] = useState(data.roadmap || []);
+  const [draftNote, setDraftNote] = useState(data.mentors_note || "");
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
+  const [viewDate, setViewDate] = useState(new Date());
+
+  // Sync internal state if data changes from external (e.g. initial load)
+  useEffect(() => {
+    if (!isAdmin) {
+      setDraftItems(data.timeline_items || []);
+      setDraftRoadmap(data.roadmap || []);
+      setDraftNote(data.mentors_note || "");
+    }
+  }, [data.timeline_items, data.roadmap, data.mentors_note, isAdmin]);
+  
+  const liveStatus = data.liveStatus || "online"; // Use passed down status
+  
+  const updateDraftItem = (id: number, field: string, value: any) => {
+    setDraftItems((prev: any) => prev.map((i: any) => i.id === id ? { ...i, [field]: value } : i));
+  };
+
+  const addDraftItem = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    const nextWeekStr = nextWeek.toISOString().split('T')[0];
+
+    const newItem = {
+      id: Date.now(),
+      activity: "Aktivitas Baru",
+      detail: "Detail aktivitas...",
+      start_date: today,
+      end_date: nextWeekStr,
+      color: "bg-accent/40 text-accent"
+    };
+    setDraftItems([...draftItems, newItem]);
+  };
+
+  const removeDraftItem = (id: number) => {
+    setDraftItems(draftItems.filter((i: any) => i.id !== id));
+  };
+
+  const updateDraftRoadmap = (id: number, field: string, value: any) => {
+    setDraftRoadmap((prev: any) => prev.map((r: any) => r.id === id ? { ...r, [field]: value } : r));
+  };
+
+  const colorPresets = [
+    { name: "Blue", class: "bg-accent/40 text-accent" },
+    { name: "Emerald", class: "bg-emerald-500/40 text-emerald-700" },
+    { name: "Rose", class: "bg-rose-500/40 text-rose-700" },
+    { name: "Amber", class: "bg-amber-500/40 text-amber-700" },
+    { name: "Purple", class: "bg-purple-500/40 text-purple-700" },
+    { name: "Slate", class: "bg-slate-900/40 text-slate-900" }
+  ];
+
+  const handlePublish = async () => {
+    setIsSyncing(true);
+    try {
+      // Perform all updates
+      await Promise.all([
+        onUpdate("timeline_items", draftItems),
+        onUpdate("roadmap", draftRoadmap),
+        onUpdate("mentors_note", draftNote)
+      ]);
+      setLastSynced(new Date());
+      // Small delay for UI satisfaction
+      setTimeout(() => setIsSyncing(false), 800);
+    } catch (err) {
+      setIsSyncing(false);
+      alert("Gagal sinkronisasi data.");
+    }
+  };
+
+  // Determine items to display (Draft for Admin, Real for Client)
+  const displayItems = isAdmin ? draftItems : (data.timeline_items || []);
+  const displayRoadmap = isAdmin ? draftRoadmap : (data.roadmap || []);
+  const displayNote = isAdmin ? draftNote : (data.mentors_note || "");
+
+  return (
+    <div className="space-y-10 pb-40">
+       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+             <h2 className="text-4xl font-sans font-extrabold text-slate-900 leading-tight">Mentoring <span className="italic text-accent">Timeline</span> {isAdmin && <span className="text-xs font-black bg-accent text-white px-2 py-0.5 rounded-md ml-2 uppercase tracking-widest">Admin Mode</span>}</h2>
+             <div className="flex items-center gap-3 mt-2">
+                {isAdmin && lastSynced && (
+                   <span className="text-[9px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 animate-in fade-in slide-in-from-left-2 transition-all">
+                      Last Live: {lastSynced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                   </span>
+                )}
+             </div>
+          </div>
+          <div className="flex gap-4">
+             {isAdmin && (
+                <button 
+                  onClick={handlePublish}
+                  disabled={isSyncing}
+                  className={`px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl transition-all flex items-center gap-2 ${isSyncing ? 'bg-slate-100 text-slate-400' : 'bg-slate-900 text-white hover:bg-slate-800 active:scale-95'}`}
+                >
+                   {isSyncing ? <Zap className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3 text-accent" />}
+                   {isSyncing ? "Syncing..." : "Sync to Client Page"}
+                </button>
+             )}
+             <div className="px-6 py-3 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="flex items-center gap-2">
+                   <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Active Phase:</span>
+                   {isAdmin ? (
+                      <select 
+                        value={data.currentPhase}
+                        onChange={(e) => onUpdate("current_phase", Number(e.target.value))}
+                        className="text-[10px] font-black text-accent bg-transparent outline-none cursor-pointer"
+                      >
+                         {[1, 2, 3, 4, 5].map(p => <option key={p} value={p}>Phase {p}</option>)}
+                      </select>
+                   ) : (
+                      <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{data.currentPhase}</span>
+                   )}
+                </div>
+             </div>
+          </div>
+       </div>
+
+       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+          {/* LEFT: Calendar & Activity Detail (5/12) */}
+          <div className="xl:col-span-5 space-y-8">
+             <Card className="p-8 rounded-[3.5rem] border-none bg-white shadow-sm overflow-hidden relative text-center">
+                <div className="flex items-center justify-between mb-8 px-4">
+                   <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <CalendarIcon className="w-4 h-4 text-accent" /> Timeline Map
+                   </h3>
+                   <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400">
+                      <div className="flex items-center gap-2 mr-2">
+                        <button 
+                          onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))}
+                          className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-accent hover:bg-accent/10 transition-all active:scale-95"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <span className="min-w-[100px] text-center capitalize">{viewDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</span>
+                        <button 
+                          onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
+                          className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-accent hover:bg-accent/10 transition-all active:scale-95"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                      {isAdmin && (
+                         <button 
+                           onClick={addDraftItem}
+                           className="bg-accent text-white px-3 py-1 rounded-full flex items-center gap-1 hover:scale-105 transition-all shadow-accent-sm active:scale-95 whitespace-nowrap"
+                         >
+                            <Plus className="w-3 h-3" /> Add Timeline
+                         </button>
+                      )}
+                   </div>
+                </div>
+                
+                <div className="grid grid-cols-7 gap-1 mb-8 overflow-hidden rounded-3xl border border-slate-50">
+                   {["S", "M", "T", "W", "T", "F", "S"].map((d, idx) => (
+                      <span key={`${d}-${idx}`} className="text-[10px] font-black text-slate-200 py-3">{d}</span>
+                   ))}
+                   {/* Empty slots for start day */}
+                   {Array.from({ length: new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay() }).map((_, i) => (
+                      <div key={`empty-${i}`} className="min-h-[52px] border-[0.5px] border-slate-50 opacity-10" />
+                   ))}
+                   {/* Days of the month */}
+                   {Array.from({ length: new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate() }, (_, i) => {
+                      const day = i + 1;
+                      const dateObj = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+                      
+                      // Calculate program day (Day X of program)
+                      let programDay = day; // default fallback
+                      if (data.start_date) {
+                        const start = new Date(data.start_date);
+                        start.setHours(0, 0, 0, 0);
+                        const curr = new Date(dateObj);
+                        curr.setHours(0, 0, 0, 0);
+                        const diffTime = curr.getTime() - start.getTime();
+                        programDay = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                      }
+
+                      const activeItems = displayItems.filter((item: any) => {
+                        if (!item.start_date || !item.end_date) return false;
+                        const s = new Date(item.start_date);
+                        s.setHours(0, 0, 0, 0);
+                        const e = new Date(item.end_date);
+                        e.setHours(0, 0, 0, 0);
+                        return dateObj >= s && dateObj <= e;
+                      });
+                      const isToday = day === new Date().getDate() && viewDate.getMonth() === new Date().getMonth() && viewDate.getFullYear() === new Date().getFullYear();
+                      
+                      return (
+                         <div key={i} className="relative flex flex-col items-center justify-center min-h-[52px] border-[0.5px] border-slate-50 transition-all group overflow-hidden">
+                            {/* Full background block for active activities */}
+                            <div className="absolute inset-0 flex flex-col gap-[1px]">
+                               {activeItems.map((item: any, idx: number) => (
+                                  <div 
+                                    key={idx} 
+                                    className={`flex-1 w-full ${item.color.split(' ')[0]} ${item.start_date && new Date(item.start_date).toDateString() === dateObj.toDateString() ? 'rounded-l-lg ml-0.5' : ''} ${item.end_date && new Date(item.end_date).toDateString() === dateObj.toDateString() ? 'rounded-r-lg mr-0.5' : ''} transition-all duration-300 opacity-80`} 
+                                  />
+                               ))}
+                            </div>
+                            
+                            <span className={`text-[11px] font-black relative z-10 transition-colors ${activeItems.length > 0 ? 'text-slate-900 group-hover:scale-125 font-black' : isToday ? 'text-white' : 'text-slate-300'}`}>
+                               {day}
+                            </span>
+                            {isToday && !activeItems.length && <div className="absolute inset-0 m-auto w-8 h-8 rounded-xl bg-accent shadow-accent-sm -z-0" />}
+                            {isToday && activeItems.length > 0 && <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-white shadow-sm z-20" />}
+                            
+                            {/* Progam Day Indicator (small hint) */}
+                            {programDay > 0 && (
+                              <div className="absolute bottom-1 right-1 text-[6px] font-black opacity-10 group-hover:opacity-100 transition-opacity">
+                                D{programDay}
+                              </div>
+                            )}
+                         </div>
+                      );
+                   })}
+                </div>
+
+                <div className="space-y-6 pt-4 text-left">
+                   <h3 className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] px-4">Active Activity Details</h3>
+                   <div className="space-y-4 max-h-[500px] overflow-y-auto px-4 custom-scrollbar pb-4">
+                      {displayItems.length === 0 && (
+                         <div className="p-10 text-center space-y-3">
+                            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto">
+                               <CalendarIcon className="w-6 h-6 text-slate-200" />
+                            </div>
+                            <p className="text-xs font-bold text-slate-400">Belum ada aktivitas di timeline.</p>
+                         </div>
+                      )}
+                      
+                      {displayItems.map((item: any) => (
+                         <div key={item.id} className="p-6 rounded-[2rem] border border-slate-100 relative group/card transition-all hover:shadow-xl hover:shadow-slate-100/50 bg-white overflow-hidden">
+                            {/* Color indicator bar */}
+                            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${item.color.split(' ')[0]}`} />
+                            
+                            <div className="flex items-start justify-between mb-4">
+                               <div className="space-y-1 flex-1">
+                                  {isAdmin ? (
+                                     <input 
+                                       className="bg-transparent font-black text-sm text-slate-900 focus:outline-none w-full border-b border-black/5"
+                                       value={item.activity}
+                                       onChange={(e) => updateDraftItem(item.id, "activity", e.target.value)}
+                                       placeholder="Nama Aktivitas..."
+                                     />
+                                  ) : (
+                                     <h4 className="text-sm font-black text-slate-900">{item.activity}</h4>
+                                  )}
+                                   <div className="flex items-center gap-2">
+                                      <Clock className="w-3 h-3 opacity-30" />
+                                      <span className="text-[9px] font-bold opacity-40 uppercase tracking-widest">
+                                        {item.start_date ? new Date(item.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : "???"} - {item.end_date ? new Date(item.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : "???"}
+                                      </span>
+                                   </div>
+                               </div>
+                               {isAdmin && (
+                                  <button onClick={() => removeDraftItem(item.id)} className="p-2.5 rounded-xl bg-white/50 text-rose-500 shadow-sm opacity-0 group-hover/card:opacity-100 transition-all hover:bg-rose-500 hover:text-white">
+                                     <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                               )}
+                            </div>
+
+                            {isAdmin ? (
+                               <div className="space-y-4 mt-6">
+                                  <div className="grid grid-cols-2 gap-4">
+                                     <div>
+                                         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Start Date</label>
+                                         <input type="date" className="w-full bg-white/50 rounded-xl px-4 py-2 text-[10px] font-bold focus:bg-white transition-all shadow-inner outline-none" value={item.start_date || ""} onChange={(e) => updateDraftItem(item.id, "start_date", e.target.value)} />
+                                      </div>
+                                      <div>
+                                         <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">End Date</label>
+                                         <input type="date" className="w-full bg-white/50 rounded-xl px-4 py-2 text-[10px] font-bold focus:bg-white transition-all shadow-inner outline-none" value={item.end_date || ""} onChange={(e) => updateDraftItem(item.id, "end_date", e.target.value)} />
+                                      </div>
+                                   </div>
+                                  
+                                  <div>
+                                     <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Theme Color</label>
+                                     <div className="flex gap-2 p-2 bg-white/30 rounded-2xl">
+                                        {colorPresets.map(c => (
+                                           <button 
+                                             key={c.name} 
+                                             onClick={() => updateDraftItem(item.id, "color", c.class)}
+                                             className={`w-6 h-6 rounded-lg ${c.class.split(' ')[0]} ${item.color === c.class ? 'ring-2 ring-black ring-offset-2' : ''} transition-all`}
+                                           />
+                                        ))}
+                                     </div>
+                                  </div>
+
+                                  <textarea 
+                                    className="w-full bg-white/50 rounded-2xl p-4 text-[11px] text-slate-600 focus:bg-white outline-none min-h-[80px] shadow-inner font-medium leading-relaxed"
+                                    value={item.detail}
+                                    onChange={(e) => updateDraftItem(item.id, "detail", e.target.value)}
+                                    placeholder="Apa yang dilakukan di sesi ini?..."
+                                  />
+                               </div>
+                            ) : (
+                               <p className="text-[11px] text-slate-600 font-medium leading-relaxed pt-2 opacity-80">
+                                  "{item.detail}"
+                               </p>
+                            )}
+                         </div>
+                      ))}
+                   </div>
+                </div>
+                {isAdmin && <div className="absolute top-2 right-2 text-[8px] font-black text-accent/20 uppercase tracking-widest rotate-12">Draft Mode Active</div>}
+             </Card>
+          </div>
+
+          {/* CENTER: Learning Path (4/12) */}
+          <div className="xl:col-span-4">
+             <Card className="p-10 rounded-[3.5rem] border-none bg-white shadow-sm overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 blur-3xl rounded-full -mr-32 -mt-32" />
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-10 flex items-center gap-2 relative z-10">
+                   <Route className="w-4 h-4 text-accent" /> Learning Path
+                </h3>
+
+                <div className="relative pl-10 space-y-12 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-50 relative z-10 text-left">
+                   {displayRoadmap.map((phase: any, index: number) => {
+                      const isActive = data.currentPhase === index + 1;
+                      const isCompleted = data.currentPhase > index + 1;
+                      return (
+                         <div key={phase.id} className="relative">
+                            <div className={`absolute -left-10 top-0 w-6 h-6 rounded-lg transition-all border-4 ${isCompleted ? 'bg-emerald-500 border-white shadow-emerald-sm' : isActive ? 'bg-accent border-white shadow-accent-sm scale-125' : 'bg-white border-slate-100'}`}>
+                               {isCompleted && <Check className="w-3 h-3 text-white m-auto" />}
+                            </div>
+                            <div className="space-y-1">
+                               <div className="flex items-center gap-3 mb-1">
+                                  {isAdmin ? (
+                                     <input 
+                                       className={`text-sm font-black bg-transparent border-b border-transparent focus:border-accent outline-none w-full ${isActive ? 'text-accent font-black' : isCompleted ? 'text-emerald-600' : 'text-slate-400'}`}
+                                       value={phase.title}
+                                       onChange={(e) => updateDraftRoadmap(phase.id, "title", e.target.value)}
+                                     />
+                                  ) : (
+                                     <h4 className={`text-sm font-black transition-colors ${isActive ? 'text-accent' : isCompleted ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                        Fase 0{index + 1}: {phase.title}
+                                     </h4>
+                                  )}
+                                  {isCompleted && !isAdmin && <span className="text-[8px] font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 uppercase tracking-widest">Done</span>}
+                               </div>
+                               
+                               {isAdmin ? (
+                                  <textarea 
+                                    className="text-[11px] text-slate-400 font-medium leading-relaxed w-full bg-slate-50 rounded-xl p-3 focus:outline-none min-h-[60px]"
+                                    value={phase.description}
+                                    onChange={(e) => updateDraftRoadmap(phase.id, "description", e.target.value)}
+                                  />
+                               ) : (
+                                  <p className="text-[11px] text-slate-400 font-medium leading-relaxed max-w-[90%]">{phase.description}</p>
+                               )}
+                               
+                               {isActive && (
+                                  <div className="mt-4 grid grid-cols-1 gap-2">
+                                     {data.tasks.slice(0, 3).map((task: any, idx: number) => (
+                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100/50">
+                                           <div className={`w-3 h-3 rounded-md transition-colors ${task.status === 'Done' ? 'bg-emerald-400' : 'bg-slate-200'}`} />
+                                              <span className="text-[10px] font-bold text-slate-600">{task.label || task.text}</span>
+                                        </div>
+                                     ))}
+                                  </div>
+                               )}
+                            </div>
+                         </div>
+                      );
+                   })}
+                </div>
+             </Card>
+          </div>
+
+          {/* RIGHT: Mentor Interaction (3/12) */}
+          <div className="xl:col-span-3 space-y-8">
+             <Card className="p-8 rounded-[3rem] border border-slate-100 bg-white shadow-[0_10px_40px_rgba(0,0,0,0.04)] overflow-hidden relative group flex flex-col">
+                {/* Subtle background glow effect */}
+                <div className={`absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-1000 ${liveStatus === 'busy' ? 'bg-rose-400' : liveStatus === 'away' ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+                
+                {/* 1. MENTOR IDENTITY & LIVE PRESENCE */}
+                <div className="relative z-10 flex flex-col items-center">
+                   
+                   {/* Avatar with Status Ring */}
+                   <div className="relative mb-6">
+                      <div className={`w-28 h-28 rounded-[2.5rem] bg-white p-1.5 shadow-xl relative z-20 transition-all duration-500 ring-4 ${liveStatus === 'busy' ? 'ring-rose-50 shadow-rose-500/10' : liveStatus === 'away' ? 'ring-amber-50 shadow-amber-500/10' : 'ring-emerald-50 shadow-emerald-500/10'}`}>
+                         <div className="w-full h-full rounded-[2.1rem] overflow-hidden bg-slate-100">
+                            {data.mentor_persona?.photo ? (
+                               <img src={data.mentor_persona.photo} className="w-full h-full object-cover" />
+                            ) : (
+                               <div className="w-full h-full flex items-center justify-center text-2xl font-sans font-extrabold text-slate-300">MH</div>
+                            )}
+                         </div>
+                      </div>
+                      
+                      {/* Priority Status Badge (Overlapping Avatar) */}
+                      <div className={`absolute -bottom-3.5 left-1/2 -translate-x-1/2 z-30 px-3.5 py-1.5 rounded-full border-[3px] border-white shadow-xl flex items-center gap-2 ${liveStatus === 'busy' ? 'bg-slate-900 border-rose-500/10' : liveStatus === 'away' ? 'bg-slate-900 border-amber-500/10' : 'bg-slate-900 border-emerald-500/10'}`}>
+                         <div className={`w-2.5 h-2.5 rounded-full ${liveStatus === 'busy' ? 'bg-rose-500 animate-pulse shadow-rose-sm' : liveStatus === 'away' ? 'bg-amber-500 shadow-amber-sm' : 'bg-emerald-500 shadow-emerald-sm'}`} />
+                         <span className="text-[9px] font-black text-white uppercase tracking-widest mt-0.5">
+                            {liveStatus === 'busy' ? 'In a Meeting' : liveStatus === 'away' ? 'Away' : 'Available'}
+                         </span>
+                      </div>
+                   </div>
+
+                   {/* Name & Role */}
+                   <div className="mt-4 mb-6 text-center relative z-20">
+                      <h4 className="text-lg font-black text-slate-900 tracking-tight">{data.mentor_persona?.name || "Mentor Mentoreshp"}</h4>
+                      <p className="text-[9px] font-black text-[#4880FF] uppercase tracking-widest mt-1.5">{data.mentor_persona?.title || "Active Mentor"}</p>
+                   </div>
+
+                   {/* Speech Bubble for Dynamic Status Note */}
+                   <div className="relative w-full flex flex-col items-center z-10">
+                      {/* Pointer tip pointing towards name */}
+                      <div className="w-4 h-4 bg-slate-50 rotate-45 absolute -top-2 rounded-sm border-t border-l border-slate-200/60" />
+                      <div className="bg-slate-50 border border-slate-200/60 rounded-[2rem] p-5 w-full shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col items-center text-center relative mt-0">
+                         {data.mentor_persona?.status_message ? (
+                           <span className="text-[12px] font-bold text-slate-700 leading-relaxed italic">"{data.mentor_persona.status_message}"</span>
+                         ) : (
+                           <span className="text-[11px] font-medium text-slate-400 italic">No custom status update.</span>
+                         )}
+                      </div>
+                   </div>
+                </div>
+
+                {/* DIVIDER */}
+                <div className="w-full h-px bg-slate-100 my-8 relative">
+                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-[9px] font-black text-slate-300 uppercase tracking-widest">
+                      Mentor's Note
+                   </div>
+                </div>
+
+                {/* 2. MENTOR'S NOTE AREA */}
+                <div className="flex flex-col flex-1">
+                   {isAdmin ? (
+                      <textarea 
+                        className="flex-1 min-h-[140px] text-slate-600 text-[13px] leading-relaxed font-sans font-bold p-6 rounded-[2rem] bg-slate-50 border border-slate-200 outline-none focus:ring-2 ring-accent/20 transition-all placeholder:font-medium placeholder:text-slate-400 resize-none no-scrollbar"
+                        value={data.mentors_note || ""}
+                        onChange={(e) => onUpdate("mentors_note", e.target.value)}
+                        placeholder="Write an encouraging note or feedback for your mentee..."
+                      />
+                   ) : (
+                      <div className="flex-1 min-h-[140px] text-slate-600 text-[13px] leading-relaxed font-sans font-bold p-6 rounded-[2rem] bg-slate-50 border border-slate-200 italic flex items-center justify-center text-center">
+                         {data.mentors_note ? `"${data.mentors_note}"` : "Mentor hasn't left a note yet."}
+                      </div>
+                   )}
+
+                   <button 
+                     onClick={() => !isAdmin && window.dispatchEvent(new Event('openBookingModal'))}
+                     className={`mt-6 w-full h-[56px] rounded-[1.5rem] font-black text-[13px] uppercase tracking-wider shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${isAdmin ? 'bg-[#4880FF] text-white hover:bg-blue-600 shadow-blue-500/20' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/20'}`}
+                   >
+                      {isAdmin ? "Apply Changes" : "Book Consultation"}
+                   </button>
+                </div>
+             </Card>
+          </div>
+       </div>
+    </div>
+  );
+};
 
 // --- Helper Components ---
 
@@ -2147,7 +2957,7 @@ const DebouncedInput = ({ value, onChange, placeholder, className, isTextArea, d
       onChange={(e) => setLocalValue(e.target.value)}
     />
   );
-};;
+};
 
 
 
@@ -2176,7 +2986,7 @@ const StatCard = ({ label, value, percent, icon: Icon, platform }: any) => {
 
       <div className="space-y-1">
         <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400 font-sans">{label}</p>
-        <h4 className={`text-4xl font-bold font-serif ${accentColor}`}>{value}</h4>
+        <h4 className={`text-4xl font-bold font-sans font-extrabold ${accentColor}`}>{value}</h4>
       </div>
 
       {!!percent && (
@@ -2212,7 +3022,7 @@ const PhaseStep = ({ phase, title, status, description, color }: any) => (
     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border-4 border-white shadow-md transition-all duration-500 ${status === "completed" ? "bg-blue-500 text-white" :
         status === "active" ? "bg-emerald-500 text-white scale-110 ring-8 ring-emerald-500/10" : "bg-slate-100 text-slate-400"
       }`}>
-      {status === "completed" ? <CheckSquare className="w-6 h-6" /> : <span className="text-lg font-serif">{phase}</span>}
+      {status === "completed" ? <CheckSquare className="w-6 h-6" /> : <span className="text-lg font-sans font-extrabold">{phase}</span>}
     </div>
     <div className="space-y-1">
       <h5 className={`font-bold text-sm tracking-wide ${status === "upcoming" ? "text-slate-400" : "text-slate-900"}`}>{title}</h5>
@@ -2251,23 +3061,20 @@ const ContentQueueItem = ({ title, type, date, status }: any) => (
     </p>
   </Card>
 );
-
-const ActionItem = ({ text, done }: any) => (
-  <div className="flex items-center justify-between group cursor-pointer">
-    <div className="flex items-center gap-4">
-      <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${done ? "bg-accent border-accent" : "border-border group-hover:border-accent"
-        }`}>
-        {done && <CheckSquare className="w-3 h-3 text-white" />}
-      </div>
-      <span className={`text-xs font-semibold ${done ? "text-muted-foreground line-through decoration-emerald-500/50" : "text-slate-700"}`}>
-        {text}
-      </span>
+const ActionItem = ({ text, done, category }: any) => (
+  <div className="flex items-center gap-4 group cursor-pointer p-1">
+    <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm ${done ? "bg-emerald-50 text-emerald-500" : "bg-white border border-slate-100 text-slate-300 group-hover:border-accent group-hover:text-accent"}`}>
+       {done ? <CheckCircle2 size={16} /> : (
+         category === 'mentoring' ? <GraduationCap size={16} /> :
+         category === 'handling' ? <Video size={16} /> :
+         <Zap size={16} />
+       )}
     </div>
-    <ArrowUpRight className="w-3 h-3 text-muted-foreground/30 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+    <span className={`text-[11px] font-bold tracking-tight transition-all duration-500 ${done ? "text-slate-300 line-through" : "text-slate-600 group-hover:text-slate-900"}`}>{text}</span>
   </div>
 );
 
-const MetricItem = ({ label, value, onChange }: any) => {
+const MetricItem = ({ label, value, onChange, disabled = false }: any) => {
   const [localValue, setLocalValue] = useState(value || 0);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -2300,9 +3107,10 @@ const MetricItem = ({ label, value, onChange }: any) => {
       <label className="text-[10px] font-black text-slate-300 tracking-widest mb-1 group-hover/metric:text-accent transition-colors">{label}</label>
       <input 
         type="number"
-        className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-xs font-black text-slate-700 focus:outline-none focus:ring-4 ring-accent/5 focus:bg-white transition-all text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-sm"
+        className={`w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-xs font-black text-slate-700 focus:outline-none focus:ring-4 ring-accent/5 focus:bg-white transition-all text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-sm ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         value={localValue}
-        onFocus={() => setIsFocused(true)}
+        onFocus={() => !disabled && setIsFocused(true)}
+        disabled={disabled}
         onBlur={handleBlur}
         onChange={(e) => setLocalValue(e.target.value)}
       />
@@ -2327,13 +3135,9 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
 
 
   const content = (data.content_plan || []).filter((item: any) => {
-    // Include items that are in progress or done
-    const allowedStatuses = ["Uploaded", "Published", "Awaiting Upload", "Ongoing"];
-    if (!allowedStatuses.includes(item.status)) return false;
     if (!item.date) return false;
     
     const itemDate = new Date(item.date);
-
     const start = new Date(reportFilter.startDate);
     const end = new Date(reportFilter.endDate);
     
@@ -2378,12 +3182,25 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
   // Helper to parse follower strings like "1.2k" or "1,200"
   const parseFollowers = (v: any) => {
     if (!v) return 0;
-    const s = String(v).toLowerCase().replace(/,/g, '');
-    let num = parseFloat(s.replace(/[^0-9.]/g, ''));
-    if (isNaN(num)) return 0;
-    if (s.includes('k')) num *= 1000;
-    if (s.includes('m')) num *= 1000000;
-    return num;
+    const s = String(v).toLowerCase().trim();
+    
+    // Handle k/m suffixes
+    if (s.includes('k') || s.includes('m')) {
+      // For suffixes, we keep the dot for parseFloat (e.g., 1.2k)
+      // but remove commas which might be used as thousand separators (e.g., 1,200k)
+      const numStr = s.replace(/[km]/g, '').replace(/,/g, '');
+      let num = parseFloat(numStr);
+      if (isNaN(num)) return 0;
+      if (s.includes('k')) num *= 1000;
+      if (s.includes('m')) num *= 1000000;
+      return num;
+    }
+    
+    // For non-suffix numbers, remove all punctuation (dots or commas) 
+    // and treat as a whole integer.
+    const cleanStr = s.replace(/[^0-9]/g, '');
+    const num = parseInt(cleanStr, 10);
+    return isNaN(num) ? 0 : num;
   };
 
   const currentFollowers = reportFilter.platform === "Instagram" 
@@ -2392,7 +3209,9 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
       ? parseFollowers(data.platformStats?.tiktok?.followers)
       : (parseFollowers(data.platformStats?.instagram?.followers) + parseFollowers(data.platformStats?.tiktok?.followers));
 
-  const erPercent = currentFollowers > 0 ? (totalInteraksi / currentFollowers) * 100 : 0;
+  const erPercent = (currentFollowers > 0) 
+    ? (totalInteraksi / currentFollowers) 
+    : 0;
 
 
 
@@ -2411,7 +3230,7 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
 
   // Pillar Distribution
   const pillarMap = content.reduce((acc: any, item: any) => {
-    const pillar = item.pillar || item.value || "Lainnya";
+    const pillar = item.value || "Lainnya"; // Using 'value' from content plan as Pillar
     acc[pillar] = (acc[pillar] || 0) + 1;
     return acc;
   }, {});
@@ -2437,7 +3256,7 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
               <BarChart3 className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-serif font-black text-slate-900">Full Monthly Report Dashboard</h2>
+              <h2 className="text-xl font-sans font-extrabold font-black text-slate-900">Full Monthly Report Dashboard</h2>
               <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mt-0.5">Performance Analysis & Distribution</p>
             </div>
           </div>
@@ -2501,21 +3320,27 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
                <Card className="p-8 rounded-[2.5rem] border-none shadow-sm h-[350px] relative overflow-hidden group">
                   <div className="flex items-center justify-between mb-8">
                     <h3 className="text-xs font-black tracking-widest text-slate-400 uppercase flex items-center gap-2">
-                       <TrendingUp className="w-4 h-4 text-accent" /> Weekly Performance Growth
+                       <TrendingUp className="w-4 h-4 text-accent" /> Daily Performance Growth
                     </h3>
                     <div className="flex items-center gap-4 text-[9px] font-bold">
                        <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-accent" /> REACH</span>
                        <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-400" /> VIEWS</span>
                     </div>
                   </div>
-                  <div className="h-48 w-full bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 flex items-center justify-center">
-                     <p className="text-[10px] font-serif italic text-slate-300">Data visualisasi mingguan otomatis menyesuaikan periode terpilih...</p>
-                  </div>
-                  <div className="absolute bottom-6 left-8 right-8 flex justify-between text-[8px] font-bold text-slate-300 uppercase tracking-widest">
-                     <span>Minggu 1</span>
-                     <span>Minggu 2</span>
-                     <span>Minggu 3</span>
-                     <span>Minggu 4</span>
+                  <div className="h-56 w-full bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 p-4 relative">
+                    {content.length > 0 ? (
+                      <DailyGrowthChart data={(data.content_plan || []).filter((item: any) => {
+                        const start = new Date(reportFilter.startDate);
+                        const end = new Date(reportFilter.endDate);
+                        if (!item.date) return false;
+                        const itemDate = new Date(item.date);
+                        return itemDate >= start && itemDate <= end;
+                      })} reportFilter={reportFilter} />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-[10px] font-sans font-extrabold text-slate-300">Data visualisasi harian otomatis menyesuaikan periode terpilih...</p>
+                      </div>
+                    )}
                   </div>
                </Card>
 
@@ -2534,7 +3359,7 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
                             </div>
                          </div>
                        )) : (
-                         <p className="text-[10px] italic text-slate-300 py-4">Belum ada data...</p>
+                         <p className="text-[10px] text-slate-300 py-4">Belum ada data...</p>
                        )}
                     </div>
                   </Card>
@@ -2553,7 +3378,7 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
                             </div>
                          </div>
                        )) : (
-                         <p className="text-[10px] italic text-slate-300 py-4">Belum ada data...</p>
+                         <p className="text-[10px] text-slate-300 py-4">Belum ada data...</p>
                        )}
                     </div>
                   </Card>
@@ -2568,7 +3393,7 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
                      <div>
                         <h3 className="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase mb-8">Production Summary</h3>
                         <div className="flex items-end gap-3">
-                           <span className="text-7xl font-serif font-black">{content.length}</span>
+                           <span className="text-7xl font-sans font-extrabold font-black">{content.length}</span>
                            <div className="mb-4">
                               <p className="text-lg font-black leading-none">Konten</p>
                               <p className="text-[9px] font-bold text-slate-500 tracking-widest uppercase mt-1">Digital Portfolio</p>
@@ -2625,19 +3450,46 @@ const MonthlyReportModal = ({ data, onClose }: any) => {
                    <Clock className="w-4 h-4" /> Post Frequency
                 </h3>
                 <div className="h-40 flex items-end justify-between px-4">
-                   {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day, i) => {
-                     const height = 20 + (Math.random() * 60); // Mock data for now
-                     return (
-                        <div key={day} className="flex flex-col items-center gap-4 group">
-                           <motion.div 
-                             initial={{ height: 0 }}
-                             animate={{ height: `${height}%` }}
-                             className="w-10 rounded-xl bg-slate-100 group-hover:bg-accent transition-all duration-500"
-                           />
-                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{day}</span>
-                        </div>
-                     )
-                   })}
+                   {(() => {
+                     // 1. Aggregasi berdasarkan hari (0=Min, 1=Sen, ...)
+                     const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+                     content.forEach((item: any) => {
+                       if (item.date) {
+                         const d = new Date(item.date);
+                         dayCounts[d.getDay()] += 1;
+                       }
+                     });
+
+                     // Mapping index to Labels & rearrange to start from Monday (Sen)
+                     const mapping = [
+                       { label: "Sen", index: 1 },
+                       { label: "Sel", index: 2 },
+                       { label: "Rab", index: 3 },
+                       { label: "Kam", index: 4 },
+                       { label: "Jum", index: 5 },
+                       { label: "Sab", index: 6 },
+                       { label: "Min", index: 0 },
+                     ];
+
+                     const maxVal = Math.max(...dayCounts, 1);
+
+                     return mapping.map((item) => {
+                       const count = dayCounts[item.index];
+                       const height = (count / maxVal) * 100;
+                       
+                       return (
+                          <div key={item.label} className="flex flex-col items-center gap-4 group flex-1">
+                             <div className="text-[8px] font-black text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity mb-1">{count}</div>
+                             <motion.div 
+                               initial={{ height: 0 }}
+                               animate={{ height: count > 0 ? `${Math.max(height, 5)}%` : "2%" }}
+                               className={`w-full max-w-[32px] rounded-xl transition-all duration-500 ${count > 0 ? 'bg-accent/20 group-hover:bg-accent ring-1 ring-accent/10' : 'bg-slate-50'}`}
+                             />
+                             <span className={`text-[9px] font-bold uppercase tracking-widest ${count > 0 ? 'text-slate-600' : 'text-slate-300'}`}>{item.label}</span>
+                          </div>
+                       )
+                     });
+                   })()}
                 </div>
              </Card>
              <Card className="p-8 rounded-[2.5rem] border-none shadow-sm">
@@ -2670,3 +3522,323 @@ const MetricCard = ({ label, value, color }: any) => {
     </div>
   );
 };
+
+const DailyGrowthChart = ({ data, reportFilter }: any) => {
+  // 1. Calculate Daily Data Points
+  const getDailyDataPoints = () => {
+    const start = new Date(reportFilter.startDate);
+    const end = new Date(reportFilter.endDate);
+    const diffMs = end.getTime() - start.getTime();
+    
+    // Add 1 to ensure inclusion of both start and end days
+    const totalDays = Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)) + 1);
+
+    // If visualizing more than 14 days, group them into ~7 data points to avoid crowding
+    // Otherwise, show day by day.
+    const maxDataPoints = totalDays <= 14 ? totalDays : 7;
+    const blockSize = totalDays / maxDataPoints;
+
+    return Array.from({ length: maxDataPoints }).map((_, i) => {
+      const dStart = new Date(start);
+      dStart.setDate(start.getDate() + (i * blockSize));
+      const dEnd = new Date(start);
+      dEnd.setDate(start.getDate() + ((i + 1) * blockSize));
+
+      const inBlock = data.filter((item: any) => {
+        const itemDate = new Date(item.date);
+        return itemDate >= dStart && itemDate < dEnd;
+      });
+
+      // Just for labeling
+      const isSingleDay = blockSize <= 1.5;
+      const label = isSingleDay 
+        ? dStart.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+        : `${dStart.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}-${new Date(dEnd.getTime() - 1000*60*60*24).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}`;
+
+      return {
+        name: label,
+        reach: inBlock.reduce((sum: number, item: any) => sum + Number(item.metrics?.reach || 0), 0),
+        views: inBlock.reduce((sum: number, item: any) => sum + Number(item.metrics?.views || 0), 0)
+      };
+    });
+  };
+
+  const chartData = getDailyDataPoints();
+
+  return (
+    <div className="w-full h-full pt-4">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id="colorReach" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#0052FF" stopOpacity={0.2}/>
+              <stop offset="95%" stopColor="#0052FF" stopOpacity={0}/>
+            </linearGradient>
+            <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.2}/>
+              <stop offset="95%" stopColor="#fbbf24" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <XAxis 
+            dataKey="name" 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{ fill: '#94a3b8', fontSize: 9, fontWeight: 700 }}
+            dy={10}
+          />
+          <Tooltip 
+            contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)', fontSize: '10px', fontWeight: 'bold' }}
+            cursor={{ stroke: '#e2e8f0', strokeWidth: 1, strokeDasharray: '4 4' }}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="views" 
+            stroke="#fbbf24" 
+            strokeWidth={3}
+            fillOpacity={1} 
+            fill="url(#colorViews)" 
+            activeDot={{ r: 6, strokeWidth: 0, fill: '#fbbf24' }}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="reach" 
+            stroke="#0052FF" 
+            strokeWidth={3}
+            fillOpacity={1} 
+            fill="url(#colorReach)" 
+            activeDot={{ r: 6, strokeWidth: 0, fill: '#0052FF' }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+const GoalsRoadmapView = ({ clientId, isAdmin, paymentData, getPaymentStatus }: { clientId: string; isAdmin: boolean; paymentData: any; getPaymentStatus: any }) => {
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [clientVision, setClientVision] = useState<any>({
+    statement: "Membangun personal brand yang Berpengaruh.",
+    focus: ["Market Authority", "Consistent Value Rendering", "Monetization Readiness"],
+    color: "#0F172A"
+  });
+  const [loading, setLoading] = useState(true);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [evidenceLink, setEvidenceLink] = useState("");
+
+  const fetchData = async () => {
+    setLoading(true);
+    
+    // Fetch Vision
+    const { data: cData } = await supabase.from('clients').select('vision_statement, roadmap_focus, roadmap_color').eq('id', clientId).single();
+    if (cData) {
+      setClientVision({
+        statement: cData.vision_statement || "Membangun personal brand yang Berpengaruh.",
+        focus: cData.roadmap_focus || ["Market Authority", "Consistent Value Rendering", "Monetization Readiness"],
+        color: cData.roadmap_color || "#0F172A"
+      });
+    }
+
+    // Fetch Tasks
+    const { data } = await supabase
+      .from('mentee_tasks')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('priority', { ascending: false })
+      .order('created_at', { ascending: false });
+    
+    if (data) setTasks(data || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!clientId) return;
+    
+    fetchData();
+
+    // SETUP REALTIME SYNC
+    const channel = supabase
+      .channel(`roadmap_realtime_${clientId}`)
+      .on(
+        'postgres_changes',
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'mentee_tasks',
+          filter: `client_id=eq.${clientId}`
+        },
+        () => fetchData()
+      )
+      .on(
+        'postgres_changes',
+        { 
+          event: 'UPDATE', 
+          schema: 'public', 
+          table: 'clients',
+          filter: `id=eq.${clientId}`
+        },
+        () => fetchData()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [clientId]);
+
+  const handleUpdateStatus = async (taskId: string, status: string) => {
+     const { error } = await supabase.from('mentee_tasks').update({ status }).eq('id', taskId);
+     if (!error) fetchData();
+  };
+
+  const handleSubmitEvidence = async () => {
+    if (!selectedTask || !evidenceLink) return;
+    const { error } = await supabase.from('mentee_tasks').update({ 
+      evidence_link: evidenceLink,
+      status: 'Under Review'
+    }).eq('id', selectedTask.id);
+    if (!error) { setSelectedTask(null); setEvidenceLink(""); fetchData(); }
+  };
+
+  const completedTasks = tasks.filter(t => t.status === 'Completed');
+  const progressPercent = tasks.length > 0 ? (completedTasks.length / tasks.length) * 100 : 0;
+
+  return (
+    <div className="space-y-12 animate-in fade-in slide-in-from-right-10 duration-700 pb-20">
+       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-4">
+          <div className="space-y-4">
+             <SectionLabel label="Personal Branding Roadmap" />
+             <h2 className="text-4xl md:text-5xl font-sans font-extrabold tracking-tight text-foreground leading-[1.1]">
+               Goals & <span className="gradient-text">Roadmap.</span>
+             </h2>
+             <p className="text-muted-foreground font-medium text-lg max-w-xl">Langkah-langkah strategis untuk membangun otoritas personal brand kamu.</p>
+          </div>
+
+          <Card className="p-8 bg-white border-border/50 shadow-2xl shadow-accent/5 rounded-[32px] md:w-80 shrink-0">
+              <div className="flex items-center justify-between mb-6">
+                 <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Overall Progress</p>
+                    <h4 className="text-2xl font-black text-foreground">{Math.round(progressPercent)}%</h4>
+                 </div>
+                 <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
+                    <Target size={24} />
+                 </div>
+              </div>
+              <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                 <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} className="h-full bg-accent" />
+              </div>
+          </Card>
+       </div>
+
+       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-8 space-y-8">
+             {loading ? (
+                <div className="py-20 text-center"><div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto" /></div>
+             ) : tasks.length === 0 ? (
+                <Card className="p-20 text-center border-dashed border-2 bg-transparent rounded-[32px]">
+                  <Zap size={48} className="text-muted-foreground/20 mx-auto mb-6" />
+                  <p className="text-muted-foreground font-bold">Belum ada roadmap yang ditugaskan oleh mentor.</p>
+                </Card>
+             ) : (
+                <div className="space-y-6">
+                   {tasks.map(task => (
+                      <Card key={task.id} className={`p-8 md:p-10 overflow-hidden border-none shadow-[0px_10px_40px_rgba(0,0,0,0.03)] rounded-[32px] transition-all duration-500 border-l-[6px] ${
+                        task.status === 'Completed' ? 'border-emerald-500' : 
+                        task.status === 'Under Review' ? 'border-amber-500' : 'border-accent'
+                      }`}>
+                         <div className="flex flex-col md:flex-row justify-between gap-8">
+                            <div className="space-y-4 flex-1">
+                               <div className="flex items-center gap-3">
+                                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[2px] border ${
+                                    task.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 
+                                    task.status === 'Under Review' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-accent/5 text-accent border-accent/10'
+                                  }`}>{task.status}</span>
+                                  <span className="text-[11px] font-black text-muted-foreground/50 uppercase tracking-widest">{task.category}</span>
+                               </div>
+                               <h4 className="text-2xl font-sans font-extrabold tracking-tight text-foreground">{task.title}</h4>
+                               <p className="text-muted-foreground text-[15px] font-medium leading-relaxed max-w-2xl">{task.description}</p>
+                               
+                               {task.mentor_feedback && (
+                                 <div className="mt-8 p-6 bg-accent/[0.03] border border-accent/10 rounded-3xl flex gap-4 items-start shadow-sm">
+                                    <MessageSquare size={18} className="text-accent shrink-0 mt-1" />
+                                    <div className="space-y-1">
+                                       <p className="text-[10px] font-black text-accent uppercase tracking-widest">Mentor Feedback</p>
+                                       <p className="text-sm font-bold text-foreground italic leading-relaxed">"{task.mentor_feedback}"</p>
+                                    </div>
+                                 </div>
+                               )}
+                            </div>
+
+                            <div className="flex flex-col gap-3 min-w-[200px]">
+                               {task.status !== 'Completed' && (
+                                  <Button className="w-full h-14 rounded-2xl font-black tracking-widest text-[11px] uppercase shadow-accent-lg" onClick={() => setSelectedTask(task)}>Submit Proof</Button>
+                               )}
+                               {task.evidence_link && (
+                                  <a href={task.evidence_link} target="_blank" className="text-center p-3 rounded-2xl bg-slate-50 text-slate-400 hover:text-accent font-bold text-xs flex items-center justify-center gap-2 border border-slate-100 transition-all"><LinkIcon size={14} /> View Submission</a>
+                               )}
+                            </div>
+                         </div>
+                      </Card>
+                   ))}
+                </div>
+             )}
+          </div>
+
+          <div className="lg:col-span-4 space-y-8">
+              <Card 
+                className="p-8 text-white rounded-[40px] shadow-2xl shadow-accent/20 overflow-hidden relative border-none min-h-[400px]"
+                style={{ backgroundColor: clientVision.color }}
+              >
+                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 blur-[80px] rounded-full" />
+                 <h4 className="text-3xl font-black tracking-tight leading-loose relative z-10 whitespace-pre-wrap">{clientVision.statement}</h4>
+                 <div className="space-y-4 pt-10 relative z-10">
+                    <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Upcoming Focus</p>
+                    <div className="space-y-4">
+                       {Array.isArray(clientVision.focus) && clientVision.focus.map((f: string) => (
+                          <div key={f} className="flex items-center gap-3"><div className="w-2 h-2 rounded-full bg-accent animate-pulse" /><p className="text-sm font-bold opacity-70 tracking-tight">{f}</p></div>
+                       ))}
+                    </div>
+                 </div>
+              </Card>
+              
+              <Card className="p-8 bg-white border-border/50 rounded-[40px] shadow-xl shadow-accent/5">
+                 <div className="flex items-center gap-4 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center"><Star size={20} /></div>
+                    <h5 className="font-black text-lg text-foreground">Butuh Bantuan Strategi?</h5>
+                 </div>
+                 <p className="text-sm font-medium text-muted-foreground leading-relaxed mb-6">Jika kamu bingung dengan roadmap di atas, silakan hubungi mentor di Inbox Mentee.</p>
+                 <Button variant="outline" className="w-full h-12 rounded-2xl font-black tracking-widest text-[11px] uppercase border-2">Tanya Mentor</Button>
+              </Card>
+
+              <div className="p-10 rounded-[3rem] bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-center group hover:border-accent/40 transition-all duration-500">
+                 <div className="w-20 h-20 rounded-[2.5rem] bg-white shadow-xl flex items-center justify-center text-accent mb-6 group-hover:scale-110 transition-transform">
+                    <CreditCard size={32} />
+                 </div>
+                 <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 mb-2">Program Bill Status</h4>
+                 <p className="text-xl font-black text-slate-900 group-hover:text-accent transition-colors">
+                    {getPaymentStatus(paymentData)}
+                 </p>
+              </div>
+          </div>
+       </div>
+
+       <AnimatePresence>
+          {selectedTask && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
+               <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-white rounded-[40px] shadow-2xl w-full max-w-lg p-10 space-y-8">
+                  <div className="flex items-center justify-between">
+                     <h3 className="text-3xl font-black text-foreground tracking-tight">Kirim Bukti Tugas</h3>
+                     <button onClick={() => setSelectedTask(null)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all"><X size={20} /></button>
+                  </div>
+                  <div className="space-y-6">
+                     <input placeholder="Link Dokumentasi (G-Drive, Sosmed, dll)" value={evidenceLink} onChange={(e) => setEvidenceLink(e.target.value)} className="w-full h-16 rounded-[24px] bg-[#FAFAFA] border border-slate-100 px-6 font-bold text-sm focus:outline-none focus:ring-4 ring-accent/10 transition-all text-slate-700" />
+                  </div>
+                  <Button onClick={handleSubmitEvidence} className="w-full h-16 rounded-[24px] shadow-accent-lg font-black tracking-widest text-[16px] uppercase">Submit to Mentor</Button>
+               </motion.div>
+            </div>
+          )}
+       </AnimatePresence>
+    </div>
+  );
+};
+
+
