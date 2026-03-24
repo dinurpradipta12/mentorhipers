@@ -8,8 +8,8 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ zoom: "80%" }}>
+    <>
       {children}
-    </div>
+    </>
   );
 }
