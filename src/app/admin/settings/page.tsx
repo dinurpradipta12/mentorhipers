@@ -38,6 +38,7 @@ export default function AppSettingsCMS() {
     app_name: "Mentorhipers",
     app_logo: "",
     app_favicon: "",
+    tablet_zoom: "0.7"
   });
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export default function AppSettingsCMS() {
           app_name: data.app_name || "Mentorhipers",
           app_logo: data.app_logo || "",
           app_favicon: data.app_favicon || "",
+          tablet_zoom: data.tablet_zoom || localStorage.getItem('tablet_zoom') || "0.7",
         });
       }
       setIsLoaded(true);
@@ -219,7 +221,7 @@ export default function AppSettingsCMS() {
                      </div>
                   </div>
 
-                  {/* FAVICON */}
+                   {/* FAVICON */}
                   <div className="space-y-3">
                      <label className="text-[11px] font-black text-[#202224] opacity-40 uppercase tracking-[2px] ml-1">Upload Favicon Browser Tab</label>
                      <div className="flex gap-4 items-center">
@@ -245,6 +247,45 @@ export default function AppSettingsCMS() {
                         )}
                      </div>
                      <p className="text-[10px] font-bold text-slate-400 ml-1">Sistem akan memancarkan webhook Realtime untuk mengganti ikon tab browser mentee secara instan ke gambar ini.</p>
+                  </div>
+
+                  {/* TABLET ZOOM SLIDER */}
+                  <div className="space-y-4 pt-4 border-t border-slate-100">
+                     <div className="flex justify-between items-end">
+                        <div className="space-y-1">
+                           <label className="text-[11px] font-black text-[#202224] opacity-40 uppercase tracking-[2px] ml-1">Optimasi Zoom Tablet (MD-LG View)</label>
+                           <p className="text-[10px] font-bold text-slate-400 ml-1">Atur skala UI agar lebih efisien di layar tablet. Default: 70% (0.7).</p>
+                        </div>
+                        <span className="text-sm font-black text-[#4880FF] bg-blue-50 px-3 py-1 rounded-lg">{(parseFloat(settings.tablet_zoom) * 100).toFixed(0)}%</span>
+                     </div>
+                     <div className="flex items-center gap-6">
+                        <input 
+                           type="range"
+                           min="0.5"
+                           max="1.0"
+                           step="0.05"
+                           value={settings.tablet_zoom}
+                           onChange={(e) => {
+                              const val = e.target.value;
+                              setSettings({...settings, tablet_zoom: val});
+                              document.documentElement.style.setProperty('--tablet-zoom', val);
+                              localStorage.setItem('tablet_zoom', val);
+                           }}
+                           className="flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#4880FF]"
+                        />
+                        <div className="flex gap-2">
+                           <button 
+                              onClick={() => {
+                                 setSettings({...settings, tablet_zoom: "0.7"});
+                                 document.documentElement.style.setProperty('--tablet-zoom', "0.7");
+                                 localStorage.setItem('tablet_zoom', "0.7");
+                              }}
+                              className="text-[10px] font-bold text-slate-400 hover:text-[#4880FF] transition-colors"
+                           >
+                              Reset
+                           </button>
+                        </div>
+                     </div>
                   </div>
 
               </div>

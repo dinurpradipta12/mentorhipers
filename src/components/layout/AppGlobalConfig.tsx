@@ -33,6 +33,10 @@ export const AppGlobalConfig = () => {
           };
           updateFavicon(data.app_favicon);
         }
+        // TABLET ZOOM SYNC
+        const storedZoom = localStorage.getItem('tablet_zoom') || (data as any).tablet_zoom || "0.7";
+        document.documentElement.style.setProperty('--tablet-zoom', storedZoom);
+        localStorage.setItem('tablet_zoom', storedZoom);
       }
 
       if (mentorRes.data) {
@@ -48,12 +52,16 @@ export const AppGlobalConfig = () => {
         event: 'UPDATE', 
         schema: 'public', 
         table: 'app_settings' 
-      }, (payload: { new: { app_name?: string, app_logo?: string, app_favicon?: string } }) => {
+      }, (payload: { new: { app_name?: string, app_logo?: string, app_favicon?: string, tablet_zoom?: string } }) => {
         if (payload.new.app_name) {
           document.title = payload.new.app_name;
           localStorage.setItem('app_name', payload.new.app_name);
         }
         if (payload.new.app_logo) localStorage.setItem('app_logo', payload.new.app_logo);
+        if (payload.new.tablet_zoom) {
+          document.documentElement.style.setProperty('--tablet-zoom', payload.new.tablet_zoom);
+          localStorage.setItem('tablet_zoom', payload.new.tablet_zoom);
+        }
         if (payload.new.app_favicon) {
           localStorage.setItem('app_favicon', payload.new.app_favicon);
           const icons = document.querySelectorAll("link[rel*='icon']");
