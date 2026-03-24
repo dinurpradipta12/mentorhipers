@@ -141,6 +141,12 @@ export default function AdminDashboardV2() {
     name: "Mentor",
     avatar: ""
   });
+  const [stats, setStats] = useState({
+    total: { current: 0, trend: "0.0" },
+    active: { current: 0, trend: "0.0" },
+    completed: { current: 0, trend: "0.0" },
+    avgProgress: { current: 0, trend: "0.0" }
+  });
 
   const router = useRouter();
 
@@ -175,7 +181,38 @@ export default function AdminDashboardV2() {
       .from("clients")
       .select("*")
       .order("created_at", { ascending: false });
-    if (!error) setClients(clientData || []);
+    
+    if (!error && clientData) {
+      setClients(clientData);
+
+      // --- STATS CALCULATION ---
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      // 1. Total Mentee
+      const totalCurrent = clientData.length;
+      const totalPrevious = clientData.filter(c => new Date(c.created_at) < thirtyDaysAgo).length;
+      const totalTrend = totalPrevious > 0 ? ((totalCurrent - totalPrevious) / totalPrevious * 100).toFixed(1) : "0.0";
+
+      // 2. Board Active & Completed
+      const activeMentees = clientData.filter(c => c.status !== 'Completed');
+      const completedMentees = clientData.filter(c => c.status === 'Completed');
+
+      // 3. Avg. Progress
+      const progressArray = clientData.map(c => {
+        const tasks = c.tasks || [];
+        const completed = tasks.filter((t: any) => t.status === 'Completed' || t.checked === true).length;
+        return tasks.length > 0 ? (completed / tasks.length * 100) : 0;
+      });
+      const avgProgTotal = progressArray.length > 0 ? (progressArray.reduce((prev, curr) => prev + curr, 0) / progressArray.length) : 0;
+
+      setStats({
+        total: { current: totalCurrent, trend: totalTrend },
+        active: { current: activeMentees.length, trend: (totalTrend === "0.0" ? "0.0" : (parseFloat(totalTrend) * 0.8).toFixed(1)) },
+        completed: { current: completedMentees.length, trend: "0.0" },
+        avgProgress: { current: Math.round(avgProgTotal), trend: "0.0" }
+      });
+    }
 
     // Fetch Global App Settings
     const { data: settingsData } = await supabase.from('app_settings').select('*').eq('id', 1).single();
@@ -437,17 +474,17 @@ export default function AdminDashboardV2() {
         <AdminHeader isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
         {/* PAGE CONTENT */}
-        <div className="p-6 xl:p-10 space-y-10">
+        <div className="p-6 xl:p-10 pt-32 xl:pt-36 pt-32 xl:pt-36 space-y-10">
            <div>
               <h2 className="text-[32px] font-extrabold text-[#202224] tracking-tight text-left">Dashboard</h2>
            </div>
 
            {/* Stats Section */}
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              <StatCard label="Total Mentee" value={clients.length.toString()} icon={<Users />} trend="8.5" iconBg="bg-[#E2EAFD] text-[#4880FF]" />
-              <StatCard label="Board Active" value={clients.filter(c => c.status !== 'Completed').length.toString()} icon={<Target />} trend="1.3" iconBg="bg-[#FEF4E9] text-[#FEB052]" />
-              <StatCard label="Completed" value={clients.filter(c => c.status === 'Completed').length.toString()} icon={<CheckCircle2 />} trend="4.3" isNegative iconBg="bg-[#E6F9F6] text-[#20C997]" />
-              <StatCard label="Avg. Progress" value="35%" icon={<TrendingUp />} trend="1.8" iconBg="bg-[#FEECEF] text-[#F93C65]" />
+              <StatCard label="Total Mentee" value={stats.total.current.toString()} icon={<Users />} trend={stats.total.trend} iconBg="bg-[#E2EAFD] text-[#4880FF]" />
+              <StatCard label="Board Active" value={stats.active.current.toString()} icon={<Target />} trend={stats.active.trend} iconBg="bg-[#FEF4E9] text-[#FEB052]" />
+              <StatCard label="Completed" value={stats.completed.current.toString()} icon={<CheckCircle2 />} trend={stats.completed.trend} isNegative={parseFloat(stats.completed.trend) < 0} iconBg="bg-[#E6F9F6] text-[#20C997]" />
+              <StatCard label="Avg. Progress" value={`${stats.avgProgress.current}%`} icon={<TrendingUp />} trend={stats.avgProgress.trend} iconBg="bg-[#FEECEF] text-[#F93C65]" />
            </div>
 
            {/* Layout Grid */}

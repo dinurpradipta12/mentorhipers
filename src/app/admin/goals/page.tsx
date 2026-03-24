@@ -274,7 +274,7 @@ export default function AdminGoalsPage() {
       >
         <AdminHeader isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-        <div className="p-6 xl:p-10 space-y-10 max-w-[1600px] mx-auto w-full">
+        <div className="p-6 xl:p-10 pt-32 xl:pt-36 space-y-10 max-w-[1600px] mx-auto w-full">
           {/* TOP BAR / TITLE */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
              <div>

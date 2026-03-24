@@ -166,7 +166,7 @@ export default function AppSettingsCMS() {
           </Button>
         </AdminHeader>
 
-        <div className="flex-1 p-10 max-w-4xl">
+        <div className="flex-1 p-10 pt-32 xl:pt-36 max-w-4xl">
            
            <Card className="p-10 rounded-[2rem] border border-slate-100 bg-white shadow-sm space-y-10">
               <div className="flex items-start gap-5 border-b border-slate-100 pb-8">

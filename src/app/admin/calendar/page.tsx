@@ -270,7 +270,7 @@ export default function AdminCalendarPage() {
         <AdminHeader isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
         {/* CALENDAR PAGE CONTENT */}
-        <div className="p-6 xl:p-10 flex flex-col gap-10">
+        <div className="p-6 xl:p-10 pt-32 xl:pt-36 pt-32 xl:pt-36 flex flex-col gap-10">
            <div className="flex items-center justify-between">
               <h2 className="text-[32px] font-extrabold text-[#202224] tracking-tight">Calendar</h2>
            </div>
@@ -308,7 +308,7 @@ export default function AdminCalendarPage() {
 
               {/* RIGHT COL: Main Calendar (9 cols) */}
               <div className="col-span-12 lg:col-span-8 xl:col-span-9">
-                 <Card className="p-6 xl:p-10 bg-white border-none shadow-[0px_10px_30px_rgba(0,0,0,0.02)] rounded-[14px] overflow-x-auto no-scrollbar">
+                 <Card className="p-6 xl:p-10 pt-32 xl:pt-36 bg-white border-none shadow-[0px_10px_30px_rgba(0,0,0,0.02)] rounded-[14px] overflow-x-auto no-scrollbar">
                     <div className="min-w-[800px]">
                         {/* Calendar Header */}
                         <div className="flex items-center justify-between mb-10">
