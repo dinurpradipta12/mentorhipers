@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SectionLabel } from "@/components/ui/Badge";
@@ -15,6 +15,17 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [appLogo, setAppLogo] = useState("");
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase.from('app_settings').select('app_logo').eq('id', 1).single();
+      if (data?.app_logo) {
+        setAppLogo(data.app_logo);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,12 +76,15 @@ export default function LoginPage() {
       <div className="lg:col-span-5 flex flex-col items-center justify-center p-8 sm:p-20 relative z-10 bg-white">
         <div className="max-w-md w-full">
           <div className="flex items-center gap-2 mb-12">
-            <h1 className="text-3xl font-sans font-extrabold tracking-tight">
-              Mentor<span className="gradient-text">hipers</span>
-            </h1>
+            {appLogo ? (
+               <img src={appLogo} alt="Logo" className="h-20 w-auto object-contain" />
+            ) : (
+               <h1 className="text-3xl font-sans font-extrabold tracking-tight">
+                 Mentor<span className="gradient-text">hipers</span>
+               </h1>
+            )}
           </div>
 
-          <SectionLabel label="Secure Access" className="mb-6" />
           <h2 className="text-4xl font-sans font-extrabold mb-2 leading-tight">
             Selamat Datang <span className="gradient-text">Kembali!</span>
           </h2>
