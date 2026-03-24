@@ -81,7 +81,7 @@ export default function AdminHeader({ title, isSidebarOpen, toggleSidebar, showS
   };
 
   return (
-    <header className="h-[90px] bg-white border-b border-[#E0E0E0] px-10 flex items-center justify-between sticky top-0 z-40 transition-all">
+    <header className="bg-white border-b border-[#E0E0E0] px-10 flex items-center justify-between sticky top-0 z-40 transition-all" style={{ minHeight: '90px', paddingTop: 'env(safe-area-inset-top, 0px)' }}>
        <div className="flex items-center gap-6">
           <button onClick={toggleSidebar} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-all active:scale-95">
              <Menu size={20} />
