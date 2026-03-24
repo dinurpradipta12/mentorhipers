@@ -46,29 +46,29 @@ export const AppUpdateNotifier = () => {
           exit={{ opacity: 0, scale: 0.9, y: 50 }}
           className="fixed bottom-12 right-12 z-[10000] max-w-[340px] w-full"
         >
-          <div className="bg-slate-900/60 backdrop-blur-2xl border border-white/10 shadow-[0_32px_128px_-16px_rgba(0,0,0,0.6)] rounded-[2.5rem] p-8 overflow-hidden group relative">
+          <div className="bg-[#4880FF]/90 backdrop-blur-2xl border border-white/20 shadow-[0_32px_128px_-16px_rgba(72,128,255,0.4)] rounded-[2.5rem] p-8 overflow-hidden group relative">
             {/* Background Accent */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#4880FF]/20 blur-[60px] rounded-full -mr-16 -mt-16 group-hover:bg-[#4880FF]/30 transition-all duration-700" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 blur-[40px] rounded-full -mr-16 -mt-16 group-hover:bg-white/30 transition-all duration-700" />
             
             <div className="relative z-10 text-left">
               <div className="flex items-center gap-5 mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-[#4880FF]/10 border border-[#4880FF]/20 flex items-center justify-center text-[#4880FF] shadow-lg shadow-[#4880FF]/20">
-                  <Zap size={24} className="fill-[#4880FF] animate-pulse" />
+                <div className="w-14 h-14 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-white shadow-lg">
+                  <Zap size={24} className="fill-white animate-pulse" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-white leading-tight uppercase tracking-widest">New <span className="text-[#4880FF] italic">Update</span></h4>
-                  <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">Version Live Now</p>
+                  <h4 className="text-sm font-black text-white leading-tight uppercase tracking-widest">Aplikasi <span className="text-white/80 italic">Update</span></h4>
+                  <p className="text-[10px] font-bold text-white/60 mt-1 uppercase tracking-widest">Versi Baru Tersedia</p>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <p className="text-[11px] leading-relaxed text-slate-300 font-medium">
-                  Sistem baru saja diperbarui oleh Admin untuk performa yang lebih maksimal. Silakan segarkan aplikasi.
+                <p className="text-[11px] leading-relaxed text-white font-medium">
+                  Ada perbaikan sistem oleh Mas Ar untuk performa yang lebih stabil. Silakan segarkan aplikasi sekarang.
                 </p>
                 
                 <button 
                   onClick={() => window.location.reload()} 
-                  className="w-full h-12 rounded-2xl bg-white text-slate-900 font-black text-[10px] hover:bg-slate-100 transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-white/5"
+                  className="w-full h-12 rounded-2xl bg-white text-[#4880FF] font-black text-[10px] hover:bg-slate-50 transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-[#4880FF]/20"
                 >
                   <RefreshCw size={14} />
                   Segarkan Sekarang
