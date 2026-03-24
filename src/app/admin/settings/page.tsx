@@ -38,7 +38,7 @@ export default function AppSettingsCMS() {
     app_name: "Mentorhipers",
     app_logo: "",
     app_favicon: "",
-    tablet_zoom: "0.7"
+    tablet_zoom: "0.65"
   });
 
   useEffect(() => {
@@ -254,14 +254,14 @@ export default function AppSettingsCMS() {
                      <div className="flex justify-between items-end">
                         <div className="space-y-1">
                            <label className="text-[11px] font-black text-[#202224] opacity-40 uppercase tracking-[2px] ml-1">Optimasi Zoom Tablet (MD-LG View)</label>
-                           <p className="text-[10px] font-bold text-slate-400 ml-1">Atur skala UI agar lebih efisien di layar tablet. Default: 70% (0.7).</p>
+                           <p className="text-[10px] font-bold text-slate-400 ml-1">Atur skala UI agar lebih efisien di layar tablet. Default: 65% (0.65).</p>
                         </div>
                         <span className="text-sm font-black text-[#4880FF] bg-blue-50 px-3 py-1 rounded-lg">{(parseFloat(settings.tablet_zoom) * 100).toFixed(0)}%</span>
                      </div>
                      <div className="flex items-center gap-6">
                         <input 
                            type="range"
-                           min="0.5"
+                           min="0.45"
                            max="1.0"
                            step="0.05"
                            value={settings.tablet_zoom}
@@ -276,9 +276,9 @@ export default function AppSettingsCMS() {
                         <div className="flex gap-2">
                            <button 
                               onClick={() => {
-                                 setSettings({...settings, tablet_zoom: "0.7"});
-                                 document.documentElement.style.setProperty('--tablet-zoom', "0.7");
-                                 localStorage.setItem('tablet_zoom', "0.7");
+                                 setSettings({...settings, tablet_zoom: "0.65"});
+                                 document.documentElement.style.setProperty('--tablet-zoom', "0.65");
+                                 localStorage.setItem('tablet_zoom', "0.65");
                               }}
                               className="text-[10px] font-bold text-slate-400 hover:text-[#4880FF] transition-colors"
                            >
