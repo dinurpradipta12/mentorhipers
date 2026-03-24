@@ -271,6 +271,14 @@ export default function AppSettingsCMS() {
                               setSettings({...settings, tablet_zoom: val});
                               document.documentElement.style.setProperty('--tablet-zoom', val);
                               localStorage.setItem('tablet_zoom_value', val);
+                              
+                              // Immediate Viewport Scaling Update
+                              const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1380;
+                              let viewportMeta = document.querySelector('meta[name="viewport"]');
+                              if (viewportMeta) {
+                                const scale = isTablet ? val : "1.0";
+                                viewportMeta.setAttribute('content', `width=device-width, initial-scale=${scale}, minimum-scale=${scale}, viewport-fit=cover`);
+                              }
                            }}
                            className="flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#4880FF]"
                         />
@@ -290,6 +298,13 @@ export default function AppSettingsCMS() {
                                  setSettings({...settings, tablet_zoom: preset.value});
                                  document.documentElement.style.setProperty('--tablet-zoom', preset.value);
                                  localStorage.setItem('tablet_zoom_value', preset.value);
+                                 
+                                 const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1380;
+                                 let viewportMeta = document.querySelector('meta[name="viewport"]');
+                                 if (viewportMeta) {
+                                   const scale = isTablet ? preset.value : "1.0";
+                                   viewportMeta.setAttribute('content', `width=device-width, initial-scale=${scale}, minimum-scale=${scale}, viewport-fit=cover`);
+                                 }
                               }}
                               className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${
                                  settings.tablet_zoom === preset.value
