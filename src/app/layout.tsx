@@ -4,6 +4,7 @@ import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppUpdateNotifier } from "@/components/layout/AppUpdateNotifier";
 import { AppGlobalConfig } from "@/components/layout/AppGlobalConfig";
+import { TabletZoomOptimizer } from "@/components/layout/TabletZoomOptimizer";
 
 export const viewport: Viewport = {
   themeColor: '#4880FF',
@@ -56,6 +57,7 @@ export default function RootLayout({
         {children}
         <AppGlobalConfig />
         <AppUpdateNotifier />
+        <TabletZoomOptimizer />
       </body>
     </html>
   );
