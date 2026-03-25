@@ -62,19 +62,8 @@ const viewportZoomScript = `
       overrideMeta.id = 'mh-tablet-viewport';
       overrideMeta.content = 'width=device-width, initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=' + scale + ', user-scalable=0';
       document.head.appendChild(overrideMeta);
-      
-      // Give iOS WebView 2 frames to process the tag before rendering the HTML
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-          document.documentElement.classList.add('mh-zoom-ready');
-        });
-      });
-    } else {
-      document.documentElement.classList.add('mh-zoom-ready');
     }
-  } catch(e) {
-    document.documentElement.classList.add('mh-zoom-ready');
-  }
+  } catch(e) {}
 })();
 `;
 
@@ -90,20 +79,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* We hide the body but KEEP the html background colored so we don't flash the OS Dark/Light Native WebView Background ! */}
-        <style dangerouslySetInnerHTML={{ __html: `
-          html { background-color: #FAFAFA !important; }
-          @media (min-width: 768px) and (max-width: 1380px) {
-            html:not(.mh-zoom-ready) body {
-              opacity: 0 !important;
-              /* Fallback: if JS fails, show page after 1.5 seconds */
-              animation: zoom-fallback-show 1ms 1.5s forwards;
-            }
-          }
-          @keyframes zoom-fallback-show {
-            to { opacity: 1 !important; }
-          }
-        `}} />
         {/* We use a native synchronous script to avoid Next.js _next_s deferred array load */}
         <script
           suppressHydrationWarning
