@@ -58,10 +58,10 @@ export default function MentorProfileCMS() {
    });
 
    const [appSettings, setAppSettings] = useState({
-      app_name: typeof window !== 'undefined' ? (localStorage.getItem('app_name') || "Mentorhipers") : "Mentorhipers",
-      app_logo: typeof window !== 'undefined' ? (localStorage.getItem('app_logo') || "") : "",
-      app_favicon: typeof window !== 'undefined' ? (localStorage.getItem('app_favicon') || "") : ""
-   });
+    app_name: "Mentorhipers",
+    app_logo: "",
+    app_favicon: ""
+  });
 
    useEffect(() => {
       const sessionStr = localStorage.getItem("mh_session");

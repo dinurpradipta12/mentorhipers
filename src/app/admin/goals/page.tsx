@@ -66,10 +66,10 @@ export default function AdminGoalsPage() {
    const [isAddingTask, setIsAddingTask] = useState(false);
    const [isLoading, setIsLoading] = useState(false);
    const [appSettings, setAppSettings] = useState({
-      app_name: typeof window !== 'undefined' ? (localStorage.getItem('app_name') || "Mentorhipers") : "Mentorhipers",
-      app_logo: typeof window !== 'undefined' ? (localStorage.getItem('app_logo') || "") : "",
-      app_favicon: typeof window !== 'undefined' ? (localStorage.getItem('app_favicon') || "") : ""
-   });
+    app_name: "Mentorhipers",
+    app_logo: "",
+    app_favicon: ""
+  });
 
    // New Task Form State
    const [taskForm, setTaskForm] = useState({
