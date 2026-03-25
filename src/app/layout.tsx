@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppUpdateNotifier } from "@/components/layout/AppUpdateNotifier";
@@ -69,7 +70,7 @@ export default function RootLayout({
       <head>
         {/* Pre-paint viewport zoom — must run before any render to prevent glitch */}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <script dangerouslySetInnerHTML={{ __html: viewportZoomScript }} />
+        <Script id="viewport-zoom" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: viewportZoomScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]">
         {children}
