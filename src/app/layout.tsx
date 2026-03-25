@@ -51,8 +51,8 @@ const viewportZoomScript = `
     if (zoom > 1.0 && zoom <= 100) zoom /= 100;
     else if (zoom < 0.1 || zoom > 1.0) zoom = 0.8;
     var w = window.innerWidth || screen.width;
+    
     if (w >= 768 && w <= 1380) {
-      document.documentElement.style.display = 'none';
       var scale = zoom.toFixed(2);
       
       // Override Next.js's viewport meta by appending our own at the very end of head
@@ -63,13 +63,18 @@ const viewportZoomScript = `
       overrideMeta.content = 'width=device-width, initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=' + scale + ', user-scalable=0';
       document.head.appendChild(overrideMeta);
       
+      // Give iOS WebView 2 frames to process the tag before rendering the HTML
       requestAnimationFrame(function() {
         requestAnimationFrame(function() {
-          document.documentElement.style.display = '';
+          document.documentElement.classList.add('mh-zoom-ready');
         });
       });
+    } else {
+      document.documentElement.classList.add('mh-zoom-ready');
     }
-  } catch(e) {}
+  } catch(e) {
+    document.documentElement.classList.add('mh-zoom-ready');
+  }
 })();
 `;
 
