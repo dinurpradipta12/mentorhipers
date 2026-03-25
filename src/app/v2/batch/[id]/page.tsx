@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import React, { useState, useEffect, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -21,7 +23,10 @@ import {
   FileText,
   UserPlus,
   Share2,
-  Check
+  Check,
+  Eye,
+  EyeOff,
+  UserCheck
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
@@ -34,6 +39,7 @@ export default function BatchDetailPage({ params }: { params: Promise<{ id: stri
   const [batch, setBatch] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   
   // Auth Store
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -115,16 +121,31 @@ export default function BatchDetailPage({ params }: { params: Promise<{ id: stri
   // if (isLoading) return <div className="h-screen w-full flex items-center justify-center p-20"><div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>;
 
   const isAdmin = currentUser?.role === 'admin';
+  const isAdminView = isAdmin && !isPreviewMode;
 
   const TABS = [
-    ...(isAdmin ? [{ id: "students", label: "Student List & Groups", icon: <Users size={16} /> }] : []),
-    { id: "curriculum", label: isAdmin ? "Curriculum Assignments" : "My Tasks & Learning", icon: <BookOpen size={16} /> },
-    { id: "grades", label: isAdmin ? "Grading Matrix" : "My Results", icon: <BarChart4 size={16} /> },
-    { id: "attendance", label: isAdmin ? "Attendance History" : "My Attendance", icon: <CheckCircle2 size={16} /> }
+    ...(isAdminView ? [{ id: "students", label: "Student List & Groups", icon: <Users size={16} /> }] : []),
+    { id: "curriculum", label: isAdminView ? "Curriculum Assignments" : "My Tasks & Learning", icon: <BookOpen size={16} /> },
+    { id: "grades", label: isAdminView ? "Grading Matrix" : "My Results", icon: <BarChart4 size={16} /> },
+    { id: "attendance", label: isAdminView ? "Attendance History" : "My Attendance", icon: <CheckCircle2 size={16} /> }
   ];
 
   return (
     <div className="p-6 md:p-10 xl:p-12 space-y-12 max-w-[1700px] mx-auto min-h-screen">
+      {/* Simulation Banner */}
+      <AnimatePresence>
+        {isPreviewMode && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-emerald-500 text-white p-4 rounded-3xl flex items-center justify-center gap-3 font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20"
+          >
+            <Eye size={16} /> SIMULASI TAMPILAN MURID (PREVIEW MODE)
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header Info */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 py-10 px-10 bg-slate-900 rounded-[44px] text-white overflow-hidden relative shadow-2xl">
         {/* Glow */}
@@ -136,13 +157,13 @@ export default function BatchDetailPage({ params }: { params: Promise<{ id: stri
             <Link href="/v2/batch" className="p-3 bg-white/10 rounded-2xl hover:bg-white/20 transition-all border border-white/10 group">
               <ChevronRight size={20} className="rotate-180 group-hover:-translate-x-1 transition-transform" />
             </Link>
-            <div className="px-3 py-1 rounded-full bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest">
-              {isAdmin ? 'Cohort Management' : 'Student Portal'}
+            <div className={`px-3 py-1 rounded-full text-white text-[9px] font-black uppercase tracking-widest ${isAdminView ? 'bg-blue-600' : 'bg-emerald-500'}`}>
+              {isAdminView ? 'Cohort Management' : 'Student Portal'}
             </div>
           </div>
           <div className="space-y-4">
             <h1 className="text-4xl md:text-5xl font-black tracking-tight">{batch?.name || "Loading Batch..."}</h1>
-            {!isAdmin && <p className="text-blue-400 font-bold tracking-widest uppercase text-xs">Welcome back, {currentUser?.full_name}!</p>}
+            {!isAdminView && <p className="text-emerald-400 font-bold tracking-widest uppercase text-xs">Simulated view as {currentUser?.full_name}!</p>}
             <div className="flex flex-wrap gap-6 items-center opacity-60">
               <p className="flex items-center gap-2 text-sm font-bold"><Zap size={14} className="text-blue-400" /> {batch?.status === 'active' ? 'Ongoing Batch' : 'Batch Completed'}</p>
               <div className="h-1 w-1 rounded-full bg-white/30" />
@@ -156,19 +177,30 @@ export default function BatchDetailPage({ params }: { params: Promise<{ id: stri
         <div className="relative z-10 flex gap-4 xl:mb-2">
            {isAdmin ? (
              <>
+               {isAdminView && (
+                 <Button 
+                   onClick={() => setIsRegModalOpen(true)}
+                   className="h-14 px-8 rounded-2xl bg-white text-slate-900 font-bold text-sm shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3"
+                 >
+                   <UserPlus size={18} /> Add Student
+                 </Button>
+               )}
                <Button 
-                 onClick={() => setIsRegModalOpen(true)}
-                 className="h-14 px-8 rounded-2xl bg-white text-slate-900 font-bold text-sm shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3"
+                onClick={() => setIsPreviewMode(!isPreviewMode)}
+                className={`h-14 px-8 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 ${isPreviewMode ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
                >
-                 <UserPlus size={18} /> Add Student (Option A)
+                 {isPreviewMode ? <EyeOff size={18} /> : <Eye size={18} />}
+                 {isPreviewMode ? 'Exit Preview' : 'Student Preview'}
                </Button>
-               <Button 
-                onClick={handleShare}
-                className={`h-14 px-8 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 ${isCopied ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
-               >
-                 {isCopied ? <Check size={18} /> : <Share2 size={18} />}
-                 {isCopied ? 'Link Copied!' : 'Share Batch'}
-               </Button>
+               {isAdminView && (
+                  <Button 
+                    onClick={handleShare}
+                    className={`h-14 px-8 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 ${isCopied ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                  >
+                    {isCopied ? <Check size={18} /> : <Share2 size={18} />}
+                    {isCopied ? 'Link Copied' : 'Share Batch'}
+                  </Button>
+               )}
              </>
            ) : (
              <Button className="h-14 px-8 rounded-2xl bg-white/10 text-white font-bold text-sm border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center gap-3">
