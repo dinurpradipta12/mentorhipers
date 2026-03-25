@@ -48,10 +48,18 @@ const viewportZoomScript = `
     else if (zoom < 0.1 || zoom > 1.0) zoom = 0.8;
     var w = window.innerWidth || screen.width;
     if (w >= 768 && w <= 1380) {
+      // Prevent FOUC/Glitch on PWA by briefly hiding while the browser applies zoom
+      document.documentElement.style.display = 'none';
       var scale = zoom.toFixed(2);
       var meta = document.querySelector('meta[name="viewport"]');
       if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
+      // Removed viewport-fit=cover so it aligns with TabletZoomOptimizer
       meta.content = 'width=device-width, initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=' + scale + ', user-scalable=0';
+      
+      // Force repaint with new scale before un-hiding
+      setTimeout(function() {
+        document.documentElement.style.display = '';
+      }, 30);
     }
   } catch(e) {}
 })();
@@ -69,7 +77,7 @@ export default function RootLayout({
     >
       <head>
         {/* Pre-paint viewport zoom — must run before any render to prevent glitch */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" suppressHydrationWarning />
         <Script id="viewport-zoom" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: viewportZoomScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]">
