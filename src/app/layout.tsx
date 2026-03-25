@@ -20,6 +20,8 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+export const runtime = 'edge';
+
 export const metadata: Metadata = {
   title: "Mentorhipers | Mentoring & Content Planning",
   description: "Personal branding and social media mentoring platform.",
