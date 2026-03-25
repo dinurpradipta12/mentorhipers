@@ -20,8 +20,6 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
-export const runtime = 'edge';
-
 export const metadata: Metadata = {
   title: "Mentorhipers | Mentoring & Content Planning",
   description: "Personal branding and social media mentoring platform.",
@@ -37,31 +35,11 @@ export const metadata: Metadata = {
   },
 };
 
-import { cookies } from "next/headers";
-
-export async function generateViewport(): Promise<Viewport> {
-  const cookieStore = await cookies();
-  const isTablet = cookieStore.get('mh_is_tablet')?.value === 'true';
-  const zoomVal = cookieStore.get('tablet_zoom_value')?.value || '0.8';
-
-  if (isTablet) {
-    let scale = parseFloat(zoomVal);
-    if (isNaN(scale) || scale < 0.1 || scale > 1.0) scale = 0.8;
-    return {
-      width: "device-width",
-      initialScale: scale,
-      minimumScale: scale,
-      maximumScale: scale,
-      userScalable: false,
-    };
-  }
-
-  return {
-    width: "device-width",
-    initialScale: 1,
-    viewportFit: "cover",
-  };
-}
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 // Inline script that runs BEFORE first paint to set viewport zoom
 // Native script guarantees synchronicity. We mutate the exact tag.
@@ -84,8 +62,19 @@ const viewportZoomScript = `
       overrideMeta.id = 'mh-tablet-viewport';
       overrideMeta.content = 'width=device-width, initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=' + scale + ', user-scalable=0';
       document.head.appendChild(overrideMeta);
+      
+      // Give iOS WebView a frame to process the layout shift, then unhide body
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          document.documentElement.classList.add('mh-zoom-ready');
+        });
+      });
+    } else {
+      document.documentElement.classList.add('mh-zoom-ready');
     }
-  } catch(e) {}
+  } catch(e) {
+    document.documentElement.classList.add('mh-zoom-ready');
+  }
 })();
 `;
 
@@ -101,6 +90,18 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          html { background-color: #FAFAFA !important; }
+          @media (min-width: 768px) and (max-width: 1380px) {
+            html:not(.mh-zoom-ready) body {
+              opacity: 0 !important;
+              animation: zoom-fallback-show 1ms 1s forwards;
+            }
+          }
+          @keyframes zoom-fallback-show {
+            to { opacity: 1 !important; }
+          }
+        `}} />
         {/* We use a native synchronous script to avoid Next.js _next_s deferred array load */}
         <script
           suppressHydrationWarning
