@@ -90,6 +90,20 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* We hide the body but KEEP the html background colored so we don't flash the OS Dark/Light Native WebView Background ! */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          html { background-color: #FAFAFA !important; }
+          @media (min-width: 768px) and (max-width: 1380px) {
+            html:not(.mh-zoom-ready) body {
+              opacity: 0 !important;
+              /* Fallback: if JS fails, show page after 1.5 seconds */
+              animation: zoom-fallback-show 1ms 1.5s forwards;
+            }
+          }
+          @keyframes zoom-fallback-show {
+            to { opacity: 1 !important; }
+          }
+        `}} />
         {/* We use a native synchronous script to avoid Next.js _next_s deferred array load */}
         <script
           suppressHydrationWarning

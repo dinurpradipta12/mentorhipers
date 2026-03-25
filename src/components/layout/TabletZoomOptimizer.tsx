@@ -24,15 +24,16 @@ export function TabletZoomOptimizer() {
 
       if (isTablet) {
         const scale = zoom.toFixed(2);
-        viewport.setAttribute(
-          "content",
-          // Use viewport-fit=auto (NOT cover) so iOS respects safe-area-insets
-          // and content doesn't slide under the status bar when zoomed
-          `width=device-width, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale=${scale}, user-scalable=0`
-        );
+        const newContent = `width=device-width, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale=${scale}, user-scalable=0`;
+        if (viewport.getAttribute("content") !== newContent) {
+          viewport.setAttribute("content", newContent);
+        }
         document.documentElement.style.setProperty("--tablet-zoom", scale);
       } else {
-        viewport.setAttribute("content", "width=device-width, initial-scale=1, viewport-fit=cover");
+        const newContent = "width=device-width, initial-scale=1, viewport-fit=cover";
+        if (viewport.getAttribute("content") !== newContent) {
+          viewport.setAttribute("content", newContent);
+        }
         document.documentElement.style.setProperty("--tablet-zoom", "1.0");
       }
     };
