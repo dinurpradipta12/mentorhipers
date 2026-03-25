@@ -38,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 // Inline script that runs BEFORE first paint to set viewport zoom
-// This prevents the glitch caused by TabletZoomOptimizer running after hydration
+// CSS will hide the HTML until this script adds 'mh-zoom-ready' to prevent any flicker
 const viewportZoomScript = `
 (function() {
   try {
@@ -48,20 +48,26 @@ const viewportZoomScript = `
     else if (zoom < 0.1 || zoom > 1.0) zoom = 0.8;
     var w = window.innerWidth || screen.width;
     if (w >= 768 && w <= 1380) {
-      // Prevent FOUC/Glitch on PWA by briefly hiding while the browser applies zoom
-      document.documentElement.style.display = 'none';
       var scale = zoom.toFixed(2);
       var meta = document.querySelector('meta[name="viewport"]');
       if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
-      // Removed viewport-fit=cover so it aligns with TabletZoomOptimizer
       meta.content = 'width=device-width, initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=' + scale + ', user-scalable=0';
       
-      // Force repaint with new scale before un-hiding
-      setTimeout(function() {
-        document.documentElement.style.display = '';
-      }, 30);
+      // Wait a tiny bit (2 frames + 50ms) for iOS Safari WebView to apply the layout shift, then reveal UI
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          setTimeout(function() {
+            document.documentElement.classList.add('mh-zoom-ready');
+            document.documentElement.style.display = '';
+          }, 50);
+        });
+      });
+    } else {
+      document.documentElement.classList.add('mh-zoom-ready');
     }
-  } catch(e) {}
+  } catch(e) {
+    document.documentElement.classList.add('mh-zoom-ready');
+  }
 })();
 `;
 
@@ -76,6 +82,20 @@ export default function RootLayout({
       className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
     >
       <head>
+        {/* CSS to perfectly hide any flicker on tablets while zoom applies. Mobile and Desktop are unchanged */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media (min-width: 768px) and (max-width: 1380px) {
+            html:not(.mh-zoom-ready) {
+              opacity: 0 !important;
+              visibility: hidden !important;
+              /* Fallback: if JS fails, show page after 1.5 seconds */
+              animation: zoom-fallback-show 1ms 1.5s forwards;
+            }
+          }
+          @keyframes zoom-fallback-show {
+            to { opacity: 1 !important; visibility: visible !important; }
+          }
+        `}} />
         {/* Pre-paint viewport zoom — must run before any render to prevent glitch */}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" suppressHydrationWarning />
         <Script id="viewport-zoom" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: viewportZoomScript }} />
