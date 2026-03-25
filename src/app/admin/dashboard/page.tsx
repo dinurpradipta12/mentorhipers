@@ -522,10 +522,10 @@ export default function AdminDashboardV2() {
                                     <div className="space-y-2">
                                        <p className="text-[10px] font-black text-[#202224] opacity-30 uppercase tracking-[0.2em]">Mentoring Period</p>
                                        <p className="text-[13px] font-extrabold text-[#202224] text-left">{formatDate(client.start_date)} — {formatDate(client.end_date)}</p>
-                                       <p className="text-[11px] font-bold text-[#4880FF] text-left inline-flex items-center gap-2">
-                                          <div className="w-1.5 h-1.5 rounded-full bg-[#4880FF] animate-pulse" />
+                                       <span className="text-[11px] font-bold text-[#4880FF] text-left inline-flex items-center gap-2">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-[#4880FF] animate-pulse inline-block" />
                                           {calculateRemainingWeeks(client.end_date)} tersisa
-                                       </p>
+                                       </span>
                                     </div>
                                  </div>
 
