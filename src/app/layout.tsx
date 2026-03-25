@@ -6,12 +6,7 @@ import { AppUpdateNotifier } from "@/components/layout/AppUpdateNotifier";
 import { AppGlobalConfig } from "@/components/layout/AppGlobalConfig";
 import { TabletZoomOptimizer } from "@/components/layout/TabletZoomOptimizer";
 
-export const viewport: Viewport = {
-  themeColor: '#4880FF',
-  width: 'device-width',
-  initialScale: 1,
-  viewportFit: 'cover',
-}
+// Viewport is now dynamically controlled by TabletZoomOptimizer.tsx for global zoom consistency
 
 const inter = Inter({
   variable: "--font-inter",

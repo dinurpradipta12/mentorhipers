@@ -14,24 +14,19 @@ export function TabletZoomOptimizer() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // 1. Core Scaling Logic
+    const getZoomValue = () => {
+      const stored = localStorage.getItem("tablet_zoom_value") || "0.8";
+      let val = parseFloat(stored);
+      if (val > 1.0 && val <= 100) val /= 100;
+      else if (val < 0.1 || val > 1.0) val = 0.8;
+      return val.toFixed(2);
+    };
+
     const applyScaling = () => {
-      // 1. Get current setting (default to 0.8)
-      // Read from localStorage which acts as our system preference
-      const storedZoom = localStorage.getItem("tablet_zoom_value") || "0.8";
-      let zoomFactor = parseFloat(storedZoom);
-
-      // Robust detect: handles both 0.8 (decimal) and 80 (percentage)
-      if (zoomFactor > 1.0 && zoomFactor <= 100) {
-        zoomFactor = zoomFactor / 100;
-      } else if (zoomFactor < 0.1 || zoomFactor > 1.0) {
-        // Safety fallback if value is corrupted or out of range
-        zoomFactor = 0.8;
-      }
-
-      // 2. Target Tablet Range (Standard 768px up to narrow laptops 1380px)
+      const zoom = getZoomValue();
       const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1380;
-
-      // 3. Viewport Manipulation
+      
       let viewport = document.querySelector('meta[name="viewport"]');
       if (!viewport) {
         viewport = document.createElement('meta');
@@ -40,16 +35,17 @@ export function TabletZoomOptimizer() {
       }
 
       if (isTablet) {
-        const scaleStr = zoomFactor.toFixed(2);
-        // Force system-level zoom using multiple viewport scale properties
-        viewport.setAttribute('content', `width=device-width, initial-scale=${scaleStr}, minimum-scale=${scaleStr}, maximum-scale=${scaleStr}, user-scalable=0, viewport-fit=cover`);
-        
-        // Sync CSS variable for components using it as multiplier
-        document.documentElement.style.setProperty("--tablet-zoom", scaleStr);
-        console.log(`[TabletZoom] Global Scaling: ${Math.round(zoomFactor * 100)}% forced via viewport.`);
+        const content = `width=device-width, initial-scale=${zoom}, minimum-scale=${zoom}, maximum-scale=${zoom}, user-scalable=0, viewport-fit=cover`;
+        if (viewport.getAttribute('content') !== content) {
+          viewport.setAttribute('content', content);
+          console.log(`[TabletZoom] Forced Scale: ${zoom}`);
+        }
+        document.documentElement.style.setProperty("--tablet-zoom", zoom);
       } else {
-        // Restore standard view on desktop/mobile
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover');
+        const defaultContent = 'width=device-width, initial-scale=1, viewport-fit=cover';
+        if (viewport.getAttribute('content') !== defaultContent) {
+           viewport.setAttribute('content', defaultContent);
+        }
         document.documentElement.style.setProperty("--tablet-zoom", "1.0");
       }
     };
@@ -57,24 +53,40 @@ export function TabletZoomOptimizer() {
     // Initial apply
     applyScaling();
 
-    // Listen for orientation/resize changes
-    window.addEventListener('resize', applyScaling);
-    
-    // Listen for storage changes from other tabs/pages
-    const handleStorageChange = (e: StorageEvent) => {
-       if (e.key === 'tablet_zoom_value') {
-          applyScaling();
-       }
-    };
-    window.addEventListener('storage', handleStorageChange);
+    // 2. Aggressive Persistence
+    // Watch for ANY changes to the viewport meta tag (e.g. from Next.js router)
+    const observer = new MutationObserver((mutations) => {
+       mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'content') {
+             applyScaling();
+          }
+       });
+    });
 
-    // Custom event for instant same-tab updates (e.g. from Settings slider)
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (viewportMeta) {
+       observer.observe(viewportMeta, { attributes: true });
+    } else {
+       // If meta doesn't exist yet, watch the entire head for additions
+       observer.observe(document.head, { childList: true, subtree: true });
+    }
+
+    // 3. Event Listeners
+    window.addEventListener('resize', applyScaling);
+    window.addEventListener('storage', (e) => {
+       if (e.key === 'tablet_zoom_value') applyScaling();
+    });
     window.addEventListener('mh_zoom_update', applyScaling);
 
+    // Re-apply several times after navigation to clear any racing conditions
+    const timers = [10, 50, 100, 250, 500].map(ms => setTimeout(applyScaling, ms));
+
     return () => {
+       observer.disconnect();
        window.removeEventListener('resize', applyScaling);
-       window.removeEventListener('storage', handleStorageChange);
+       window.removeEventListener('storage', applyScaling);
        window.removeEventListener('mh_zoom_update', applyScaling);
+       timers.forEach(clearTimeout);
     };
   }, [pathname]);
 
