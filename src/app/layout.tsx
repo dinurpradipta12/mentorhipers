@@ -1,12 +1,10 @@
 import React from "react";
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppUpdateNotifier } from "@/components/layout/AppUpdateNotifier";
 import { AppGlobalConfig } from "@/components/layout/AppGlobalConfig";
 import { TabletZoomOptimizer } from "@/components/layout/TabletZoomOptimizer";
-
-// Viewport is now dynamically controlled by TabletZoomOptimizer.tsx for global zoom consistency
 
 const inter = Inter({
   variable: "--font-inter",
@@ -38,6 +36,26 @@ export const metadata: Metadata = {
   },
 };
 
+// Inline script that runs BEFORE first paint to set viewport zoom
+// This prevents the glitch caused by TabletZoomOptimizer running after hydration
+const viewportZoomScript = `
+(function() {
+  try {
+    var stored = localStorage.getItem('tablet_zoom_value') || '0.8';
+    var zoom = parseFloat(stored);
+    if (zoom > 1.0 && zoom <= 100) zoom /= 100;
+    else if (zoom < 0.1 || zoom > 1.0) zoom = 0.8;
+    var w = window.innerWidth || screen.width;
+    if (w >= 768 && w <= 1380) {
+      var scale = zoom.toFixed(2);
+      var meta = document.querySelector('meta[name="viewport"]');
+      if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
+      meta.content = 'width=device-width, initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=' + scale + ', user-scalable=0';
+    }
+  } catch(e) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -48,6 +66,11 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
     >
+      <head>
+        {/* Pre-paint viewport zoom — must run before any render to prevent glitch */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <script dangerouslySetInnerHTML={{ __html: viewportZoomScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]">
         {children}
         <AppGlobalConfig />
