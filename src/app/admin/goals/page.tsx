@@ -221,7 +221,7 @@ export default function AdminGoalsPage() {
       if (!error && selectedClient) fetchTasks(selectedClient.id);
    };
 
-   if (!isLoaded) return null;
+   // We remove the return null so the page shell renders instantly during client-side navigation
 
    return (
       <div className="min-h-screen bg-[#F5F6FA] flex overflow-x-hidden font-sans">
