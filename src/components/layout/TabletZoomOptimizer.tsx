@@ -10,24 +10,72 @@ import { usePathname } from "next/navigation";
  * This ensures EVERYTHING (including fixed sidebars and headers) scales
  * proportionally on tablet devices without breaking layouts.
  */
-import { applyViewportScaling } from "@/lib/viewport-scaling";
-
-/**
- * TabletZoomOptimizer
- * 
- * Re-runs whenever the user navigates (pathname change) or resizes the window
- * to ensure scaling is consistent across different pages and orientations.
- */
 export function TabletZoomOptimizer() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Apply on load and pathname change
-    applyViewportScaling();
+    const applyScaling = () => {
+      // 1. Get current setting (default to 0.8)
+      // Read from localStorage which acts as our system preference
+      const storedZoom = localStorage.getItem("tablet_zoom_value") || "0.8";
+      let zoomFactor = parseFloat(storedZoom);
 
-    // Re-apply on window resize to handle orientation changes
-    window.addEventListener('resize', () => applyViewportScaling());
-    return () => window.removeEventListener('resize', () => applyViewportScaling());
+      // Robust detect: handles both 0.8 (decimal) and 80 (percentage)
+      if (zoomFactor > 1.0 && zoomFactor <= 100) {
+        zoomFactor = zoomFactor / 100;
+      } else if (zoomFactor < 0.1 || zoomFactor > 1.0) {
+        // Safety fallback if value is corrupted or out of range
+        zoomFactor = 0.8;
+      }
+
+      // 2. Target Tablet Range (Standard 768px up to narrow laptops 1380px)
+      const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1380;
+
+      // 3. Viewport Manipulation
+      let viewport = document.querySelector('meta[name="viewport"]');
+      if (!viewport) {
+        viewport = document.createElement('meta');
+        viewport.setAttribute('name', 'viewport');
+        document.head.appendChild(viewport);
+      }
+
+      if (isTablet) {
+        const scaleStr = zoomFactor.toFixed(2);
+        // Force system-level zoom using multiple viewport scale properties
+        viewport.setAttribute('content', `width=device-width, initial-scale=${scaleStr}, minimum-scale=${scaleStr}, maximum-scale=${scaleStr}, user-scalable=0, viewport-fit=cover`);
+        
+        // Sync CSS variable for components using it as multiplier
+        document.documentElement.style.setProperty("--tablet-zoom", scaleStr);
+        console.log(`[TabletZoom] Global Scaling: ${Math.round(zoomFactor * 100)}% forced via viewport.`);
+      } else {
+        // Restore standard view on desktop/mobile
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover');
+        document.documentElement.style.setProperty("--tablet-zoom", "1.0");
+      }
+    };
+
+    // Initial apply
+    applyScaling();
+
+    // Listen for orientation/resize changes
+    window.addEventListener('resize', applyScaling);
+    
+    // Listen for storage changes from other tabs/pages
+    const handleStorageChange = (e: StorageEvent) => {
+       if (e.key === 'tablet_zoom_value') {
+          applyScaling();
+       }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Custom event for instant same-tab updates (e.g. from Settings slider)
+    window.addEventListener('mh_zoom_update', applyScaling);
+
+    return () => {
+       window.removeEventListener('resize', applyScaling);
+       window.removeEventListener('storage', handleStorageChange);
+       window.removeEventListener('mh_zoom_update', applyScaling);
+    };
   }, [pathname]);
 
   return null;

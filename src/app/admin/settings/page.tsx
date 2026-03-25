@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { applyViewportScaling } from "@/lib/viewport-scaling";
 import AdminHeader from "@/components/layout/AdminHeader";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 
@@ -234,8 +233,17 @@ export default function AppSettingsCMS() {
                               onChange={(e) => {
                                  const val = e.target.value;
                                  setSettings({ ...settings, tablet_zoom: val });
+                                 document.documentElement.style.setProperty('--tablet-zoom', val);
                                  localStorage.setItem('tablet_zoom_value', val);
-                                 applyViewportScaling(val);
+                                 window.dispatchEvent(new Event('mh_zoom_update'));
+
+                                 // Immediate Viewport Scaling Update
+                                 const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1380;
+                                 let viewportMeta = document.querySelector('meta[name="viewport"]');
+                                 if (viewportMeta) {
+                                    const scale = isTablet ? val : "1.0";
+                                    viewportMeta.setAttribute('content', `width=device-width, initial-scale=${scale}, minimum-scale=${scale}, viewport-fit=cover`);
+                                 }
                               }}
                               className="flex-1 h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#4880FF]"
                            />
@@ -253,8 +261,16 @@ export default function AppSettingsCMS() {
                                  key={preset.value}
                                  onClick={() => {
                                     setSettings({ ...settings, tablet_zoom: preset.value });
+                                    document.documentElement.style.setProperty('--tablet-zoom', preset.value);
                                     localStorage.setItem('tablet_zoom_value', preset.value);
-                                    applyViewportScaling(preset.value);
+                                    window.dispatchEvent(new Event('mh_zoom_update'));
+
+                                    const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1380;
+                                    let viewportMeta = document.querySelector('meta[name="viewport"]');
+                                    if (viewportMeta) {
+                                       const scale = isTablet ? preset.value : "1.0";
+                                       viewportMeta.setAttribute('content', `width=device-width, initial-scale=${scale}, minimum-scale=${scale}, viewport-fit=cover`);
+                                    }
                                  }}
                                  className={`text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all ${settings.tablet_zoom === preset.value
                                        ? "bg-[#4880FF] text-white shadow-sm"
