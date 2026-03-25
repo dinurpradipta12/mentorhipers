@@ -67,8 +67,14 @@
   --tablet-zoom: 0.8;
 }
 
-@media (min-width: 768px) and (max-width: 1380px) {
-  /* Viewport scaling is handled via TabletZoomOptimizer.tsx script for total content scaling (including text) */
+/* 
+ * Prevent iOS Safari from auto-boosting fonts when zoom is applied.
+ * Without this, fonts stay at "readable" size even when we scale down,
+ * which causes layout to look cramped with oversized text.
+ */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 .sidebar-logo-container {
