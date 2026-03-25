@@ -67,16 +67,6 @@
   --tablet-zoom: 0.8;
 }
 
-/* 
- * Prevent iOS Safari from auto-boosting fonts when zoom is applied.
- * Without this, fonts stay at "readable" size even when we scale down,
- * which causes layout to look cramped with oversized text.
- */
-html {
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-}
-
 .sidebar-logo-container {
   min-height: 110px;
   display: flex;
