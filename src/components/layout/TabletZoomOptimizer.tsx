@@ -14,6 +14,10 @@ export function TabletZoomOptimizer() {
       else if (zoom < 0.1 || zoom > 1.0) zoom = 0.8;
 
       const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1380;
+      
+      // Save for Server-Side Viewport Rendering to eliminate PWA flicker
+      document.cookie = `mh_is_tablet=${isTablet}; path=/; max-age=31536000`;
+      document.cookie = `tablet_zoom_value=${zoom}; path=/; max-age=31536000`;
 
       let viewport = document.querySelector('meta[id="mh-tablet-viewport"]') || document.querySelector('meta[name="viewport"]');
       if (!viewport) {
