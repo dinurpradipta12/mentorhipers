@@ -15,7 +15,7 @@ export function TabletZoomOptimizer() {
 
       const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1380;
 
-      let viewport = document.querySelector('meta[name="viewport"]');
+      let viewport = document.querySelector('meta[id="mh-tablet-viewport"]') || document.querySelector('meta[name="viewport"]');
       if (!viewport) {
         viewport = document.createElement("meta");
         viewport.setAttribute("name", "viewport");

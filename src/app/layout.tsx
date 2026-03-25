@@ -1,6 +1,4 @@
-import React from "react";
-import type { Metadata } from "next";
-import Script from "next/script";
+import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AppUpdateNotifier } from "@/components/layout/AppUpdateNotifier";
@@ -37,8 +35,14 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 // Inline script that runs BEFORE first paint to set viewport zoom
-// CSS will hide the HTML until this script adds 'mh-zoom-ready' to prevent any flicker
+// Native script guarantees synchronicity. We mutate the exact tag.
 const viewportZoomScript = `
 (function() {
   try {
@@ -48,26 +52,24 @@ const viewportZoomScript = `
     else if (zoom < 0.1 || zoom > 1.0) zoom = 0.8;
     var w = window.innerWidth || screen.width;
     if (w >= 768 && w <= 1380) {
+      document.documentElement.style.display = 'none';
       var scale = zoom.toFixed(2);
-      var meta = document.querySelector('meta[name="viewport"]');
-      if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
-      meta.content = 'width=device-width, initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=' + scale + ', user-scalable=0';
       
-      // Wait a tiny bit (2 frames + 50ms) for iOS Safari WebView to apply the layout shift, then reveal UI
+      // Override Next.js's viewport meta by appending our own at the very end of head
+      // This ensures 100% priority and avoids React hydration restoring the original
+      var overrideMeta = document.createElement('meta');
+      overrideMeta.name = 'viewport';
+      overrideMeta.id = 'mh-tablet-viewport';
+      overrideMeta.content = 'width=device-width, initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=' + scale + ', user-scalable=0';
+      document.head.appendChild(overrideMeta);
+      
       requestAnimationFrame(function() {
         requestAnimationFrame(function() {
-          setTimeout(function() {
-            document.documentElement.classList.add('mh-zoom-ready');
-            document.documentElement.style.display = '';
-          }, 50);
+          document.documentElement.style.display = '';
         });
       });
-    } else {
-      document.documentElement.classList.add('mh-zoom-ready');
     }
-  } catch(e) {
-    document.documentElement.classList.add('mh-zoom-ready');
-  }
+  } catch(e) {}
 })();
 `;
 
@@ -80,27 +82,16 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
+      suppressHydrationWarning
     >
       <head>
-        {/* CSS to perfectly hide any flicker on tablets while zoom applies. Mobile and Desktop are unchanged */}
-        <style dangerouslySetInnerHTML={{ __html: `
-          @media (min-width: 768px) and (max-width: 1380px) {
-            html:not(.mh-zoom-ready) {
-              opacity: 0 !important;
-              visibility: hidden !important;
-              /* Fallback: if JS fails, show page after 1.5 seconds */
-              animation: zoom-fallback-show 1ms 1.5s forwards;
-            }
-          }
-          @keyframes zoom-fallback-show {
-            to { opacity: 1 !important; visibility: visible !important; }
-          }
-        `}} />
-        {/* Pre-paint viewport zoom — must run before any render to prevent glitch */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" suppressHydrationWarning />
-        <Script id="viewport-zoom" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: viewportZoomScript }} />
+        {/* We use a native synchronous script to avoid Next.js _next_s deferred array load */}
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: viewportZoomScript }}
+        />
       </head>
-      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]">
+      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]" suppressHydrationWarning>
         {children}
         <AppGlobalConfig />
         <AppUpdateNotifier />
