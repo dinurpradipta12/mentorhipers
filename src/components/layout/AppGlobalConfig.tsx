@@ -2,12 +2,13 @@
 
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { applyViewportScaling } from "@/lib/viewport-scaling";
 
 export const AppGlobalConfig = () => {
   useEffect(() => {
     const applyConfig = async () => {
       const [settingsRes, mentorRes] = await Promise.all([
-        supabase.from('app_settings').select('app_name, app_logo, app_favicon').eq('id', 1).single(),
+        supabase.from('app_settings').select('app_name, app_logo, app_favicon, tablet_zoom').eq('id', 1).single(),
         supabase.from('mentor_profile').select('name, avatar').eq('id', 1).single()
       ]);
 
@@ -33,10 +34,11 @@ export const AppGlobalConfig = () => {
           };
           updateFavicon(data.app_favicon);
         }
+        
         // TABLET ZOOM SYNC
-        const storedZoom = localStorage.getItem('tablet_zoom_value') || "0.8";
-        document.documentElement.style.setProperty('--tablet-zoom', storedZoom);
+        const storedZoom = data.tablet_zoom || localStorage.getItem('tablet_zoom_value') || "0.8";
         localStorage.setItem('tablet_zoom_value', storedZoom);
+        applyViewportScaling(storedZoom);
       }
 
       if (mentorRes.data) {
@@ -59,8 +61,8 @@ export const AppGlobalConfig = () => {
         }
         if (payload.new.app_logo) localStorage.setItem('app_logo', payload.new.app_logo);
         if (payload.new.tablet_zoom) {
-          document.documentElement.style.setProperty('--tablet-zoom', payload.new.tablet_zoom);
           localStorage.setItem('tablet_zoom_value', payload.new.tablet_zoom);
+          applyViewportScaling(payload.new.tablet_zoom);
         }
         if (payload.new.app_favicon) {
           localStorage.setItem('app_favicon', payload.new.app_favicon);
