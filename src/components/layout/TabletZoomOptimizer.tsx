@@ -15,29 +15,13 @@ export function TabletZoomOptimizer() {
 
       const isTablet = window.innerWidth >= 768 && window.innerWidth <= 1380;
       
-      // Save for Server-Side Viewport Rendering to eliminate PWA flicker
+      // Save for Server-Side or Client-Side memory
       document.cookie = `mh_is_tablet=${isTablet}; path=/; max-age=31536000`;
       document.cookie = `tablet_zoom_value=${zoom}; path=/; max-age=31536000`;
 
-      let viewport = document.querySelector('meta[id="mh-tablet-viewport"]') || document.querySelector('meta[name="viewport"]');
-      if (!viewport) {
-        viewport = document.createElement("meta");
-        viewport.setAttribute("name", "viewport");
-        document.head.appendChild(viewport);
-      }
-
       if (isTablet) {
-        const scale = zoom.toFixed(2);
-        const newContent = `width=device-width, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale=${scale}, user-scalable=0`;
-        if (viewport.getAttribute("content") !== newContent) {
-          viewport.setAttribute("content", newContent);
-        }
-        document.documentElement.style.setProperty("--tablet-zoom", scale);
+        document.documentElement.style.setProperty("--tablet-zoom", zoom.toFixed(2));
       } else {
-        const newContent = "width=device-width, initial-scale=1, viewport-fit=cover";
-        if (viewport.getAttribute("content") !== newContent) {
-          viewport.setAttribute("content", newContent);
-        }
         document.documentElement.style.setProperty("--tablet-zoom", "1.0");
       }
     };

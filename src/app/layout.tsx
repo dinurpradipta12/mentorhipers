@@ -41,43 +41,6 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-// Inline script that runs BEFORE first paint to set viewport zoom
-// Native script guarantees synchronicity. We mutate the exact tag.
-const viewportZoomScript = `
-(function() {
-  try {
-    var stored = localStorage.getItem('tablet_zoom_value') || '0.8';
-    var zoom = parseFloat(stored);
-    if (zoom > 1.0 && zoom <= 100) zoom /= 100;
-    else if (zoom < 0.1 || zoom > 1.0) zoom = 0.8;
-    var w = window.innerWidth || screen.width;
-    
-    if (w >= 768 && w <= 1380) {
-      var scale = zoom.toFixed(2);
-      
-      // Override Next.js's viewport meta by appending our own at the very end of head
-      // This ensures 100% priority and avoids React hydration restoring the original
-      var overrideMeta = document.createElement('meta');
-      overrideMeta.name = 'viewport';
-      overrideMeta.id = 'mh-tablet-viewport';
-      overrideMeta.content = 'width=device-width, initial-scale=' + scale + ', minimum-scale=' + scale + ', maximum-scale=' + scale + ', user-scalable=0';
-      document.head.appendChild(overrideMeta);
-      
-      // Give iOS WebView a frame to process the layout shift, then unhide body
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() {
-          document.documentElement.classList.add('mh-zoom-ready');
-        });
-      });
-    } else {
-      document.documentElement.classList.add('mh-zoom-ready');
-    }
-  } catch(e) {
-    document.documentElement.classList.add('mh-zoom-ready');
-  }
-})();
-`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -87,28 +50,8 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
-      suppressHydrationWarning
     >
-      <head>
-        <style dangerouslySetInnerHTML={{ __html: `
-          html { background-color: #FAFAFA !important; }
-          @media (min-width: 768px) and (max-width: 1380px) {
-            html:not(.mh-zoom-ready) body {
-              opacity: 0 !important;
-              animation: zoom-fallback-show 1ms 1s forwards;
-            }
-          }
-          @keyframes zoom-fallback-show {
-            to { opacity: 1 !important; }
-          }
-        `}} />
-        {/* We use a native synchronous script to avoid Next.js _next_s deferred array load */}
-        <script
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: viewportZoomScript }}
-        />
-      </head>
-      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]" suppressHydrationWarning>
+      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]">
         {children}
         <AppGlobalConfig />
         <AppUpdateNotifier />
