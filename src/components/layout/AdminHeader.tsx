@@ -82,9 +82,9 @@ export default function AdminHeader({ title, isSidebarOpen, toggleSidebar, showS
 
   return (
     <div 
-      className="fixed top-0 z-40 px-6 py-4 pointer-events-none transition-all duration-300" 
+      className="fixed top-0 z-40 px-6 pointer-events-none transition-all duration-300" 
       style={{ 
-        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
+        paddingTop: 'calc(env(safe-area-inset-top, 20px) + 20px)',
         left: isSidebarOpen ? '240px' : '80px',
         width: isSidebarOpen ? 'calc(100% - 240px)' : 'calc(100% - 80px)'
       }}

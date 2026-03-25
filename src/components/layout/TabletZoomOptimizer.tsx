@@ -26,7 +26,9 @@ export function TabletZoomOptimizer() {
         const scale = zoom.toFixed(2);
         viewport.setAttribute(
           "content",
-          `width=device-width, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale=${scale}, user-scalable=0, viewport-fit=cover`
+          // Use viewport-fit=auto (NOT cover) so iOS respects safe-area-insets
+          // and content doesn't slide under the status bar when zoomed
+          `width=device-width, initial-scale=${scale}, minimum-scale=${scale}, maximum-scale=${scale}, user-scalable=0`
         );
         document.documentElement.style.setProperty("--tablet-zoom", scale);
       } else {
