@@ -1,34 +1,21 @@
-"use client";
-
 import dynamic from "next/dynamic";
 import React from "react";
 
-// THIS IS THE UNIVERSAL V2 CATCH-ALL SHELL
-// By using a single [[...slug]] catch-all route, we reduce 8 Edge Functions into ONE module (~1.6MB).
-// This is the ONLY way to beat the Cloudflare Free Plan 3MB total deployment limit.
+// THIS IS THE UNIVERSAL V2 CATCH-ALL ROUTER
+// We maintain Server Component status to resolve params on the server (fixing 404s).
+// To comply with build rules, we remove 'ssr: false' but keep 'dynamic' for code splitting.
 export const runtime = "edge";
 
-const SelectionContent = dynamic(() => import("../_core/SelectionContent"), { ssr: false });
-const LoginContent = dynamic(() => import("../_core/LoginContent"), { ssr: false });
-const BatchListContent = dynamic(() => import("../_core/BatchListContent"), { ssr: false });
-const BatchContent = dynamic(() => import("../_core/BatchContent"), { ssr: false });
-const AgencyListContent = dynamic(() => import("../_core/AgencyListContent"), { ssr: false });
-const AgencyContent = dynamic(() => import("../_core/AgencyContent"), { ssr: false });
-const PortalContent = dynamic(() => import("../_core/PortalContent"), { ssr: false });
+const SelectionContent = dynamic(() => import("../_core/SelectionContent"));
+const LoginContent = dynamic(() => import("../_core/LoginContent"));
+const BatchListContent = dynamic(() => import("../_core/BatchListContent"));
+const BatchContent = dynamic(() => import("../_core/BatchContent"));
+const AgencyListContent = dynamic(() => import("../_core/AgencyListContent"));
+const AgencyContent = dynamic(() => import("../_core/AgencyContent"));
+const PortalContent = dynamic(() => import("../_core/PortalContent"));
 
-export default function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
-  const [resolvedParams, setResolvedParams] = React.useState<{ slug?: string[] } | null>(null);
-
-  React.useEffect(() => {
-    params.then(setResolvedParams);
-  }, [params]);
-
-  if (!resolvedParams) return (
-     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
-     </div>
-  );
-
+export default async function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const resolvedParams = await params;
   const slug = resolvedParams.slug || [];
 
   // Routing Logic
