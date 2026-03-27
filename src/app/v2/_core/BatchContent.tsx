@@ -51,7 +51,7 @@ import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { registerStudentAction, updateWorkspaceSchedulesAction } from "../../actions";
+import { registerStudentAction, updateWorkspaceSchedulesAction } from "../actions";
 
  function Countdown({ targetDate }: { targetDate: string }) {
    const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
