@@ -1,21 +1,24 @@
+"use client";
+
 import dynamic from "next/dynamic";
-import React from "react";
+import React, { use } from "react";
 
 // THIS IS THE UNIVERSAL V2 CATCH-ALL ROUTER
-// We maintain Server Component status to resolve params on the server (fixing 404s).
-// To comply with build rules, we remove 'ssr: false' but keep 'dynamic' for code splitting.
+// We use "use client" so that we can use ssr: false for child components (reducing edge size).
+// We use React.use(params) to resolve the slug during render, which fixes the Server Action 404
+// because the slug becomes available during the server-side action resolution phase.
 export const runtime = "edge";
 
-const SelectionContent = dynamic(() => import("../_core/SelectionContent"));
-const LoginContent = dynamic(() => import("../_core/LoginContent"));
-const BatchListContent = dynamic(() => import("../_core/BatchListContent"));
-const BatchContent = dynamic(() => import("../_core/BatchContent"));
-const AgencyListContent = dynamic(() => import("../_core/AgencyListContent"));
-const AgencyContent = dynamic(() => import("../_core/AgencyContent"));
-const PortalContent = dynamic(() => import("../_core/PortalContent"));
+const SelectionContent = dynamic(() => import("../_core/SelectionContent"), { ssr: false });
+const LoginContent = dynamic(() => import("../_core/LoginContent"), { ssr: false });
+const BatchListContent = dynamic(() => import("../_core/BatchListContent"), { ssr: false });
+const BatchContent = dynamic(() => import("../_core/BatchContent"), { ssr: false });
+const AgencyListContent = dynamic(() => import("../_core/AgencyListContent"), { ssr: false });
+const AgencyContent = dynamic(() => import("../_core/AgencyContent"), { ssr: false });
+const PortalContent = dynamic(() => import("../_core/PortalContent"), { ssr: false });
 
-export default async function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
-  const resolvedParams = await params;
+export default function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const resolvedParams = use(params);
   const slug = resolvedParams.slug || [];
 
   // Routing Logic
