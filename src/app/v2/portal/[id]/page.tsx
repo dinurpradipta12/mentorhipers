@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import React from "react";
 
+export const runtime = "edge";
+
 const PortalContent = dynamic(() => import("./PortalContent"), {
   ssr: false,
   loading: () => (
@@ -20,4 +22,3 @@ const PortalContent = dynamic(() => import("./PortalContent"), {
 export default function StudentPortalPage({ params }: { params: Promise<{ id: string }> }) {
   return <PortalContent params={params} />;
 }
-// Force Change Fri Mar 27 23:38:46 WITA 2026

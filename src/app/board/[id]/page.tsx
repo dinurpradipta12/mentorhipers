@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import React from "react";
 
+export const runtime = "edge";
+
 const BoardContent = dynamic(() => import("./BoardContent"), {
   ssr: false,
   loading: () => (

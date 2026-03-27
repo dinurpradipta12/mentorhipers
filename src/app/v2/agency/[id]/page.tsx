@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import React from "react";
 
+export const runtime = "edge";
+
 const AgencyContent = dynamic(() => import("./AgencyContent"), {
   ssr: false,
   loading: () => (

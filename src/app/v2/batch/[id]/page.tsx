@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import React from "react";
 
+export const runtime = "edge";
+
 const BatchContent = dynamic(() => import("./BatchContent"), {
   ssr: false,
   loading: () => (
