@@ -1,0 +1,1 @@
+ALTER TABLE v2_submissions ADD COLUMN IF NOT EXISTS is_feedback_read BOOLEAN DEFAULT FALSE;

@@ -2885,8 +2885,8 @@ const MentoringTimelineHub = ({ data, isAdmin, onUpdate }: any) => {
               {isAdmin ? (
                 <textarea
                   className="flex-1 min-h-[140px] text-slate-600 text-[13px] leading-relaxed font-sans font-bold p-6 rounded-[2rem] bg-slate-50 border border-slate-200 outline-none focus:ring-2 ring-accent/20 transition-all placeholder:font-medium placeholder:text-slate-400 resize-none no-scrollbar"
-                  value={data.mentors_note || ""}
-                  onChange={(e) => onUpdate("mentors_note", e.target.value)}
+                  value={draftNote}
+                  onChange={(e) => setDraftNote(e.target.value)}
                   placeholder="Write an encouraging note or feedback for your mentee..."
                 />
               ) : (
@@ -2896,10 +2896,16 @@ const MentoringTimelineHub = ({ data, isAdmin, onUpdate }: any) => {
               )}
 
               <button
-                onClick={() => !isAdmin && window.dispatchEvent(new Event('openBookingModal'))}
+                onClick={() => {
+                   if (isAdmin) {
+                      handlePublish();
+                   } else {
+                      window.dispatchEvent(new Event('openBookingModal'));
+                   }
+                }}
                 className={`mt-6 w-full h-[56px] rounded-[1.5rem] font-black text-[13px] uppercase tracking-wider shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 ${isAdmin ? 'bg-[#4880FF] text-white hover:bg-blue-600 shadow-blue-500/20' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/20'}`}
               >
-                {isAdmin ? "Apply Changes" : "Book Consultation"}
+                {isAdmin ? (isSyncing ? "Saving..." : "Apply Changes") : "Book Consultation"}
               </button>
             </div>
           </Card>

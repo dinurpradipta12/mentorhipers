@@ -107,8 +107,8 @@ export default function AdminSidebar({ isSidebarOpen, appSettings }: AdminSideba
          />
          
          <div className="mt-auto mb-10 space-y-2">
-            <div className={`px-4 mb-4 ${!isSidebarOpen ? 'px-2' : ''}`}>
-               <Link href="/v2" className={`flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all overflow-hidden relative group ${!isSidebarOpen ? 'justify-center px-0' : ''}`}>
+             <div className={`px-4 mb-4 ${!isSidebarOpen ? 'px-2' : ''}`}>
+               <Link href="/v2/login" className={`flex items-center gap-3 p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all overflow-hidden relative group ${!isSidebarOpen ? 'justify-center px-0' : ''}`}>
                   <div className="absolute -right-4 -top-4 w-12 h-12 bg-white/10 blur-xl rounded-full group-hover:scale-150 transition-transform" />
                   <Sparkles size={18} className="shrink-0 relative z-10" />
                   {isSidebarOpen && <span className="text-[12px] font-black uppercase tracking-widest relative z-10">Switch to V2</span>}

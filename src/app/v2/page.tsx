@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  GraduationCap, 
-  Users, 
   ArrowRight, 
   Zap, 
   ShieldCheck, 
@@ -15,9 +13,31 @@ import {
   Award
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export default function V2SelectionPage() {
   const [hovered, setHovered] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const handleRoute = async () => {
+      if (typeof window !== 'undefined' && localStorage.getItem('v2_legacy_admin') === 'true') {
+         return; // Legacy Admin Bypass - do not redirect to student portals
+      }
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session.user.id).single();
+      if (profile && profile.role !== 'admin') {
+        const { data: membership } = await supabase.from('v2_memberships').select('workspace_id').eq('profile_id', session.user.id).single();
+        if (membership?.workspace_id) {
+          router.push(`/v2/portal/${membership.workspace_id}`);
+        }
+      }
+    };
+    handleRoute();
+  }, [router]);
 
   const OPTIONS = [
     {
@@ -25,7 +45,7 @@ export default function V2SelectionPage() {
       title: "School / Bootcamp Mode",
       type: "SCHEME A",
       description: "LMS for batch classes. Manage up to 50 students, assignments, attendance, and 12+ grading points.",
-      icon: <GraduationCap size={44} />,
+      icon: <img src="/logo_rs.png" className="w-24 h-24 object-contain" alt="School Logo" />,
       color: "from-blue-600 to-indigo-700",
       accent: "bg-blue-500",
       features: ["6x Post-tests", "3x Assignments", "Group Challenges", "Batch Analytics"],
@@ -36,7 +56,7 @@ export default function V2SelectionPage() {
       title: "Agency / Team Mode",
       type: "SCHEME B",
       description: "Collaborative B2B Workspace. Shared roadmap, content plans, and tasks for teams up to 10 members.",
-      icon: <Users size={44} />,
+      icon: <img src="/logo.png" className="w-24 h-24 object-contain" alt="Agency Logo" />,
       color: "from-emerald-600 to-teal-700",
       accent: "bg-emerald-500",
       features: ["10 Members Max", "Shared Dashboard", "Real-time Roadmap", "Cross-Team Content"],
@@ -57,7 +77,7 @@ export default function V2SelectionPage() {
       >
         {/* Intro */}
         <div className="max-w-2xl">
-          <div className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-[0.2em] border border-blue-100 inline-flex items-center gap-2 mb-6">
+          <div className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[9px] font-black border border-blue-100 inline-flex items-center gap-2 mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
             V2 Workspace Selection
           </div>
@@ -83,11 +103,11 @@ export default function V2SelectionPage() {
                 <div className={`absolute -right-20 -top-20 w-64 h-64 blur-3xl opacity-0 group-hover:opacity-40 transition-opacity duration-700 bg-gradient-to-br ${opt.color}`} />
                 
                 <div className="relative z-10 space-y-12">
-                  <div className="flex items-start justify-between">
-                    <div className={`p-6 rounded-[28px] bg-gradient-to-br ${opt.color} text-white shadow-lg`}>
+                  <div className="flex items-start justify-between -mt-4 -ml-2">
+                    <div className="w-28 h-28 flex items-center justify-center p-2">
                       {opt.icon}
                     </div>
-                    <div className="px-4 py-2 rounded-2xl bg-slate-50 text-slate-400 font-black text-[10px] tracking-widest uppercase border border-slate-100">
+                    <div className="px-4 py-2 rounded-2xl bg-slate-50 text-slate-400 font-black text-[10px] border border-slate-100">
                       {opt.type}
                     </div>
                   </div>
@@ -101,14 +121,14 @@ export default function V2SelectionPage() {
                     {opt.features.map((f, i) => (
                       <div key={i} className="flex items-center gap-3">
                         <div className={`w-2 h-2 rounded-full ${opt.accent}`} />
-                        <span className="text-[11px] font-bold text-slate-600 uppercase tracking-tight">{f}</span>
+                        <span className="text-[11px] font-bold text-slate-600 tracking-tight">{f}</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="pt-6">
                     <div className="flex items-center gap-4 group-hover:gap-6 transition-all duration-300">
-                      <span className={`text-sm font-black uppercase tracking-widest ${opt.id === 'school' ? 'text-blue-600' : 'text-emerald-600'}`}>Setup Workspace</span>
+                      <span className={`text-sm font-black ${opt.id === 'school' ? 'text-blue-600' : 'text-emerald-600'}`}>Setup Workspace</span>
                       <ArrowRight size={18} className={opt.id === 'school' ? 'text-blue-600' : 'text-emerald-600'} />
                     </div>
                   </div>
@@ -123,14 +143,14 @@ export default function V2SelectionPage() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <ShieldCheck size={16} className="text-emerald-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Parallel Database V2.0</span>
+              <span className="text-[10px] font-black">Parallel Database V2.0</span>
             </div>
             <div className="flex items-center gap-2">
               <Zap size={16} className="text-amber-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Edge-Runtime Ready</span>
+              <span className="text-[10px] font-black">Edge-Runtime Ready</span>
             </div>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Click a card to initialize the environment</p>
+          <p className="text-[10px] font-bold text-slate-400">Click a card to initialize the environment</p>
         </div>
       </motion.div>
     </div>

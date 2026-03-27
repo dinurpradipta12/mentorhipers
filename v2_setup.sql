@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS v2_workspaces (
 CREATE TABLE IF NOT EXISTS v2_profiles (
     id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
     full_name TEXT NOT NULL,
+    username TEXT UNIQUE,
     avatar_url TEXT,
     role TEXT DEFAULT 'student', -- 'student', 'team_member', 'admin', 'moderator'
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

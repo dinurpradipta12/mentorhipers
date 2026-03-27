@@ -1,0 +1,3 @@
+ALTER TABLE v2_workspaces 
+ADD COLUMN IF NOT EXISTS current_session INTEGER DEFAULT 1,
+ADD COLUMN IF NOT EXISTS is_attendance_open BOOLEAN DEFAULT false;
