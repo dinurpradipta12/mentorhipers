@@ -1,24 +1,23 @@
-"use client";
-
 import dynamic from "next/dynamic";
-import React, { use } from "react";
+import React from "react";
 
 // THIS IS THE UNIVERSAL V2 CATCH-ALL ROUTER
-// We use "use client" so that we can use ssr: false for child components (reducing edge size).
-// We use React.use(params) to resolve the slug during render, which fixes the Server Action 404
-// because the slug becomes available during the server-side action resolution phase.
+// Converting to a Server Component (async) and removing ssr: false is the 
+// definitive fix for Server Action 404 errors. 
+// It ensures that Next.js registers all action handlers for each sub-route 
+// correctly on the server side.
 export const runtime = "edge";
 
-const SelectionContent = dynamic(() => import("../_core/SelectionContent"), { ssr: false });
-const LoginContent = dynamic(() => import("../_core/LoginContent"), { ssr: false });
-const BatchListContent = dynamic(() => import("../_core/BatchListContent"), { ssr: false });
-const BatchContent = dynamic(() => import("../_core/BatchContent"), { ssr: false });
-const AgencyListContent = dynamic(() => import("../_core/AgencyListContent"), { ssr: false });
-const AgencyContent = dynamic(() => import("../_core/AgencyContent"), { ssr: false });
-const PortalContent = dynamic(() => import("../_core/PortalContent"), { ssr: false });
+const SelectionContent = dynamic(() => import("../_core/SelectionContent"));
+const LoginContent = dynamic(() => import("../_core/LoginContent"));
+const BatchListContent = dynamic(() => import("../_core/BatchListContent"));
+const BatchContent = dynamic(() => import("../_core/BatchContent"));
+const AgencyListContent = dynamic(() => import("../_core/AgencyListContent"));
+const AgencyContent = dynamic(() => import("../_core/AgencyContent"));
+const PortalContent = dynamic(() => import("../_core/PortalContent"));
 
-export default function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
-  const resolvedParams = use(params);
+export default async function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const resolvedParams = await params;
   const slug = resolvedParams.slug || [];
 
   // Routing Logic
