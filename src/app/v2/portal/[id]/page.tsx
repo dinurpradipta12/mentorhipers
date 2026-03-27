@@ -2,9 +2,15 @@
 
 export const runtime = "edge";
 
-import React, { useState, useEffect, use, useRef } from "react";
+import React, { useState, useEffect, use, useRef, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import html2canvas from "html2canvas";
+import dynamic from "next/dynamic";
+
+// Dynamic Imports for size optimization
+const IdCardContent = dynamic(() => import("./IdCardContent"), {
+  loading: () => <div className="h-64 flex items-center justify-center text-white/20">Loading Identity...</div>,
+  ssr: false
+});
 import { 
   PlayCircle, 
   FileText, 
@@ -116,6 +122,9 @@ export default function StudentPortalPage({ params }: { params: Promise<{ id: st
      if (!idCardRef.current) return;
      setIsLoading(true);
      try {
+        // Dynamically import html2canvas only when needed
+        const html2canvas = (await import("html2canvas")).default;
+        
         const canvas = await html2canvas(idCardRef.current, {
            backgroundColor: null,
            scale: 2,
@@ -1493,72 +1502,15 @@ export default function StudentPortalPage({ params }: { params: Promise<{ id: st
                       <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2" />
                       <div className="absolute bottom-0 left-0 w-60 h-60 bg-sky-400/10 blur-[80px] rounded-full -translate-x-1/2 translate-y-1/2" />
                       
-                      <div className="relative z-10 space-y-10">
-                        {/* Header ID */}
-                        <div className="flex items-center justify-between">
-                           <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <ShieldCheck size={16} className="text-sky-300" />
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">Verified Scholar</p>
-                              </div>
-                              <p className="text-white font-black text-xl italic">{batch?.name?.toLowerCase()?.includes('ruang sosmed') ? 'Ruang Sosmed.' : 'Mentorhipers.'}</p>
-                           </div>
-                           <Fingerprint size={40} className="text-white/20" />
-                        </div>
-
-                        {/* Profile Area */}
-                        <div className="flex flex-col items-center gap-6 py-6">
-                           <div className="relative">
-                              <div className="w-40 h-40 rounded-[48px] border-4 border-white/30 p-2 transform rotate-3">
-                                 <div className="w-full h-full rounded-[38px] overflow-hidden bg-white shadow-2xl">
-                                    {currentUser?.avatar_url ? (
-                                       <img src={currentUser.avatar_url} className="w-full h-full object-cover" />
-                                    ) : (
-                                       <div className={`w-full h-full flex items-center justify-center ${batch?.name?.toLowerCase()?.includes('ruang sosmed') ? 'text-blue-500' : 'text-indigo-600'} text-5xl font-black`}>{currentUser?.full_name?.charAt(0)}</div>
-                                    )}
-                                 </div>
-                              </div>
-                              {/* Group Leader Badge */}
-                              {me?.is_leader && (
-                                <div className="absolute -top-4 -right-4 w-12 h-12 bg-amber-400 text-slate-900 rounded-2xl flex items-center justify-center shadow-xl border-4 border-white transform -rotate-12">
-                                   <Award size={20} fill="currentColor" />
-                                </div>
-                              )}
-                           </div>
-
-                           <div className="text-center space-y-2">
-                              <h2 className="text-3xl font-black text-white tracking-tighter uppercase whitespace-pre-line">{currentUser?.full_name}</h2>
-                              <div className="px-5 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm text-sky-200 text-[9px] font-black uppercase tracking-[0.2em] w-fit mx-auto">
-                                 {batch?.name?.toLowerCase()?.includes('ruang sosmed') ? 'RS' : 'MH'}-{resolvedParams.id.substring(0,4).toUpperCase()}-{(currentUser?.id?.substring(0,6) || "STU").toUpperCase()}
-                              </div>
-                           </div>
-                        </div>
-
-                        {/* Card Details Footer */}
-                        <div className="pt-10 border-t border-white/10 flex items-end justify-between">
-                           <div className="space-y-6">
-                              <div className="space-y-1">
-                                 <p className="text-[8px] font-black uppercase tracking-widest text-white/40">Active Batch</p>
-                                 <p className="text-xs font-bold text-white uppercase">{batch?.name || "Member Batch"}</p>
-                              </div>
-                              <div className="space-y-1">
-                                 <p className="text-[8px] font-black uppercase tracking-widest text-white/40">Authorized Date</p>
-                                 <p className="text-xs font-bold text-white">{new Date(me?.created_at || Date.now()).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}</p>
-                              </div>
-                           </div>
-                           
-                           {/* Decorative QR */}
-                           <div className="p-4 bg-white/10 border border-white/20 rounded-3xl backdrop-blur-md group hover:bg-white transition-all">
-                              <QrCode size={40} className={`text-white group-hover:${batch?.name?.toLowerCase()?.includes('ruang sosmed') ? 'text-blue-500' : 'text-indigo-600'} transition-all`} />
-                           </div>
-                        </div>
-                      </div>
-
-                      {/* Signature / Stamp */}
-                      <div className="absolute bottom-10 right-1/2 translate-x-1/2 opacity-5 pointer-events-none scale-150">
-                         <Star size={100} fill="currentColor" className="text-white" />
-                      </div>
-                   </div>
+                       <Suspense fallback={<div className="h-64 flex items-center justify-center text-white/20">Loading Card...</div>}>
+                          <IdCardContent 
+                             batch={batch}
+                             currentUser={currentUser}
+                             me={me}
+                             resolvedParams={resolvedParams}
+                          />
+                       </Suspense>
+                    </div>
 
                    {/* DOWNLOAD / SHARE BUTTONS */}
                    <div className="grid grid-cols-2 gap-4 mt-8">
