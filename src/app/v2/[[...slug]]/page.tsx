@@ -2,11 +2,8 @@ import dynamic from "next/dynamic";
 import React from "react";
 
 // THIS IS THE UNIVERSAL V2 CATCH-ALL ROUTER
-// Converting to a Server Component (async) and removing ssr: false is the 
-// definitive fix for Server Action 404 errors. 
-// It ensures that Next.js registers all action handlers for each sub-route 
-// correctly on the server side.
-export const runtime = "edge";
+// We maintain Server Component status to resolve params on the server (fixing 404s).
+// We use standard Node.js runtime to ensure maximum compatibility with Server Actions.
 
 const SelectionContent = dynamic(() => import("../_core/SelectionContent"));
 const LoginContent = dynamic(() => import("../_core/LoginContent"));
