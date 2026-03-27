@@ -707,8 +707,8 @@ export default function PortalContent({ params }: { params: Promise<{ id: string
 
                  {/* Premium Assets Deck */}
                  {selectedLesson?.assets_json?.length > 0 && (
-                    <Card className="p-10 border-none shadow-2xl shadow-blue-900/10 bg-gradient-to-br from-[#0ea5e9] to-[#1e3a8a] text-white rounded-[44px] space-y-8 relative overflow-hidden">
-                       <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full pointer-events-none" />
+                    <Card className="p-10 border-none shadow-2xl shadow-blue-900/10 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white rounded-[44px] space-y-8 relative overflow-hidden">
+                       <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[80px] rounded-full pointer-events-none" />
                        <h3 className="text-xl font-black tracking-tight px-2">Classroom Assets</h3>
                        <div className="space-y-4">
                           {selectedLesson.assets_json.map((asset: any, i: number) => (
@@ -716,13 +716,13 @@ export default function PortalContent({ params }: { params: Promise<{ id: string
                                key={i} 
                                href={asset.url} 
                                target="_blank" 
-                               className="flex items-center justify-between p-6 rounded-[28px] bg-white/5 border border-white/10 hover:bg-white/10 transition-all group"
+                               className="flex items-center justify-between p-6 rounded-[32px] bg-white/10 border border-white/10 hover:bg-white/20 transition-all group backdrop-blur-md shadow-lg"
                              >
                                 <div className="flex items-center gap-5">
                                    <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center font-black shadow-lg shadow-blue-500/20"><Download size={20} /></div>
                                    <div className="space-y-1">
-                                      <p className="text-[9px] font-bold text-slate-500">Resource {i + 1}</p>
-                                      <span className="text-sm font-bold">{asset.name}</span>
+                                      <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest">Resource {i + 1}</p>
+                                      <span className="text-sm font-bold tracking-tight">{asset.name}</span>
                                    </div>
                                  </div>
                                 <ChevronRight size={18} className="opacity-20 group-hover:opacity-100 transition-opacity" />
