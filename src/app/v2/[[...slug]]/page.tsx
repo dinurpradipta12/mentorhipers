@@ -1,11 +1,11 @@
-import nextDynamic from "next/dynamic";
-import React from "react";
+"use client";
 
-// THIS IS THE UNIVERSAL V2 CATCH-ALL ROUTER
-// Converting back to a Server Component to stabilize the Edge bundle and fix RSC prefetch (500) errors.
-// Server Components are inherently more stable on the Edge as they avoid early hydration errors.
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+import nextDynamic from "next/dynamic";
+import React, { use } from "react";
+
+// THIS IS THE UNIVERSAL V2 CATCH-ALL ROUTER (Client-side version)
+// Moved to 'use client' to allow 'ssr: false' on dynamic imports, which is required
+// for stabilizing the Edge bundle size while avoiding Server Component restrictions.
 
 const SelectionContent = nextDynamic(() => import("../_core/SelectionContent"), { ssr: false });
 const LoginContent = nextDynamic(() => import("../_core/LoginContent"), { ssr: false });
@@ -15,8 +15,8 @@ const AgencyListContent = nextDynamic(() => import("../_core/AgencyListContent")
 const AgencyContent = nextDynamic(() => import("../_core/AgencyContent"), { ssr: false });
 const PortalContent = nextDynamic(() => import("../_core/PortalContent"), { ssr: false });
 
-export default async function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
-  const resolvedParams = await params;
+export default function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const resolvedParams = use(params);
   const slug = resolvedParams.slug || [];
 
   // Routing Logic

@@ -1,11 +1,10 @@
+"use client";
+
 import nextDynamic from "next/dynamic";
 import React from "react";
 
-// The V2 Layout is converted to a Server Component to stabilize the Edge bundle.
-// This prevents hydration mismatches and stabilizes RSC (500) prefetch requests on Cloudflare.
-// The content (sidebar, auth check, etc.) still runs only on the client via dynamic(..., { ssr: false }).
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+// Converting V2Layout to a Client Component to allow 'ssr: false' on its content.
+// This prevents hydration mismatches and stabilizes the Edge bundle on Cloudflare.
 
 const V2LayoutContent = nextDynamic(() => import("./V2LayoutContent"), {
   ssr: false,
