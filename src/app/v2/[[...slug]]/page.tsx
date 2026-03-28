@@ -1,24 +1,22 @@
-"use client";
-
-import dynamic from "next/dynamic";
-import React, { use } from "react";
+import nextDynamic from "next/dynamic";
+import React from "react";
 
 // THIS IS THE UNIVERSAL V2 CATCH-ALL ROUTER
-// Consolidation is the ONLY way to beat the Cloudflare Free Plan 3MB total deployment limit.
-// By using dynamic(..., { ssr: false }), we ensure that heavy UI components are not 
-// bundled into the server-side Edge function.
+// Converting back to a Server Component to stabilize the Edge bundle and fix RSC prefetch (500) errors.
+// Server Components are inherently more stable on the Edge as they avoid early hydration errors.
 export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
 
-const SelectionContent = dynamic(() => import("../_core/SelectionContent"), { ssr: false });
-const LoginContent = dynamic(() => import("../_core/LoginContent"), { ssr: false });
-const BatchListContent = dynamic(() => import("../_core/BatchListContent"), { ssr: false });
-const BatchContent = dynamic(() => import("../_core/BatchContent"), { ssr: false });
-const AgencyListContent = dynamic(() => import("../_core/AgencyListContent"), { ssr: false });
-const AgencyContent = dynamic(() => import("../_core/AgencyContent"), { ssr: false });
-const PortalContent = dynamic(() => import("../_core/PortalContent"), { ssr: false });
+const SelectionContent = nextDynamic(() => import("../_core/SelectionContent"), { ssr: false });
+const LoginContent = nextDynamic(() => import("../_core/LoginContent"), { ssr: false });
+const BatchListContent = nextDynamic(() => import("../_core/BatchListContent"), { ssr: false });
+const BatchContent = nextDynamic(() => import("../_core/BatchContent"), { ssr: false });
+const AgencyListContent = nextDynamic(() => import("../_core/AgencyListContent"), { ssr: false });
+const AgencyContent = nextDynamic(() => import("../_core/AgencyContent"), { ssr: false });
+const PortalContent = nextDynamic(() => import("../_core/PortalContent"), { ssr: false });
 
-export default function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
-  const resolvedParams = use(params);
+export default async function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const resolvedParams = await params;
   const slug = resolvedParams.slug || [];
 
   // Routing Logic
@@ -26,17 +24,17 @@ export default function V2MasterRouter({ params }: { params: Promise<{ slug?: st
   if (slug[0] === "login") return <LoginContent />;
   
   if (slug[0] === "batch") {
-    if (slug[1]) return <BatchContent params={Promise.resolve({ id: slug[1] })} />;
+    if (slug[1]) return <BatchContent id={slug[1]} />;
     return <BatchListContent />;
   }
   
   if (slug[0] === "agency") {
-    if (slug[1]) return <AgencyContent params={Promise.resolve({ id: slug[1] })} />;
+    if (slug[1]) return <AgencyContent id={slug[1]} />;
     return <AgencyListContent />;
   }
   
   if (slug[0] === "portal" && slug[1]) {
-    return <PortalContent params={Promise.resolve({ id: slug[1] })} />;
+    return <PortalContent id={slug[1]} />;
   }
 
   // Not Found fallback

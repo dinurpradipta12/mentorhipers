@@ -94,8 +94,8 @@ import Link from "next/link";
    );
  }
 
-export default function BatchContent({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
+export default function BatchContent({ id }: { id: string }) {
+  const resolvedParams = { id };
   const router = useRouter(); 
   const [activeTab, setActiveTab] = useState("students");
   const [batch, setBatch] = useState<any>(null);

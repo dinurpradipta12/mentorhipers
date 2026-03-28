@@ -26,8 +26,8 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function AgencyContent({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
+export default function AgencyContent({ id }: { id: string }) {
+  const resolvedParams = { id };
   const [activeTab, setActiveTab] = useState("dashboard");
   const [workspace, setWorkspace] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);

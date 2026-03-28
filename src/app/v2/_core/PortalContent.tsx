@@ -88,8 +88,8 @@ function Countdown({ targetDate }: { targetDate: string }) {
   );
 }
 
-export default function PortalContent({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use((params as any)) as any;
+export default function PortalContent({ id }: { id: string }) {
+  const resolvedParams = { id };
   const [batch, setBatch] = useState<any>(null);
   const [curriculum, setCurriculum] = useState<any[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
