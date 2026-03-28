@@ -258,7 +258,7 @@ export default function PortalContent({ id }: { id: string }) {
   const fetchStudents = async () => {
     const { data } = await supabase
       .from('v2_memberships')
-      .select('*, v2_profiles(*)')
+      .select('*, v2_profiles(id, full_name, avatar_url)')
       .eq('workspace_id', resolvedParams.id);
     if (data) setStudents(data);
   };

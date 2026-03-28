@@ -812,7 +812,7 @@ export default function BatchContent({ id }: { id: string }) {
       console.log(`🔍 Querying students for Workspace ID: ${resolvedParams.id}`);
       const { data, error } = await supabase
         .from('v2_memberships')
-        .select('*, v2_profiles(*)')
+        .select('*, v2_profiles(id, full_name, avatar_url)')
         .eq('workspace_id', resolvedParams.id);
       
       if (error) {
