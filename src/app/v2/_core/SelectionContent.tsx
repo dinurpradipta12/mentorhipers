@@ -7,12 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, 
   Zap, 
-  ShieldCheck, 
-  LayoutDashboard,
-  Calendar,
-  Layers,
-  Sparkles,
-  Award
+  ShieldCheck
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,7 +15,6 @@ import { supabase } from "@/lib/supabase";
 
 export default function SelectionContent() {
   const [roleChecked, setRoleChecked] = useState(false);
-  const [hovered, setHovered] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -134,8 +128,6 @@ export default function SelectionContent() {
           {OPTIONS.map((opt) => (
             <Link key={opt.id} href={opt.link}>
               <motion.div
-                onMouseEnter={() => setHovered(opt.id)}
-                onMouseLeave={() => setHovered(null)}
                 whileHover={{ y: -10 }}
                 className="relative group cursor-pointer bg-white border border-slate-100 rounded-[44px] p-10 xl:p-14 shadow-xl shadow-slate-200/50 hover:shadow-2xl transition-all h-full overflow-hidden"
               >

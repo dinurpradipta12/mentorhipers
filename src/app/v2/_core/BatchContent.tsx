@@ -1133,7 +1133,7 @@ export default function BatchContent({ id }: { id: string }) {
                                       const submissions = allSubmissions.filter(s => s.profile_id === mem.v2_profiles?.id).length;
                                       const totalTasks = curriculum.filter(t => t.type !== 'material').length;
                                       const pending = Math.max(0, totalTasks - submissions);
-                                      let riskScore = (absents * 2) + pending;
+                                      const riskScore = (absents * 2) + pending;
                                       return { mem, absents, pending, score: riskScore };
                                    }).filter(r => r.score > 2).sort((a, b) => b.score - a.score).slice(0, 2);
 
@@ -1932,7 +1932,18 @@ export default function BatchContent({ id }: { id: string }) {
                          <input 
                             type="datetime-local"
                             value={lmsForm.due_date ? new Date(new Date(lmsForm.due_date).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''}
-                            onChange={(e) => setLmsForm({ ...lmsForm, due_date: e.target.value })}
+                            onChange={(e) => {
+                               if (!e.target.value) {
+                                  setLmsForm({ ...lmsForm, due_date: '' });
+                               } else {
+                                  const d = new Date(e.target.value);
+                                  if (!isNaN(d.getTime())) {
+                                     setLmsForm({ ...lmsForm, due_date: d.toISOString() });
+                                  } else {
+                                     setLmsForm({ ...lmsForm, due_date: e.target.value });
+                                  }
+                               }
+                            }}
                             className={`w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border-2 border-slate-100 focus:outline-none transition-all ${lmsForm.type === 'material' ? 'focus:border-blue-500 text-blue-600' : 'focus:border-rose-500 text-rose-600'}`}
                          />
                       </div>

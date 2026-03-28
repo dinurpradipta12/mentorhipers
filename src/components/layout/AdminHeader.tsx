@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  Search, Menu, RefreshCcw, Save, Loader2 
+  Menu, RefreshCcw
 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
 
 interface AdminHeaderProps {
@@ -16,13 +15,17 @@ interface AdminHeaderProps {
 }
 
 export default function AdminHeader({ title, isSidebarOpen, toggleSidebar, showSearch = true, children }: AdminHeaderProps) {
-  const [profile, setProfile] = useState<any>({
+  const [profile, setProfile] = useState<{
+    name: string;
+    avatar: string;
+    manual_status: string;
+    status_message: string;
+  }>({
     name: "Admin",
     avatar: "",
     manual_status: "auto",
     status_message: ""
   });
-  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -38,12 +41,11 @@ export default function AdminHeader({ title, isSidebarOpen, toggleSidebar, showS
     };
     fetchProfile();
 
-    // Optional: Subscribe to changes if other pages update it
     const channel = supabase
       .channel('header_profile_sync')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mentor_profile' }, (payload) => {
         if (payload.new) {
-          setProfile((prev: any) => ({
+          setProfile((prev) => ({
             ...prev,
             manual_status: payload.new.manual_status,
             status_message: payload.new.status_message
@@ -58,12 +60,12 @@ export default function AdminHeader({ title, isSidebarOpen, toggleSidebar, showS
   }, []);
 
   const handleStatusChange = async (newStatus: string) => {
-    setProfile((prev: any) => ({ ...prev, manual_status: newStatus }));
+    setProfile((prev) => ({ ...prev, manual_status: newStatus }));
     await supabase.from('mentor_profile').update({ manual_status: newStatus }).eq('id', 1);
   };
 
   const handleMessageChange = (val: string) => {
-    setProfile((prev: any) => ({ ...prev, status_message: val }));
+    setProfile((prev) => ({ ...prev, status_message: val }));
     
     // Auto-save debounce
     if ((window as any).headerStatusTimeout) clearTimeout((window as any).headerStatusTimeout);
@@ -98,7 +100,7 @@ export default function AdminHeader({ title, isSidebarOpen, toggleSidebar, showS
              <h2 className="text-[20px] font-extrabold text-[#202224] tracking-tight">{title}</h2>
           ) : showSearch ? (
              <div className="relative w-[300px] xl:w-[400px]">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#202224] opacity-40" />
+                <Menu className="absolute left-5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-[#202224] opacity-40" />
                 <input 
                   placeholder="Search" 
                   className="w-full h-[38px] rounded-full bg-slate-50/50 border border-[#D5D5D5] pl-12 pr-6 text-[14px] font-semibold focus:outline-none focus:ring-4 ring-accent/5 transition-all"
@@ -108,7 +110,6 @@ export default function AdminHeader({ title, isSidebarOpen, toggleSidebar, showS
        </div>
 
        <div className="flex items-center gap-4">
-          {/* Status Message Hub */}
           <div className="hidden lg:flex items-center gap-3 pr-6 border-r border-[#E0E0E0]/50">
             <input 
                 value={profile.status_message || ""}
@@ -139,7 +140,7 @@ export default function AdminHeader({ title, isSidebarOpen, toggleSidebar, showS
                 <p className="text-[12px] font-bold text-[#202224] opacity-60 uppercase tracking-widest scale-[0.8] origin-right">Mentor</p>
              </div>
              <div className="w-[48px] h-[48px] rounded-2xl overflow-hidden border-2 border-white shadow-sm relative">
-                <img src={profile.avatar || `https://i.pravatar.cc/150?u=mentor`} className="w-full h-full object-cover" />
+                <img src={profile.avatar || `https://i.pravatar.cc/150?u=mentor`} alt={profile.name} className="w-full h-full object-cover" />
                 <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${profile.manual_status === 'busy' ? 'bg-rose-500' : profile.manual_status === 'away' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
              </div>
           </div>

@@ -444,7 +444,7 @@ export default function PortalContent({ id }: { id: string }) {
     if (!selectedAvatar || !currentUser) return;
     setIsLoading(true);
     try {
-      let finalUrl = selectedAvatar;
+      const finalUrl = selectedAvatar;
 
       // If it's a base64 from custom upload, we might want to upload to storage 
       // but for simplicity and immediate use, we update the profile. 
