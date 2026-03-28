@@ -46,6 +46,7 @@ import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import { getYouTubeEmbedUrl } from "@/lib/utils";
 
 function Countdown({ targetDate }: { targetDate: string }) {
   const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
@@ -603,11 +604,7 @@ export default function PortalContent({ id }: { id: string }) {
                        <div className="aspect-video bg-black rounded-[56px] overflow-hidden shadow-2xl relative group border-[12px] border-white ring-1 ring-slate-100 shadow-slate-200/50">
                           {selectedLesson.video_url ? (
                              <iframe 
-                               src={selectedLesson.video_url.includes('youtube.com/watch') 
-                                  ? selectedLesson.video_url.replace('watch?v=', 'embed/') 
-                                  : selectedLesson.video_url.includes('youtu.be')
-                                  ? selectedLesson.video_url.replace('youtu.be/', 'youtube.com/embed/')
-                                  : selectedLesson.video_url} 
+                               src={getYouTubeEmbedUrl(selectedLesson.video_url)} 
                                className="w-full h-full" 
                                allowFullScreen 
                              />

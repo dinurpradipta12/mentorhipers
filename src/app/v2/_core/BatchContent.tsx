@@ -51,6 +51,7 @@ import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import { getYouTubeEmbedUrl } from "@/lib/utils";
 // Server Actions replaced with fetch calls to Edge-compatible API routes
 
 import dynamic from "next/dynamic";
@@ -1222,7 +1223,7 @@ export default function BatchContent({ id }: { id: string }) {
                             <div className="aspect-video w-full rounded-[48px] bg-slate-900 overflow-hidden shadow-2xl relative group">
                                {selectedLesson.video_url ? (
                                   <iframe 
-                                    src={selectedLesson.video_url}
+                                    src={getYouTubeEmbedUrl(selectedLesson.video_url)}
                                     className="w-full h-full"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
