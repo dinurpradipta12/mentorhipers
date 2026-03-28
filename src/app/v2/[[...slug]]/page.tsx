@@ -1,11 +1,11 @@
-import dynamic from "next/dynamic";
 import React from "react";
 import LoginContent from "../_core/LoginContent";
 import SelectionContent from "../_core/SelectionContent";
 
-// This catch-all now only handles the base routes (/v2 and /v2/login).
-// All routes that use Server Actions (batch/[id], portal/[id], agency/[id])
-// now have dedicated page files so Server Action POST routing works correctly.
+// This catch-all now only handles /v2 root and /v2/login.
+// All specific routes (batch, agency, portal) have dedicated page files.
+export const runtime = 'edge';
+
 export default async function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug || [];

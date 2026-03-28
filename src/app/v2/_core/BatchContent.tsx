@@ -51,7 +51,7 @@ import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { registerStudentAction, updateWorkspaceSchedulesAction } from "../actions";
+// Server Actions replaced with fetch calls to Edge-compatible API routes
 
  function Countdown({ targetDate }: { targetDate: string }) {
    const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
@@ -398,7 +398,12 @@ export default function BatchContent({ params }: { params: Promise<{ id: string 
       const currentSchedules = batch?.schedules || [];
       const newSchedules = [...currentSchedules, newScheduleItem].sort((a,b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
 
-      const updateResponse = await updateWorkspaceSchedulesAction(resolvedParams.id, newSchedules);
+      const res = await fetch('/api/v2/update-schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId: resolvedParams.id, schedules: newSchedules })
+      });
+      const updateResponse = await res.json();
       if (!updateResponse.success) throw new Error(updateResponse.error);
       setBatch({ ...batch, schedules: newSchedules });
       setScheduleForm({ title: '', date: '', time: '', meet_link: '' });
@@ -415,7 +420,12 @@ export default function BatchContent({ params }: { params: Promise<{ id: string 
       const currentSchedules = batch?.schedules || [];
       const newSchedules = currentSchedules.filter((s:any) => s.id !== id);
 
-      const updateResponse = await updateWorkspaceSchedulesAction(resolvedParams.id, newSchedules);
+      const res = await fetch('/api/v2/update-schedules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspaceId: resolvedParams.id, schedules: newSchedules })
+      });
+      const updateResponse = await res.json();
       if (!updateResponse.success) throw new Error(updateResponse.error);
       setBatch({ ...batch, schedules: newSchedules });
     } catch(err: any) {
@@ -438,13 +448,19 @@ export default function BatchContent({ params }: { params: Promise<{ id: string 
     setIsLoading(true);
 
     try {
-      // 1. Call real Server Action for DB sync (auth + profiles + memberships)
-      const res = await registerStudentAction({
-        fullName: newStudent.fullName,
-        username: newStudent.username,
-        password: newStudent.password,
-        workspaceId: resolvedParams.id
+      // Call Edge API Route (replacing Server Action - Cloudflare Pages compatible)
+      const response = await fetch('/api/v2/register-student', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: newStudent.fullName,
+          username: newStudent.username,
+          password: newStudent.password,
+          workspaceId: resolvedParams.id
+        })
       });
+
+      const res = await response.json();
 
       if (!res.success) {
          alert(`Error: ${res.error}`);
