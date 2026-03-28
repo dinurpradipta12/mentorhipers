@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { LogOut, User, Upload } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,7 +19,12 @@ export default function V2LayoutContent({
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  const initializedRef = useRef(false);
+
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    
     fetchSettings();
     checkRole();
   }, []);

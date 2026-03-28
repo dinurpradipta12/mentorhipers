@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, 
@@ -18,6 +19,8 @@ import {
   Pencil,
   Trash2,
   ArrowRightCircle,
+  ArrowRight,
+  Settings2,
   ArrowLeft
 } from "lucide-react";
 import Link from "next/link";
@@ -31,6 +34,7 @@ export default function BatchListContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
   const [batchForm, setBatchForm] = useState({
     name: "",
@@ -43,8 +47,12 @@ export default function BatchListContent() {
   const [selectedBatch, setSelectedBatch] = useState<any>(null);
   const [selectedBatchMembers, setSelectedBatchMembers] = useState(0);
   const router = useRouter();
+  const initializedRef = React.useRef(false);
 
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     const init = async () => {
       await checkAdmin();
       await fetchBatches();
@@ -76,21 +84,39 @@ export default function BatchListContent() {
 
   const fetchBatches = async () => {
     setIsLoading(true);
-    const { data } = await supabase
-      .from('v2_workspaces')
-      .select('*')
-      .eq('type', 'batch')
-      .order('created_at', { ascending: false });
-    if (data) {
-      setBatches(data);
-      // Restore last selected batch
-      const savedId = localStorage.getItem('batch_list_selected');
-      if (savedId) {
-        const found = data.find((b: any) => b.id === savedId);
-        if (found) handleSelectBatch(found);
+    
+    // Safety fallback timeout to prevent infinite loading screens
+    const safetyTimeout = setTimeout(() => {
+        console.warn("⚠️ fetching batches taking too long. Forcing UI render.");
+        setIsLoading(false);
+    }, 10000);
+
+    try {
+      const { data, error } = await supabase
+        .from('v2_workspaces')
+        .select('*')
+        .eq('type', 'batch')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error("❌ Failed to fetch batches:", error.message);
       }
+      
+      if (data) {
+        setBatches(data);
+        // Restore last selected batch
+        const savedId = localStorage.getItem('batch_list_selected');
+        if (savedId) {
+          const found = data.find((b: any) => b.id === savedId);
+          if (found) handleSelectBatch(found);
+        }
+      }
+    } catch (err: any) {
+      console.error("❌ Unexpected error fetching batches:", err.message);
+    } finally {
+      clearTimeout(safetyTimeout);
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const fetchBatchStats = async (batchId: string) => {
@@ -105,6 +131,11 @@ export default function BatchListContent() {
     setSelectedBatch(batch);
     fetchBatchStats(batch.id);
     localStorage.setItem('batch_list_selected', batch.id);
+
+    // Auto-open info modal on mobile
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setIsInfoModalOpen(true);
+    }
   };
 
   const handleCreateBatch = async () => {
@@ -195,21 +226,24 @@ export default function BatchListContent() {
   }
 
   return (
+    <>
     <div className="p-6 md:p-10 xl:p-12 space-y-12 max-w-[1700px] mx-auto animate-in fade-in duration-700">
       {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-3">
-          <Link href="/v2" className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-all group/back mb-2">
-            <ArrowLeft size={16} className="group-hover/back:-translate-x-1 transition-transform" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Workspace Selection</span>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 md:gap-6">
+        <div className="space-y-4">
+          <Link href="/v2" className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all group/back mb-2 border border-slate-100/50">
+            <ArrowLeft size={14} className="group-hover/back:-translate-x-1 transition-transform" />
+            <span className="text-[9px] font-black uppercase tracking-widest">Workspace Selection</span>
           </Link>
-          <div className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest border border-blue-100 inline-flex items-center gap-2">
-            Workspace Control
+          <div className="flex flex-col space-y-2">
+            <div className="px-3 py-1 w-fit rounded-full bg-blue-50 text-blue-600 text-[8px] font-black uppercase tracking-[0.2em] border border-blue-100 inline-flex items-center gap-2">
+              Workspace Control
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] tracking-tight flex items-center gap-4 py-1">
+              <GraduationCap className="text-blue-600" size={32} /> Batch Management
+            </h1>
           </div>
-          <h1 className="text-4xl font-black text-[#0F172A] tracking-tight flex items-center gap-4">
-            <GraduationCap className="text-blue-600" size={40} /> Batch Management
-          </h1>
-          <p className="text-slate-500 font-medium">Kelola seluruh kelas bootcamp dalam satu dashboard terpusat.</p>
+          <p className="text-slate-500 font-medium text-sm sm:text-base max-w-lg">Kelola seluruh kelas bootcamp dalam satu dashboard terpusat.</p>
         </div>
 
         <Button 
@@ -218,7 +252,7 @@ export default function BatchListContent() {
             setBatchForm({ name: "", description: "", start_date: "", end_date: "", max_members: 50 });
             setIsModalOpen(true);
           }}
-          className="h-16 px-10 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-xl shadow-blue-500/20 hover:scale-105 transition-all flex items-center justify-center gap-3"
+          className="w-full md:w-auto h-16 md:h-20 px-10 rounded-2xl md:rounded-3xl bg-blue-600 text-white font-black text-sm shadow-2xl shadow-blue-600/30 active:scale-95 hover:scale-[1.02] transition-all flex items-center justify-center gap-3 border-b-4 border-blue-800"
         >
           <Plus size={20} /> Create New Batch
         </Button>
@@ -275,7 +309,7 @@ export default function BatchListContent() {
         </div>
 
         {/* Analytics Overview Center - Preview Mode */}
-        <div className="lg:col-span-8">
+        <div className="hidden lg:block lg:col-span-8">
           <AnimatePresence mode="wait">
             {!selectedBatch ? (
               <motion.div 
@@ -383,6 +417,7 @@ export default function BatchListContent() {
           </AnimatePresence>
         </div>
       </div>
+    </div>
 
       {/* Create Modal */}
       <AnimatePresence>
@@ -457,6 +492,99 @@ export default function BatchListContent() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+      {/* 5. BATCH INFO POPUP (MOBILE ONLY) */}
+      {typeof document !== 'undefined' ? createPortal(
+        <AnimatePresence>
+          {isInfoModalOpen && selectedBatch && (
+            <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-transparent border-none">
+              {/* Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                onClick={() => setIsInfoModalOpen(false)}
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-md cursor-pointer" 
+              />
+              {/* Modal Card */}
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0, y: 20 }} 
+                animate={{ scale: 1, opacity: 1, y: 0 }} 
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="relative z-10 w-full max-w-[95%] sm:max-w-md bg-white rounded-[32px] shadow-2xl p-6 overflow-hidden max-h-[85vh] border border-slate-100/20 mx-auto box-border flex flex-col"
+              >
+                <div className="flex-shrink-0 flex items-center justify-between mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner shrink-0">
+                    <GraduationCap size={24} />
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button 
+                      onClick={(e) => {
+                        setIsInfoModalOpen(false);
+                        openEditModal(selectedBatch, e);
+                      }}
+                      className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:text-blue-600 transition-all border border-slate-100"
+                    >
+                      <Settings2 size={16} />
+                    </button>
+                    <button 
+                      onClick={() => setIsInfoModalOpen(false)}
+                      className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:text-rose-500 transition-all border border-slate-100"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="overflow-y-auto no-scrollbar space-y-5 pb-2">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase tracking-widest border border-emerald-100">{selectedBatch.status || 'Active'}</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ID: {selectedBatch.id.split('-')[0]}</span>
+                    </div>
+                    <h2 className="text-xl font-black text-[#0F172A] tracking-tight leading-tight mb-2 pr-2">{selectedBatch.name}</h2>
+                    <p className="text-xs text-slate-500 font-medium leading-relaxed">{selectedBatch.description || "Kelas bootcamp eksklusif untuk persiapan industri."}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-blue-600 shrink-0"><Calendar size={14} /></div>
+                      <div>
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Schedule</p>
+                        <p className="text-[10px] font-bold text-slate-700 truncate">{formatDate(selectedBatch.start_date)} - {formatDate(selectedBatch.end_date)}</p>
+                      </div>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-blue-600 shrink-0"><Users size={14} /></div>
+                      <div>
+                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Capacity</p>
+                        <p className="text-[10px] font-bold text-slate-700">{selectedBatchMembers} / {selectedBatch.max_members || 50} Students</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 space-y-2">
+                    <Link 
+                      href={`/v2/batch/${selectedBatch.id}`}
+                      className="w-full h-14 bg-blue-600 text-white rounded-xl font-black text-sm shadow-xl shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-95 transition-all border-b-4 border-blue-800"
+                    >
+                      Enter Workspace <ArrowRight size={16} />
+                    </Link>
+                    <button 
+                      onClick={(e) => {
+                        setIsInfoModalOpen(false);
+                        handleDeleteBatch(selectedBatch.id, selectedBatch.name, e);
+                      }}
+                      className="w-full py-2 text-[8px] font-black text-rose-500/30 hover:text-rose-500 uppercase tracking-[0.2em] transition-all"
+                    >
+                      Terminate Workspace
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      , document.body) : null}
+    </>
   );
 }
