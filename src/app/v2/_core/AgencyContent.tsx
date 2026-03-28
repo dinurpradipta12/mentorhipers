@@ -1,7 +1,5 @@
 "use client";
 
-
-
 import React, { useState, useEffect, use } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -26,20 +24,63 @@ import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function AgencyContent({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [workspace, setWorkspace] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [members, setMembers] = useState<any[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
-    fetchWorkspaceDetail();
-    fetchMembers();
+    const init = async () => {
+      await checkAuth();
+      await fetchWorkspaceDetail();
+      await fetchMembers();
+    };
+    init();
   }, [resolvedParams.id]);
 
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const legacyAdmin = typeof window !== 'undefined' ? localStorage.getItem('v2_legacy_admin') === 'true' : false;
+
+    if (!session && !legacyAdmin) {
+      router.push('/v2/login');
+      return;
+    }
+
+    if (legacyAdmin) {
+      setIsAuthorized(true);
+      return;
+    }
+
+    // Check if global admin or has membership in THIS workspace
+    const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session?.user.id).single();
+    
+    if (profile?.role === 'admin') {
+      setIsAuthorized(true);
+      return;
+    }
+
+    const { data: membership } = await supabase.from('v2_memberships')
+      .select('id')
+      .eq('workspace_id', resolvedParams.id)
+      .eq('profile_id', session?.user.id)
+      .maybeSingle();
+
+    if (membership) {
+      setIsAuthorized(true);
+    } else {
+      router.push('/v2/login');
+    }
+  };
+
   const fetchWorkspaceDetail = async () => {
+    setIsLoading(true);
     const { data } = await supabase.from('v2_workspaces').select('*').eq('id', resolvedParams.id).single();
     if (data) setWorkspace(data);
     setIsLoading(false);
@@ -59,6 +100,17 @@ export default function AgencyContent({ params }: { params: Promise<{ id: string
     { id: "roadmap", label: "Shared Roadmap", icon: <Target size={16} /> },
     { id: "members", label: "Team Members", icon: <Users size={16} /> }
   ];
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
+          Verifying Workspace Access...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-10 xl:p-12 space-y-12 max-w-[1700px] mx-auto min-h-screen">

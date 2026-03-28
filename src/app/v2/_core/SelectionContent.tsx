@@ -19,23 +19,50 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function SelectionContent() {
+  const [roleChecked, setRoleChecked] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const handleRoute = async () => {
+      // 1. Check Legacy Admin
       if (typeof window !== 'undefined' && localStorage.getItem('v2_legacy_admin') === 'true') {
-         return; // Legacy Admin Bypass - do not redirect to student portals
+         setRoleChecked(true);
+         return; 
       }
       
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      
+      // If no session, redirect to login
+      if (!session) {
+        router.push('/v2/login');
+        return;
+      }
+
       const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session.user.id).single();
-      if (profile && profile.role !== 'admin') {
-        const { data: membership } = await supabase.from('v2_memberships').select('workspace_id').eq('profile_id', session.user.id).single();
-        if (membership?.workspace_id) {
-          router.push(`/v2/portal/${membership.workspace_id}`);
+      
+      if (profile) {
+        if (profile.role === 'admin') {
+          // User is admin, show the selection screen
+          setRoleChecked(true);
+        } else {
+          // User is student, find their membership and redirect them
+          const { data: membership } = await supabase.from('v2_memberships')
+            .select('workspace_id')
+            .eq('profile_id', session.user.id)
+            .maybeSingle();
+
+          if (membership?.workspace_id) {
+            router.push(`/v2/portal/${membership.workspace_id}`);
+          } else {
+            // No membership found, could be an error or newly registered
+            // For safety, redirect to login or a generic 404
+            router.push('/v2/login');
+          }
         }
+      } else {
+        // No profile found? Likely not a V2 user.
+        router.push('/login');
       }
     };
     handleRoute();
@@ -65,6 +92,17 @@ export default function SelectionContent() {
       link: "/v2/agency"
     }
   ];
+
+  if (!roleChecked) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
+          Verifying Identity...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 md:p-12 xl:p-20 relative min-h-[calc(100vh-64px)] overflow-hidden">

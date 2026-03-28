@@ -467,7 +467,7 @@ export default function BatchContent({ params }: { params: Promise<{ id: string 
          return;
       }
       
-      const loginUrl = `${window.location.origin}/login`;
+      const loginUrl = `${window.location.origin}/v2/login`;
       const waMessage = `Halo ${newStudent.fullName}! Selamat bergabung di ${batch?.name || "Mentorhipers"}.\n\nSilakan login di ${loginUrl} dengan detail berikut:\nUsername: ${newStudent.username}\nPassword: ${newStudent.password}\n\nSelamat belajar! 🚀`;
 
       // Simpan data kreden untuk modal sukses

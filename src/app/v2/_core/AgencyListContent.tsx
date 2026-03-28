@@ -1,7 +1,5 @@
 "use client";
 
-
-
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -19,6 +17,7 @@ import {
   X
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -26,16 +25,44 @@ import { Button } from "@/components/ui/Button";
 export default function AgencyListContent() {
   const [workspaces, setWorkspaces] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
     description: "",
     max_members: 10
   });
+  const router = useRouter();
 
   useEffect(() => {
-    fetchWorkspaces();
+    const init = async () => {
+      await checkAdmin();
+      await fetchWorkspaces();
+    };
+    init();
   }, []);
+
+  const checkAdmin = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const legacyAdmin = typeof window !== 'undefined' ? localStorage.getItem('v2_legacy_admin') === 'true' : false;
+
+    if (!session && !legacyAdmin) {
+      router.push('/v2/login');
+      return;
+    }
+
+    if (legacyAdmin) {
+      setIsAuthorized(true);
+      return;
+    }
+
+    const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session?.user.id).single();
+    if (profile?.role === 'admin') {
+      setIsAuthorized(true);
+    } else {
+      router.push('/v2/login');
+    }
+  };
 
   const fetchWorkspaces = async () => {
     setIsLoading(true);
@@ -62,6 +89,17 @@ export default function AgencyListContent() {
       fetchWorkspaces();
     }
   };
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
+          Verifying Admin Access...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-10 xl:p-12 space-y-16 max-w-[1700px] mx-auto min-h-screen animate-in fade-in duration-700">
