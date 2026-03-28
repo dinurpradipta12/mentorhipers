@@ -823,28 +823,35 @@ export default function BatchContent({ id }: { id: string }) {
       }
 
       if (memData && memData.length > 0) {
-        const profileIds = memData.map(m => m.profile_id).filter(Boolean);
+        // 1. Deduplicate & filter IDs
+        const uniqueIds = Array.from(new Set(memData.map(m => m.profile_id).filter(Boolean)));
         
-        // Fetch profiles in a separate batch
-        const { data: profData, error: profError } = await supabase
-          .from('v2_profiles')
-          .select('id, full_name, avatar_url')
-          .in('id', profileIds);
+        // 2. Fetch profiles in small chunks of 10 to avoid DB timeouts
+        let allProfData: any[] = [];
+        const CHUNK_SIZE = 10;
+        
+        for (let i = 0; i < uniqueIds.length; i += CHUNK_SIZE) {
+          const chunk = uniqueIds.slice(i, i + CHUNK_SIZE);
+          const { data, error } = await supabase
+            .from('v2_profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', chunk);
           
-        if (profError) {
-          console.error("❌ Fetch Profiles Error:", profError.message);
-          // Still show memberships even if profiles fail
-          setStudents(memData.map(m => ({ ...m, v2_profiles: null })));
-          return;
+          if (!error && data) {
+            allProfData = [...allProfData, ...data];
+          } else if (error) {
+            console.error(`❌ Profile Chunk Fetch Failed (${i}-${i+CHUNK_SIZE}):`, error.message);
+          }
         }
 
-        // Combine manually
+        // 3. Combine with mapping (faster than nested find)
+        const profMap = new Map(allProfData.map(p => [p.id, p]));
         const combined = memData.map(m => ({
           ...m,
-          v2_profiles: profData?.find(p => p.id === m.profile_id)
+          v2_profiles: profMap.get(m.profile_id) || null
         }));
         
-        console.log(`👥 Found ${combined.length} students for this batch.`);
+        console.log(`👥 Found ${combined.length} students with ${allProfData.length} profiles resolved.`);
         setStudents(combined);
       } else {
         setStudents([]);

@@ -265,15 +265,24 @@ export default function PortalContent({ id }: { id: string }) {
       if (memError) return;
 
       if (memData && memData.length > 0) {
-        const profileIds = memData.map(m => m.profile_id).filter(Boolean);
-        const { data: profData } = await supabase
-          .from('v2_profiles')
-          .select('id, full_name, avatar_url')
-          .in('id', profileIds);
-          
+        const uniqueIds = Array.from(new Set(memData.map(m => m.profile_id).filter(Boolean)));
+        
+        let allProfData: any[] = [];
+        const CHUNK_SIZE = 10;
+        
+        for (let i = 0; i < uniqueIds.length; i += CHUNK_SIZE) {
+          const chunk = uniqueIds.slice(i, i + CHUNK_SIZE);
+          const { data } = await supabase
+            .from('v2_profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', chunk);
+          if (data) allProfData = [...allProfData, ...data];
+        }
+
+        const profMap = new Map(allProfData.map(p => [p.id, p]));
         const combined = memData.map(m => ({
           ...m,
-          v2_profiles: profData?.find(p => p.id === m.profile_id)
+          v2_profiles: profMap.get(m.profile_id) || null
         }));
         setStudents(combined);
       } else {
