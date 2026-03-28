@@ -1,19 +1,45 @@
-import React from "react";
-import LoginContent from "../_core/LoginContent";
-import SelectionContent from "../_core/SelectionContent";
+"use client";
 
-// This catch-all now only handles /v2 root and /v2/login.
-// All specific routes (batch, agency, portal) have dedicated page files.
+import dynamic from "next/dynamic";
+import React, { use } from "react";
+
+// THIS IS THE UNIVERSAL V2 CATCH-ALL ROUTER
+// Consolidation is the ONLY way to beat the Cloudflare Free Plan 3MB total deployment limit.
+// By using dynamic(..., { ssr: false }), we ensure that heavy UI components are not 
+// bundled into the server-side Edge function.
 export const runtime = 'edge';
 
-export default async function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
-  const resolvedParams = await params;
+const SelectionContent = dynamic(() => import("../_core/SelectionContent"), { ssr: false });
+const LoginContent = dynamic(() => import("../_core/LoginContent"), { ssr: false });
+const BatchListContent = dynamic(() => import("../_core/BatchListContent"), { ssr: false });
+const BatchContent = dynamic(() => import("../_core/BatchContent"), { ssr: false });
+const AgencyListContent = dynamic(() => import("../_core/AgencyListContent"), { ssr: false });
+const AgencyContent = dynamic(() => import("../_core/AgencyContent"), { ssr: false });
+const PortalContent = dynamic(() => import("../_core/PortalContent"), { ssr: false });
+
+export default function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
+  const resolvedParams = use(params);
   const slug = resolvedParams.slug || [];
 
+  // Routing Logic
   if (slug.length === 0) return <SelectionContent />;
   if (slug[0] === "login") return <LoginContent />;
+  
+  if (slug[0] === "batch") {
+    if (slug[1]) return <BatchContent params={Promise.resolve({ id: slug[1] })} />;
+    return <BatchListContent />;
+  }
+  
+  if (slug[0] === "agency") {
+    if (slug[1]) return <AgencyContent params={Promise.resolve({ id: slug[1] })} />;
+    return <AgencyListContent />;
+  }
+  
+  if (slug[0] === "portal" && slug[1]) {
+    return <PortalContent params={Promise.resolve({ id: slug[1] })} />;
+  }
 
-  // Not Found fallback for anything not matched by specific routes
+  // Not Found fallback
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="text-center">
