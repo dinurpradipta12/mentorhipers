@@ -810,18 +810,45 @@ export default function BatchContent({ id }: { id: string }) {
   const fetchStudents = async () => {
     try {
       console.log(`🔍 Querying students for Workspace ID: ${resolvedParams.id}`);
-      const { data, error } = await supabase
+      
+      // Split query to avoid timeout on heavy joins
+      const { data: memData, error: memError } = await supabase
         .from('v2_memberships')
-        .select('*, v2_profiles(id, full_name, avatar_url)')
+        .select('*')
         .eq('workspace_id', resolvedParams.id);
       
-      if (error) {
-        console.error("❌ Fetch Students Error:", error.message);
+      if (memError) {
+        console.error("❌ Fetch Memberships Error:", memError.message);
         return;
       }
-      
-      console.log(`👥 Found ${data?.length || 0} students for this batch.`);
-      if (data) setStudents(data);
+
+      if (memData && memData.length > 0) {
+        const profileIds = memData.map(m => m.profile_id).filter(Boolean);
+        
+        // Fetch profiles in a separate batch
+        const { data: profData, error: profError } = await supabase
+          .from('v2_profiles')
+          .select('id, full_name, avatar_url')
+          .in('id', profileIds);
+          
+        if (profError) {
+          console.error("❌ Fetch Profiles Error:", profError.message);
+          // Still show memberships even if profiles fail
+          setStudents(memData.map(m => ({ ...m, v2_profiles: null })));
+          return;
+        }
+
+        // Combine manually
+        const combined = memData.map(m => ({
+          ...m,
+          v2_profiles: profData?.find(p => p.id === m.profile_id)
+        }));
+        
+        console.log(`👥 Found ${combined.length} students for this batch.`);
+        setStudents(combined);
+      } else {
+        setStudents([]);
+      }
     } catch (err: any) {
       console.error("❌ Unexpected Error in fetchStudents:", err.message);
     }

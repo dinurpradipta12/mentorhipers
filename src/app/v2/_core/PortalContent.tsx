@@ -256,11 +256,32 @@ export default function PortalContent({ id }: { id: string }) {
   };
 
   const fetchStudents = async () => {
-    const { data } = await supabase
-      .from('v2_memberships')
-      .select('*, v2_profiles(id, full_name, avatar_url)')
-      .eq('workspace_id', resolvedParams.id);
-    if (data) setStudents(data);
+    try {
+      const { data: memData, error: memError } = await supabase
+        .from('v2_memberships')
+        .select('*')
+        .eq('workspace_id', resolvedParams.id);
+      
+      if (memError) return;
+
+      if (memData && memData.length > 0) {
+        const profileIds = memData.map(m => m.profile_id).filter(Boolean);
+        const { data: profData } = await supabase
+          .from('v2_profiles')
+          .select('id, full_name, avatar_url')
+          .in('id', profileIds);
+          
+        const combined = memData.map(m => ({
+          ...m,
+          v2_profiles: profData?.find(p => p.id === m.profile_id)
+        }));
+        setStudents(combined);
+      } else {
+        setStudents([]);
+      }
+    } catch (e) {
+      console.error("Fetch students failed:", e);
+    }
   };
 
   const fetchUserData = async (userId: string) => {
