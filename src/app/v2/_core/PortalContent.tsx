@@ -881,16 +881,22 @@ export default function PortalContent({ id }: { id: string }) {
                            </h3>
                            <p className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">{teamMembers.length} Members Enrolled</p>
                         </div>
-                        {myMem.group_wa_link && (
-                           <a 
-                              href={myMem.group_wa_link} 
-                              target="_blank" 
-                              rel="noreferrer"
-                              className="flex items-center gap-3 px-8 py-5 rounded-2xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm shadow-xl shadow-[#25D366]/20 transition-all hover:scale-105 active:scale-95 w-full md:w-auto justify-center"
-                           >
-                              <MessageSquare size={20} fill="white" /> Join WhatsApp Group
-                           </a>
-                        )}
+                        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto mt-2 md:mt-0">
+                           {myMem?.group_wa_link ? (
+                              <a 
+                                 href={myMem.group_wa_link} 
+                                 target="_blank" 
+                                 rel="noreferrer"
+                                 className="flex items-center gap-3 px-8 py-5 rounded-[24px] bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs uppercase tracking-[0.1em] shadow-xl shadow-[#25D366]/20 transition-all hover:scale-105 active:scale-95 w-full md:w-auto justify-center"
+                              >
+                                 <MessageSquare size={18} fill="white" /> Team Discussion Group
+                              </a>
+                           ) : (
+                              <div className="flex items-center gap-3 px-8 py-5 rounded-[24px] bg-slate-50 border border-slate-100 text-slate-400 font-black text-xs uppercase tracking-[0.1em] w-full md:w-auto justify-center opacity-60">
+                                 <MessageSquare size={18} /> WA Group Link Pending
+                              </div>
+                           )}
+                        </div>
                      </div>
                      
                      <div className="space-y-6">

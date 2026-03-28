@@ -53,6 +53,12 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 // Server Actions replaced with fetch calls to Edge-compatible API routes
 
+import dynamic from "next/dynamic";
+const IdCardContent = dynamic(() => import("./IdCardContent"), {
+  loading: () => <div className="h-64 flex items-center justify-center text-slate-200">Loading Student Identity...</div>,
+  ssr: false
+});
+
  function Countdown({ targetDate }: { targetDate: string }) {
    const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);
 
@@ -163,6 +169,8 @@ export default function BatchContent({ id }: { id: string }) {
   // Results Modal
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [lastQuizResult, setLastQuizResult] = useState<number>(0);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedStudentDetail, setSelectedStudentDetail] = useState<any>(null);
 
   // Student Management State
   const [studentActionTarget, setStudentActionTarget] = useState<any>(null);
@@ -992,14 +1000,18 @@ export default function BatchContent({ id }: { id: string }) {
                       </thead>
                       <tbody>
                         {students.map((mem) => (
-                           <tr key={mem.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                           <tr 
+                             key={mem.id} 
+                             onClick={() => { setSelectedStudentDetail(mem); setIsDetailModalOpen(true); }}
+                             className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer group/row"
+                           >
                              <td className="px-10 py-6">
                                <div className="flex items-center gap-4">
-                                 <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden">
+                                 <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border-2 border-transparent group-hover/row:border-blue-200 transition-all">
                                    {mem.v2_profiles?.avatar_url && <img src={mem.v2_profiles.avatar_url} className="w-full h-full object-cover" />}
                                  </div>
-                                 <div>
-                                   <p className="text-sm font-black text-[#0F172A]">{mem.v2_profiles?.full_name}</p>
+                                 <div className="group-hover/row:translate-x-1 transition-transform">
+                                   <p className="text-sm font-black text-[#0F172A] group-hover/row:text-blue-600 transition-colors">{mem.v2_profiles?.full_name}</p>
                                    <p className="text-[10px] font-bold text-slate-400">Student ID: {mem.id.slice(0, 8)}</p>
                                  </div>
                                </div>
@@ -1018,6 +1030,7 @@ export default function BatchContent({ id }: { id: string }) {
                                  <div className="relative">
                                    <button 
                                      onClick={(e) => {
+                                       e.stopPropagation();
                                        if (openActionMenuId === mem.id) {
                                          setOpenActionMenuId(null);
                                        } else {
@@ -2769,6 +2782,128 @@ export default function BatchContent({ id }: { id: string }) {
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
+
+      {/* STUDENT DETAIL MODAL (ID CARD + ANALYTICS) */}
+      <AnimatePresence>
+        {isDetailModalOpen && selectedStudentDetail && (() => {
+           const mem = selectedStudentDetail;
+           
+           // Analytics Component Reuse
+           const tasks = curriculum.filter((c: any) => c.type !== 'material' && c.is_published !== false);
+           const studentSubmissions = allSubmissions.filter((s: any) => s.profile_id === mem.profile_id);
+           
+           let totalPT = 0, countPT = 0, totalGC = 0, countGC = 0, totalAssign = 0, countAssign = 0;
+           tasks.forEach((t: any) => {
+              const qr = studentSubmissions.find(si => si.curriculum_id === t.id && si.score !== undefined);
+              const sub = studentSubmissions.find(si => si.curriculum_id === t.id);
+              let scoreValue = 0;
+              if (t.type === 'post_test') scoreValue = qr?.score || 0;
+              else if (sub?.grade) {
+                 const gMap: any = { 'A+': 100, 'A': 90, 'B+': 80, 'B': 70, 'C': 60, 'D': 40 };
+                 scoreValue = gMap[sub.grade] || 0;
+              }
+              
+              const isAutoZero = (scoreValue === 0 && !studentSubmissions.find(s => s.curriculum_id === t.id));
+              const actualScore = isAutoZero ? 0 : scoreValue;
+
+              if (t.type === 'post_test') { totalPT += actualScore; countPT++; }
+              else if (t.type === 'challenge') { totalGC += actualScore; countGC++; }
+              else if (t.type === 'individual_assignment') { totalAssign += actualScore; countAssign++; }
+           });
+
+           const avgPT = countPT > 0 ? totalPT / countPT : 0;
+           const avgAssign = countAssign > 0 ? totalAssign / countAssign : 0;
+           const avgGC = countGC > 0 ? totalGC / countGC : 0;
+           const attendCount = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
+           const modulesCount = curriculum.filter((c: any) => c.type === 'material').length;
+           const totalSessions = modulesCount + 2; 
+           const attendScore = totalSessions > 0 ? (attendCount / totalSessions) * 100 : 0;
+           const plusPointsTotal = Object.values(mem.plus_points || {}).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+           const finalKeaktifan = Math.min(100, attendScore + plusPointsTotal);
+
+           const finalAvg = (
+              (avgPT * gradingConfig.post_test_weight) +
+              (avgAssign * gradingConfig.assignment_weight) +
+              (avgGC * gradingConfig.challenge_weight) +
+              (finalKeaktifan * gradingConfig.attendance_weight)
+           ) / (gradingConfig.post_test_weight + gradingConfig.assignment_weight + gradingConfig.challenge_weight + gradingConfig.attendance_weight);
+
+           const getGrading = (avg: number) => {
+              if (avg >= 90) return { label: 'A+ (Superstar)', color: 'text-purple-600 bg-purple-50' };
+              if (avg >= 85) return { label: 'A (Very Good)', color: 'text-indigo-600 bg-indigo-50' };
+              if (avg >= 80) return { label: 'B+ (Good)', color: 'text-blue-600 bg-blue-50' };
+              if (avg >= 70) return { label: 'B (Average)', color: 'text-amber-600 bg-amber-50' };
+              if (avg >= 60) return { label: 'C (Below Avg)', color: 'text-orange-600 bg-orange-50' };
+              return { label: 'D (Very Poor)', color: 'text-rose-600 bg-rose-50' };
+           };
+           const grade = getGrading(finalAvg);
+
+           return (
+            <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-[#0F172A]/80 backdrop-blur-xl" onClick={() => setIsDetailModalOpen(false)}>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-4xl bg-white rounded-[56px] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden relative"
+              >
+                <button 
+                  onClick={() => setIsDetailModalOpen(false)}
+                  className="absolute top-6 right-6 w-12 h-12 rounded-2xl bg-slate-100/50 hover:bg-slate-200 text-slate-400 hover:text-slate-900 transition-all flex items-center justify-center z-[310]"
+                >
+                  <X size={20} />
+                </button>
+
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                  <div className={`p-10 relative overflow-hidden bg-gradient-to-br ${batch?.name?.toLowerCase()?.includes('ruang sosmed') ? 'from-sky-600 to-blue-800' : 'from-indigo-600 to-blue-800'}`}>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[60px] rounded-full translate-x-1/2 -translate-y-1/2" />
+                    <IdCardContent 
+                       batch={batch}
+                       currentUser={mem.v2_profiles}
+                       me={mem}
+                       resolvedParams={resolvedParams}
+                    />
+                  </div>
+
+                  <div className="p-10 space-y-10 bg-white">
+                    <div className="space-y-6">
+                      <div className="px-4 py-2 rounded-2xl bg-blue-50 border border-blue-100 text-[10px] font-black text-blue-600 uppercase tracking-widest w-fit">Academic Matrix</div>
+                      <h3 className="text-2xl font-black text-[#0F172A] tracking-tighter leading-none">Overall Progress</h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-6 rounded-[32px] bg-slate-50 border border-slate-100 space-y-2">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">GPA Score</p>
+                        <p className="text-3xl font-black text-blue-600">{Math.round(finalAvg)}<span className="text-sm font-bold text-slate-400">/100</span></p>
+                      </div>
+                      <div className="p-6 rounded-[32px] bg-slate-50 border border-slate-100 space-y-2">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Presence</p>
+                        <p className="text-3xl font-black text-emerald-600">{attendCount}<span className="text-sm font-bold text-slate-400">/{totalSessions}</span></p>
+                      </div>
+                    </div>
+
+                    <div className={`p-8 rounded-[36px] ${grade.color} border border-current flex flex-col items-center justify-center text-center gap-2`}>
+                      <Award size={32} />
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Achievement Grade</p>
+                        <h4 className="text-xl font-black">{grade.label}</h4>
+                      </div>
+                    </div>
+
+                    <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Authorized Student</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-tighter">Cohort {resolvedParams.id.substring(0,4)}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+           );
+        })()}
       </AnimatePresence>
 
       {/* QUIZ REVIEW & FEEDBACK MODAL */}

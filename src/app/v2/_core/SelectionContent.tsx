@@ -6,6 +6,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, 
+  ArrowLeft,
   Zap, 
   ShieldCheck
 } from "lucide-react";
@@ -99,10 +100,21 @@ export default function SelectionContent() {
   }
 
   return (
-    <div className="p-8 md:p-12 xl:p-20 relative min-h-[calc(100vh-64px)] overflow-hidden">
+    <div className="p-8 md:p-12 xl:p-20 relative min-h-[calc(100vh-64px)] overflow-hidden bg-white">
       {/* Decorative Blur BG */}
       <div className="absolute top-20 right-20 w-80 h-80 bg-blue-400/10 blur-[120px] rounded-full -z-10" />
       <div className="absolute bottom-20 left-20 w-96 h-96 bg-emerald-400/10 blur-[120px] rounded-full -z-10" />
+
+      {/* Admin V1 Return Button */}
+      <div className="absolute top-8 right-8 md:top-12 md:right-12 z-50">
+        <Link 
+          href="/admin/dashboard" 
+          className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-[#0F172A] hover:bg-white hover:shadow-xl hover:shadow-slate-200/50 transition-all font-black text-[10px] uppercase tracking-[0.2em] group"
+        >
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
+          Switch to V1
+        </Link>
+      </div>
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
