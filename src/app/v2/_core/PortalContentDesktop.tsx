@@ -40,7 +40,8 @@ import {
   QrCode,
   ShieldCheck,
   Fingerprint,
-  Camera
+  Camera,
+  Eye
 } from "lucide-react";
 import { supabaseV2 as supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
@@ -228,7 +229,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     // 1. Quizzes
     const { data: qData } = await supabase
       .from('v2_quiz_results')
-      .select('curriculum_id, score')
+      .select('curriculum_id, score, answers_json')
       .eq('profile_id', userId)
       .eq('workspace_id', resolvedParams.id);
     if (qData) setMyQuizResults(qData);
@@ -409,7 +410,14 @@ export default function PortalContentDesktop({ id }: { id: string }) {
      }
   };
 
-  const handleOpenSubmitModal = (task: any) => {
+   const handleReviewQuiz = (task: any, result: any) => {
+      setActiveQuiz(task);
+      setQuizAnswers(result.answers_json || {});
+      setLastQuizResult(result.score);
+      setIsResultModalOpen(true);
+   };
+
+   const handleOpenSubmitModal = (task: any) => {
      setActiveTask(task);
      setSubmitForm({ file_link: '', mentor_feedback: '' });
      setIsSubmitModalOpen(true);
@@ -825,16 +833,26 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                                   )}
                                                </div>
                                             )}
-                                            <div className={`h-16 px-8 rounded-[28px] ${status === 'completed' ? 'bg-emerald-50 text-emerald-600' : status === 'in_review' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'} font-black text-xs flex items-center gap-3 border border-slate-100`}>
-                                               <div className="flex flex-col">
-                                                  <p className="text-[8px] opacity-60 uppercase">{status.replace('_', ' ')}</p>
-                                                  <div className="flex items-center gap-2">
-                                                     {status === 'completed' ? <Check size={14} /> : <Clock size={14} />}
-                                                     <span>{grade !== undefined ? `SCORE: ${grade}` : 'TASK DONE'}</span>
-                                                  </div>
-                                               </div>
-                                            </div>
-                                         </div>
+                                                                     <div className="flex items-center gap-3">
+                                                 {task.type === 'post_test' && quiz && (
+                                                   <button 
+                                                      onClick={() => handleReviewQuiz(task, quiz)}
+                                                      className="h-16 px-8 rounded-[28px] bg-slate-50 border border-slate-100 text-slate-400 font-black text-xs hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all shadow-sm flex items-center gap-2"
+                                                   >
+                                                      <Eye size={16} /> Review Hasil
+                                                   </button>
+                                                 )}
+                                                 <div className={`h-16 px-8 rounded-[28px] ${status === 'completed' ? 'bg-emerald-50 text-emerald-600' : status === 'in_review' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'} font-black text-xs flex items-center gap-3 border border-slate-100`}>
+                                                   <div className="flex flex-col">
+                                                      <p className="text-[8px] opacity-60 uppercase">{status.replace('_', ' ')}</p>
+                                                      <div className="flex items-center gap-2">
+                                                         {status === 'completed' ? <Check size={14} /> : <Clock size={14} />}
+                                                         <span>{grade !== undefined ? `SCORE: ${grade}` : 'TASK DONE'}</span>
+                                                      </div>
+                                                   </div>
+                                                 </div>
+                                             </div>
+                                          </div>
                                       );
                                    }
 
@@ -1311,50 +1329,104 @@ export default function PortalContentDesktop({ id }: { id: string }) {
 
         {/* RESULTS MODAL - Premium Experience */}
         <AnimatePresence>
-          {isResultModalOpen && (
+          {isResultModalOpen && (() => {
+             const questions = activeQuiz?.quiz_data?.questions || [];
+             const wrongAnswers = questions.map((q: any, qi: number) => {
+                const studentAnswer = quizAnswers[qi];
+                if (studentAnswer !== q.correct) {
+                   return {
+                      number: qi + 1,
+                      questionHtml: q.text,
+                      studentChoice: studentAnswer !== undefined ? q.options[studentAnswer] : "Tidak Dijawab",
+                      correctChoice: q.options[q.correct]
+                   };
+                }
+                return null;
+             }).filter(Boolean);
+
+             return (
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-2xl">
                <motion.div 
                  initial={{ opacity: 0, scale: 0.8, y: 100 }}
                  animate={{ opacity: 1, scale: 1, y: 0 }}
                  exit={{ opacity: 0, scale: 0.8, y: 100 }}
-                 className="w-full max-w-md bg-white rounded-[56px] shadow-3xl overflow-hidden text-center relative p-12 space-y-8"
+                 className="w-full max-w-xl bg-white rounded-[56px] shadow-3xl overflow-hidden relative flex flex-col max-h-[95vh]"
                >
-                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600" />
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 z-20" />
                   
-                  <div className="space-y-4">
-                     <div className={`w-24 h-24 rounded-[36px] mx-auto flex items-center justify-center shadow-2xl ${lastQuizResult >= 80 ? 'bg-emerald-500 text-white shadow-emerald-500/30' : lastQuizResult >= 60 ? 'bg-blue-600 text-white shadow-blue-600/30' : 'bg-rose-500 text-white shadow-rose-500/30'}`}>
-                        {lastQuizResult >= 80 ? <Award size={48} /> : lastQuizResult >= 60 ? <Check size={48} strokeWidth={3} /> : <Zap size={48} />}
+                  <div className="overflow-y-auto p-12 space-y-8 flex-1 scrollbar-thin scrollbar-thumb-slate-200">
+                     <div className="text-center space-y-4">
+                        <div className={`w-24 h-24 rounded-[36px] mx-auto flex items-center justify-center shadow-2xl ${lastQuizResult >= 80 ? 'bg-emerald-500 text-white shadow-emerald-500/30' : lastQuizResult >= 60 ? 'bg-blue-600 text-white shadow-blue-600/30' : 'bg-rose-500 text-white shadow-rose-500/30'}`}>
+                           {lastQuizResult >= 80 ? <Award size={48} /> : lastQuizResult >= 60 ? <Check size={48} strokeWidth={3} /> : <Zap size={48} />}
+                        </div>
+                        <div className="space-y-1">
+                           <h3 className="text-3xl font-black text-[#0F172A] tracking-tighter">
+                              {lastQuizResult >= 80 ? 'Incredible Work!' : lastQuizResult >= 60 ? 'Great Progress!' : 'Keep Learning!'}
+                           </h3>
+                           <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Your dynamic score report is ready</p>
+                        </div>
                      </div>
-                     <div className="space-y-1">
-                        <h3 className="text-3xl font-black text-[#0F172A] tracking-tighter">
-                           {lastQuizResult >= 80 ? 'Incredible Work!' : lastQuizResult >= 60 ? 'Great Progress!' : 'Keep Learning!'}
-                        </h3>
-                        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Your dynamic score report is ready</p>
-                     </div>
-                  </div>
 
-                  <div className="p-10 rounded-[44px] bg-slate-50 border border-slate-100 space-y-2">
-                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Achieved Score</p>
-                     <div className="flex items-baseline justify-center gap-2">
-                        <span className={`text-6xl font-black ${lastQuizResult >= 80 ? 'text-emerald-500' : lastQuizResult >= 60 ? 'text-blue-600' : 'text-rose-500'}`}>{lastQuizResult}</span>
-                        <span className="text-xl font-black text-slate-300">/100</span>
+                     <div className="p-10 rounded-[44px] bg-slate-50 border border-slate-100 space-y-2 text-center">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Achieved Score</p>
+                        <div className="flex items-baseline justify-center gap-2">
+                           <span className={`text-6xl font-black ${lastQuizResult >= 80 ? 'text-emerald-500' : lastQuizResult >= 60 ? 'text-blue-600' : 'text-rose-500'}`}>{lastQuizResult}</span>
+                           <span className="text-xl font-black text-slate-300">/100</span>
+                        </div>
                      </div>
-                  </div>
 
-                  <div className="space-y-4">
-                     <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-[280px] mx-auto">
-                        {lastQuizResult >= 80 ? 'Maaf, score kamu terlalu sempurna! Kamu resmi menjadi salah satu murid terbaik minggu ini.' : 'Bagus! Kamu sudah menguasai materi ini dengan baik. Terus tingkatkan performamu!'}
-                     </p>
-                     <Button 
-                        onClick={() => setIsResultModalOpen(false)}
-                        className="w-full h-16 rounded-[24px] bg-gradient-to-r from-[#0ea5e9] to-[#1e3a8a] text-white font-black text-sm shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
-                     >
-                        Continue Journey
-                     </Button>
+                     {/* WRONG ANSWERS REPORT */}
+                     {wrongAnswers.length > 0 && (
+                        <div className="space-y-6 pt-4 border-t border-slate-100 text-left">
+                           <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center font-black text-xs border border-rose-100 shadow-sm shrink-0">
+                                 {wrongAnswers.length}
+                              </div>
+                              <div>
+                                 <h3 className="text-lg font-black text-[#0F172A] tracking-tight">Koreksi Jawaban Salah</h3>
+                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Needs Improvement</p>
+                              </div>
+                           </div>
+                           
+                           <div className="grid grid-cols-1 gap-4">
+                              {wrongAnswers.map((wa: any, idx: number) => (
+                                 <div key={idx} className="p-5 bg-white border border-slate-200 rounded-[24px] shadow-sm space-y-4">
+                                    <div className="flex gap-3 items-start">
+                                       <span className="shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-[10px] font-black">{wa.number}</span>
+                                       <p className="text-sm font-bold text-slate-800 leading-snug pt-0.5">{wa.questionHtml}</p>
+                                    </div>
+                                    <div className="pl-9 space-y-3 pt-1 border-t border-slate-50 mt-4">
+                                       <div className="flex gap-2 items-start">
+                                          <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-[10px] font-black uppercase shrink-0 mt-0.5 shadow-inner">Tebakan</span>
+                                          <p className="text-xs font-medium text-slate-500 line-through decoration-rose-300">{wa.studentChoice}</p>
+                                       </div>
+                                       <div className="flex gap-2 items-start">
+                                          <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase shrink-0 mt-0.5 shadow-inner">Benar</span>
+                                          <p className="text-xs font-bold text-emerald-600 bg-emerald-50/50">{wa.correctChoice}</p>
+                                       </div>
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                     )}
+
+                     <div className="space-y-4 text-center pt-6 pb-2">
+                        <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-[280px] mx-auto">
+                           {lastQuizResult >= 80 ? 'Maaf, score kamu terlalu sempurna! Kamu resmi menjadi salah satu murid terbaik minggu ini.' : 'Bagus! Kamu sudah menguasai materi ini dengan baik. Terus tingkatkan performamu!'}
+                        </p>
+                        <Button 
+                           onClick={() => setIsResultModalOpen(false)}
+                           className="w-full h-16 rounded-[24px] bg-gradient-to-r from-[#0ea5e9] to-[#1e3a8a] text-white font-black text-sm shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
+                        >
+                           Continue Journey
+                        </Button>
+                     </div>
                   </div>
                </motion.div>
             </div>
-          )}
+             );
+          })()}
         </AnimatePresence>
 
         {/* SUBMIT ASSIGNMENT MODAL (Non-Quiz) */}
