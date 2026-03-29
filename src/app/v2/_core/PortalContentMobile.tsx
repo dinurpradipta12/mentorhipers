@@ -37,11 +37,16 @@ import {
   Fingerprint,
   Stethoscope,
   MessageCircle,
-  RotateCcw
+  RotateCcw,
+  Check,
+  XCircle,
+  ChevronLeft,
+  Trophy
 } from "lucide-react";
 import { supabaseV2 as supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { getYouTubeEmbedUrl } from "@/lib/utils";
+import { Button } from "@/components/ui/Button";
 import dynamic from "next/dynamic";
 
 // Dynamic Import for IdCard
@@ -67,6 +72,20 @@ export default function PortalContentMobile({ id }: { id: string }) {
   const idCardRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
 
+  // Quiz State
+  const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
+  const [activeQuiz, setActiveQuiz] = useState<any>(null);
+  const [quizAnswers, setQuizAnswers] = useState<any>({});
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [lastQuizResult, setLastQuizResult] = useState<number>(0);
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [activeTask, setActiveTask] = useState<any>(null);
+  const [submitForm, setSubmitForm] = useState({ file_link: '' });
+  
+  // Leaderboard State
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [isLeaderboardLoading, setIsLeaderboardLoading] = useState(false);
+
   // Statistics
   const [stats, setStats] = useState({
     gpa: 0,
@@ -87,13 +106,17 @@ export default function PortalContentMobile({ id }: { id: string }) {
        return;
     }
 
-    const [bRes, cRes, pRes, mRes, qRes, sRes] = await Promise.all([
+    const [bRes, cRes, pRes, mRes, qRes, sRes, allMemsRes, allQuizRes, allSubRes] = await Promise.all([
       supabase.from('v2_workspaces').select('id, name, description, type, start_date, end_date, max_members, status, settings, schedules, created_at').eq('id', id).single(),
       supabase.from('v2_curriculums').select('id, title, type, module_name, description, due_date, video_url, quiz_data, assets_json, is_published, created_at').eq('workspace_id', id).order('created_at', { ascending: true }),
       supabase.from('v2_profiles').select('id, full_name, username, role, avatar_url, updated_at').eq('id', user.id).single(),
-      supabase.from('v2_memberships').select('id, workspace_id, profile_id, group_name, group_wa_link, is_leader, attendance, plus_points, joined_at').eq('workspace_id', id).eq('profile_id', user.id).single(),
-      supabase.from('v2_quiz_results').select('curriculum_id, score').eq('profile_id', user.id).eq('workspace_id', id),
-      supabase.from('v2_submissions').select('id, curriculum_id, file_link, status, grade, mentor_feedback, is_feedback_read, created_at, v2_curriculums(title)').eq('profile_id', user.id).eq('workspace_id', id)
+      supabase.from('v2_memberships').select('id, workspace_id, profile_id, group_name, group, group_wa_link, is_leader, attendance, plus_points, joined_at').eq('workspace_id', id).eq('profile_id', user.id).single(),
+      supabase.from('v2_quiz_results').select('curriculum_id, score, answers_json').eq('profile_id', user.id).eq('workspace_id', id),
+      supabase.from('v2_submissions').select('id, curriculum_id, file_link, status, grade, mentor_feedback, is_feedback_read, created_at, v2_curriculums(title)').eq('profile_id', user.id).eq('workspace_id', id),
+      // Leaderboard data
+      supabase.from('v2_memberships').select('*, v2_profiles:profile_id(full_name, avatar_url)').eq('workspace_id', id),
+      supabase.from('v2_quiz_results').select('profile_id, curriculum_id, score').eq('workspace_id', id),
+      supabase.from('v2_submissions').select('profile_id, curriculum_id, grade').eq('workspace_id', id)
     ]);
 
     const batchData = bRes.data;
@@ -102,6 +125,9 @@ export default function PortalContentMobile({ id }: { id: string }) {
     const membershipData = mRes.data;
     const quizResults = qRes.data || [];
     const assignmentSubmissions = sRes.data || [];
+    const allMems = allMemsRes.data || [];
+    const allQuizzes = allQuizRes.data || [];
+    const allSubs = allSubRes.data || [];
 
     setBatch(batchData);
     setCurriculum(curriculumData);
@@ -157,39 +183,67 @@ export default function PortalContentMobile({ id }: { id: string }) {
        activeSessionToday: activeToday
     });
 
-    // Fetch group members
-    if (membershipData?.group_name && membershipData.group_name !== 'Unassigned') {
-      const { data: groupMemData } = await supabase
-        .from('v2_memberships')
-        .select('id, profile_id, group_name, is_leader, group_wa_link')
-        .eq('workspace_id', id)
-        .eq('group_name', membershipData.group_name);
+    // Leaderboard Calculation
+    const leaderboardData = allMems.map((mem: any) => {
+       let totalPT_L = 0, countPT_L = 0, totalGC_L = 0, countGC_L = 0, totalAssign_L = 0, countAssign_L = 0;
+       const memQuizzes = allQuizzes.filter((q: any) => q.profile_id === mem.profile_id);
+       const memSubs = allSubs.filter((s: any) => s.profile_id === mem.profile_id);
 
-      if (groupMemData && groupMemData.length > 0) {
-        console.log(`🔍 Mobile Group Sync: Joining for ${membershipData.group_name}`);
+       tasks.forEach((t: any) => {
+          const qr = memQuizzes.find(si => si.curriculum_id === t.id);
+          const sub = memSubs.find(si => si.curriculum_id === t.id);
+          let scoreValue = 0;
+          if (qr) scoreValue = qr.score;
+          else if (sub?.grade) {
+             const gMap: any = { 'A+': 100, 'A': 90, 'B+': 80, 'B': 70, 'C': 60, 'D': 40 };
+             scoreValue = gMap[sub.grade] || 0;
+          }
+          if (t.type === 'post_test') { totalPT_L += scoreValue; countPT_L++; }
+          else if (t.type === 'challenge') { totalGC_L += scoreValue; countGC_L++; }
+          else if (t.type === 'individual_assignment') { totalAssign_L += scoreValue; countAssign_L++; }
+       });
+
+       const avgPT_L = countPT_L > 0 ? totalPT_L / countPT_L : 0;
+       const avgAssign_L = countAssign_L > 0 ? totalAssign_L / countAssign_L : 0;
+       const avgGC_L = countGC_L > 0 ? totalGC_L / countGC_L : 0;
+       const attendCount_L = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
+       const attendScore_L = totalSessions > 0 ? (attendCount_L / totalSessions) * 100 : 0;
+       const plusPoints_L = Object.values(mem.plus_points || {}).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+       const finalKeaktifan_L = Math.min(100, attendScore_L + plusPoints_L);
+       const gpa_L = Math.round(avgPT_L * 0.3 + avgAssign_L * 0.3 + avgGC_L * 0.2 + finalKeaktifan_L * 0.2);
+
+       return {
+          id: mem.id,
+          profile_id: mem.profile_id,
+          full_name: mem.v2_profiles?.full_name || 'Anonymous',
+          avatar_url: mem.v2_profiles?.avatar_url,
+          group_name: mem.group_name || mem.group || null,
+          gpa: gpa_L,
+          isMe: mem.profile_id === profileData?.id
+       };
+    });
+
+    leaderboardData.sort((a: any, b: any) => b.gpa - a.gpa);
+    setLeaderboard(leaderboardData);
+
+    // Fetch group members
+    const groupName = membershipData?.group_name || membershipData?.group;
+    if (groupName && groupName !== 'Unassigned') {
+      const { data: memWithProfs, error: joinErr } = await supabase
+        .from('v2_memberships')
+        .select(`
+          *,
+          v2_profiles:profile_id (
+            id,
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('workspace_id', id)
+        .or(`group_name.eq.${groupName},group.eq.${groupName}`);
         
-        // Single atomic Join Query
-        const { data: memWithProfs, error: joinErr } = await supabase
-          .from('v2_memberships')
-          .select(`
-            *,
-            v2_profiles:profile_id (
-              id,
-              full_name,
-              avatar_url
-            )
-          `)
-          .eq('workspace_id', id)
-          .eq('group_name', membershipData.group_name);
-        
-        if (joinErr) {
-          console.error("❌ Mobile Group Join Failed:", joinErr.message);
-          // Fallback
-          const { data: fallback } = await supabase.from('v2_memberships').select('id, workspace_id, profile_id, group_name, group_wa_link, is_leader, attendance, plus_points, joined_at').eq('workspace_id', id).eq('group_name', membershipData.group_name);
-          if (fallback) setGroupMembers(fallback);
-        } else {
-          setGroupMembers(memWithProfs || []);
-        }
+      if (!joinErr) {
+        setGroupMembers(memWithProfs || []);
       }
     }
 
@@ -237,6 +291,98 @@ export default function PortalContentMobile({ id }: { id: string }) {
     router.push('/v2/login');
   };
 
+  const handleTakeQuiz = (c: any) => {
+    if (!c.quiz_data || !c.quiz_data.questions || c.quiz_data.questions.length === 0) {
+       alert("This quiz has no questions yet. Contact mentor!");
+       return;
+    }
+    setActiveQuiz(c);
+    setQuizAnswers({});
+    setIsQuizModalOpen(true);
+ };
+
+ const handleSubmitQuiz = async () => {
+    if (!activeQuiz || !currentUser) return;
+    
+    setIsLoading(true);
+    try {
+       // Check for existing attempt
+       const { data: existing } = await supabase
+          .from('v2_quiz_results')
+          .select('id')
+          .eq('curriculum_id', activeQuiz.id)
+          .eq('profile_id', currentUser.id)
+          .single();
+       
+       if (existing) {
+          alert("You have already submitted this task!");
+          setIsQuizModalOpen(false);
+          return;
+       }
+
+       const questions = activeQuiz.quiz_data.questions;
+       let correctCount = 0;
+       questions.forEach((q: any, i: number) => {
+          if (quizAnswers[i] === q.correct) correctCount++;
+       });
+
+       const score = Math.round((correctCount / questions.length) * 100);
+
+       const { error: resError } = await supabase.from('v2_quiz_results').insert([
+          {
+             curriculum_id: activeQuiz.id,
+             profile_id: currentUser.id,
+             workspace_id: id,
+             answers_json: quizAnswers,
+             score: score
+          }
+       ]);
+       if (resError) throw resError;
+
+       setLastQuizResult(score);
+       setIsQuizModalOpen(false);
+       setIsResultModalOpen(true);
+       initMobile(); // Refresh data
+    } catch (err: any) {
+       alert("Failed to submit quiz: " + err.message);
+    } finally {
+       setIsLoading(false);
+    }
+ };
+
+ const handleReviewQuiz = (task: any, result: any) => {
+    setActiveQuiz(task);
+    setQuizAnswers(result.answers_json || {});
+    setLastQuizResult(result.score);
+    setIsResultModalOpen(true);
+ };
+
+  const handleOpenSubmitModal = (task: any) => {
+     setActiveTask(task);
+     setSubmitForm({ file_link: '' });
+     setIsSubmitModalOpen(true);
+  };
+
+  const handleSubmitAssignment = async () => {
+     if (!activeTask || !currentUser) return;
+     if (!submitForm.file_link) { alert("Sediakan link tugas!"); return; }
+     setIsLoading(true);
+     try {
+        const { error } = await supabase.from('v2_submissions').insert([{
+           curriculum_id: activeTask.id,
+           profile_id: currentUser.id,
+           workspace_id: id,
+           file_link: submitForm.file_link,
+           status: 'pending'
+        }]);
+        if (error) throw error;
+        setIsSubmitModalOpen(false);
+        initMobile();
+        alert("Berhasil dikirim! 🛸✨");
+     } catch (err: any) { alert(err.message); }
+     finally { setIsLoading(false); }
+  };
+
   if (isLoading && !batch) return (
      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-12 text-center">
         <div className="w-16 h-16 border-4 border-blue-50 border-t-blue-600 rounded-full animate-spin mb-6" />
@@ -279,7 +425,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
                   <div className="space-y-1 flex items-center justify-between">
                      <div>
                         <h2 className="text-2xl font-black text-slate-900 tracking-tighter">Hi, {currentUser?.full_name?.split(' ')[0]}!👋</h2>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{membership?.group_name || 'Individual Scholar'}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{membership?.group_name || membership?.group || 'Individual Scholar'}</p>
                      </div>
                      <div className="flex items-baseline gap-1 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
                         <TrendingUp size={12} className="text-emerald-500" />
@@ -360,7 +506,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
                            </div>
                            <div>
                              <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-tight">Your Group</p>
-                             <h4 className="text-sm font-black text-slate-900 tracking-tight leading-tight mt-0.5">{membership?.group_name}</h4>
+                             <h4 className="text-sm font-black text-slate-900 tracking-tight leading-tight mt-0.5">{membership?.group_name || membership?.group}</h4>
                            </div>
                          </div>
                          {/* WA Button */}
@@ -491,10 +637,36 @@ export default function PortalContentMobile({ id }: { id: string }) {
                <div className="space-y-2 px-2"><h3 className="text-xl font-black text-slate-900 tracking-tight">Active Assignments</h3><p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{curriculum.filter(c => c.type !== 'material' && c.is_published !== false).length - (myQuizResults.length + myAssignments.length)} Items Pending</p></div>
                <div className="space-y-4 pb-8">
                   {curriculum.filter(c => c.type !== 'material' && c.is_published !== false).map((c) => {
-                     const isDone = myQuizResults.some(q => q.curriculum_id === c.id) || myAssignments.some(a => a.curriculum_id === c.id);
+                     const quizRes = myQuizResults.find(q => q.curriculum_id === c.id);
+                     const assSub = myAssignments.find(a => a.curriculum_id === c.id);
+                     const isDone = !!quizRes || !!assSub;
+
+                     const handleClick = () => {
+                        if (isDone) {
+                           if (quizRes) handleReviewQuiz(c, quizRes);
+                           else alert("Assignment submitted. Check results in profile.");
+                        } else {
+                           if (c.type === 'post_test') handleTakeQuiz(c);
+                           else handleOpenSubmitModal(c);
+                        }
+                     };
+
                      return (
-                        <div key={c.id} className={`p-6 bg-white border ${isDone ? 'border-emerald-100' : 'border-slate-100'} rounded-[36px] flex items-center justify-between shadow-sm shadow-slate-200/50`}>
-                           <div className="flex items-center gap-4"><div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${isDone ? 'bg-emerald-50 text-emerald-500 shadow-inner' : 'bg-slate-50 text-slate-300 shadow-inner'}`}>{isDone ? <CheckCircle2 size={20} /> : <FileText size={20} />}</div><div><h4 className="text-sm font-black text-slate-800 tracking-tight line-clamp-1">{c.title}</h4><p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{c.type.replace(/_/g, ' ')}</p></div></div>
+                        <div key={c.id} onClick={handleClick} className={`p-6 bg-white border ${isDone ? 'border-emerald-100' : 'border-slate-100'} rounded-[36px] flex items-center justify-between shadow-sm shadow-slate-200/50 active:scale-95 transition-all`}>
+                           <div className="flex items-center gap-4">
+                              <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${isDone ? 'bg-emerald-50 text-emerald-500 shadow-inner' : 'bg-slate-50 text-slate-300 shadow-inner'}`}>
+                                 {isDone ? <CheckCircle2 size={20} /> : <FileText size={20} />}
+                              </div>
+                              <div>
+                                 <h4 className="text-sm font-black text-slate-800 tracking-tight line-clamp-1">{c.title}</h4>
+                                 <div className="flex items-center gap-2 mt-0.5">
+                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{c.type.replace(/_/g, ' ')}</p>
+                                    {isDone && (
+                                       <span className="text-[8px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase">SCORE: {quizRes?.score || assSub?.grade || 'OK'}</span>
+                                    )}
+                                 </div>
+                              </div>
+                           </div>
                            <ChevronRight size={18} className="text-slate-200" />
                         </div>
                      );
@@ -511,7 +683,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
                      <div className="w-full h-full rounded-[36px] bg-slate-100 overflow-hidden ring-4 ring-white">{currentUser?.avatar_url ? <img src={currentUser.avatar_url} alt={currentUser?.full_name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-black text-3xl text-slate-400">{currentUser?.full_name?.charAt(0)}</div>}</div>
                      <div className="absolute -bottom-1 -right-1 p-2 bg-emerald-500 text-white rounded-xl shadow-lg border-2 border-white"><CheckCircle2 size={12} strokeWidth={3} /></div>
                   </div>
-                  <div><h3 className="text-2xl font-black text-slate-900 tracking-tighter leading-tight mb-2">{currentUser?.full_name}</h3><div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600"><User size={10} /><span className="text-[9px] font-black uppercase tracking-widest">{membership?.group_name || 'Individual scholar'}</span></div></div>
+                  <div><h3 className="text-2xl font-black text-slate-900 tracking-tighter leading-tight mb-2">{currentUser?.full_name}</h3><div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600"><User size={10} /><span className="text-[9px] font-black uppercase tracking-widest">{membership?.group_name || membership?.group || 'Academic Scholar'}</span></div></div>
                </div>
 
                <div className="space-y-4">
@@ -558,6 +730,126 @@ export default function PortalContentMobile({ id }: { id: string }) {
                </button>
             </div>
          )}
+
+         {/* RANKING / LEADERBOARD TAB */}
+         {activeTab === 'ranking' && (
+            <div className="px-6 py-8 space-y-10 min-h-screen pb-40">
+               <div className="space-y-2 text-center">
+                  <h3 className="text-2xl font-black text-slate-900 tracking-tighter">Batch Hall of Fame</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Recognizing the most dedicated scholars<br/>based on Overall GPA</p>
+               </div>
+
+               {/* PODIUM SECTION */}
+               <div className="flex items-end justify-center gap-2 pt-12 pb-4 px-2">
+                  {/* 2nd Place */}
+                  {leaderboard[1] && (
+                     <div className="flex flex-col items-center flex-1 space-y-3">
+                        <div className="relative">
+                           <div className="w-16 h-16 rounded-[28px] bg-slate-200 p-0.5 shadow-lg border-2 border-slate-300">
+                               <div className="w-full h-full rounded-[26px] overflow-hidden bg-slate-100">
+                                 {leaderboard[1].avatar_url ? <img src={leaderboard[1].avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-black text-slate-400 capitalize">{leaderboard[1].full_name.charAt(0)}</div>}
+                              </div>
+                           </div>
+                           <div className="absolute -bottom-2 -right-1 w-7 h-7 bg-slate-400 text-white rounded-lg flex items-center justify-center font-black text-xs border-2 border-white shadow-md">2</div>
+                        </div>
+                        <div className="text-center">
+                           <p className="text-[10px] font-black text-slate-800 line-clamp-1 max-w-[80px]">{leaderboard[1].full_name.split(' ')[0]}</p>
+                           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                              {leaderboard[1].group_name || 'Scholar'}
+                           </p>
+                        </div>
+                     </div>
+                  )}
+
+                  {/* 1st Place */}
+                  {leaderboard[0] && (
+                     <div className="flex flex-col items-center flex-1 space-y-3 scale-110 -translate-y-4">
+                        <div className="relative">
+                           <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-amber-400"><Sparkles size={16} fill="currentColor" /></div>
+                           <div className="w-20 h-20 rounded-[32px] bg-amber-400 p-0.5 shadow-2xl shadow-amber-200 border-2 border-white ring-4 ring-amber-50">
+                              <div className="w-full h-full rounded-[30px] overflow-hidden bg-amber-100">
+                                 {leaderboard[0].avatar_url ? <img src={leaderboard[0].avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-black text-amber-600 capitalize">{leaderboard[0].full_name.charAt(0)}</div>}
+                              </div>
+                           </div>
+                           <div className="absolute -bottom-2 -right-1 w-8 h-8 bg-amber-500 text-white rounded-xl flex items-center justify-center font-black text-sm border-2 border-white shadow-lg">1</div>
+                        </div>
+                        <div className="text-center">
+                           <p className="text-xs font-black text-slate-900 line-clamp-1 max-w-[100px]">{leaderboard[0].full_name.split(' ')[0]}</p>
+                           <div className="flex items-center justify-center gap-1 text-[8px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full uppercase tracking-widest mt-0.5 shadow-sm shadow-amber-100">
+                              {leaderboard[0].group_name || 'Top Scholar'}
+                           </div>
+                        </div>
+                     </div>
+                  )}
+
+                  {/* 3rd Place */}
+                  {leaderboard[2] && (
+                     <div className="flex flex-col items-center flex-1 space-y-3">
+                        <div className="relative">
+                           <div className="w-16 h-16 rounded-[28px] bg-orange-200 p-0.5 shadow-lg border-2 border-orange-300">
+                              <div className="w-full h-full rounded-[26px] overflow-hidden bg-orange-50">
+                                 {leaderboard[2].avatar_url ? <img src={leaderboard[2].avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-black text-orange-400 capitalize">{leaderboard[2].full_name.charAt(0)}</div>}
+                              </div>
+                           </div>
+                           <div className="absolute -bottom-2 -right-1 w-7 h-7 bg-orange-400 text-white rounded-lg flex items-center justify-center font-black text-xs border-2 border-white shadow-md">3</div>
+                        </div>
+                        <div className="text-center">
+                           <p className="text-[10px] font-black text-slate-800 line-clamp-1 max-w-[80px]">{leaderboard[2].full_name.split(' ')[0]}</p>
+                           <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                              {leaderboard[2].group_name || 'Scholar'}
+                           </p>
+                        </div>
+                     </div>
+                  )}
+               </div>
+
+               {/* LIST SECTION */}
+               <div className="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 p-2 space-y-1">
+                  {leaderboard.slice(3, 15).map((student, index) => (
+                     <div key={student.id} className={`flex items-center justify-between p-4 rounded-[28px] transition-all ${student.isMe ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-transparent text-slate-800'}`}>
+                        <div className="flex items-center gap-4">
+                           <span className={`w-6 text-[10px] font-black ${student.isMe ? 'text-white/60' : 'text-slate-300'}`}>#{index + 4}</span>
+                           <div className={`w-11 h-11 rounded-2xl overflow-hidden border ${student.isMe ? 'border-white/30' : 'border-slate-100 shadow-inner'}`}>
+                              {student.avatar_url ? <img src={student.avatar_url} className="w-full h-full object-cover" /> : <div className={`w-full h-full flex items-center justify-center font-black text-[10px] capitalize ${student.isMe ? 'bg-white/10 text-white' : 'bg-slate-50 text-slate-400'}`}>{student.full_name.charAt(0)}</div>}
+                           </div>
+                           <div>
+                              <p className="text-sm font-black tracking-tight">{student.full_name}</p>
+                              <p className={`text-[8px] font-bold uppercase tracking-widest mt-0.5 ${student.isMe ? 'text-white/60' : 'text-slate-400'}`}>
+                                 {student.group_name || 'Academic Scholar'}
+                              </p>
+                           </div>
+                        </div>
+                        <div className={`flex flex-col items-end gap-0.5 px-3 py-1 rounded-xl ${student.isMe ? 'bg-white/20' : 'bg-slate-50 border border-slate-100'}`}>
+                           <div className="flex items-baseline gap-0.5">
+                              <span className="text-xs font-black">{student.gpa}</span>
+                              <span className={`text-[7px] font-black opacity-50`}>%</span>
+                           </div>
+                           <span className="text-[7px] font-black opacity-40 leading-none">
+                              {student.gpa >= 85 ? 'DISTINCTION' : student.gpa >= 70 ? 'MERIT' : 'PASS'}
+                           </span>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+
+               {/* MY RANK STICKY INDICATOR (Optional if not in top 10) */}
+               {leaderboard.findIndex(l => l.isMe) >= 10 && (
+                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed bottom-32 left-8 right-8 bg-slate-900 p-4 rounded-3xl text-white flex items-center justify-between shadow-2xl border border-white/10">
+                     <div className="flex items-center gap-4">
+                        <div className="w-6 text-[10px] font-black text-white/40">#{leaderboard.findIndex(l => l.isMe) + 1}</div>
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/20">
+                           {currentUser?.avatar_url ? <img src={currentUser.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/10 flex items-center justify-center font-black text-xs">{currentUser?.full_name?.charAt(0)}</div>}
+                        </div>
+                        <div className="space-y-0.5">
+                           <p className="text-xs font-black">Your Current Position</p>
+                           <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest">Academic Excellence</p>
+                        </div>
+                     </div>
+                     <div className="text-lg font-black text-sky-400">{stats.gpa}%</div>
+                  </motion.div>
+               )}
+            </div>
+         )}
       </main>
 
       {/* 3. ID CARD MODAL */}
@@ -578,12 +870,180 @@ export default function PortalContentMobile({ id }: { id: string }) {
          )}
       </AnimatePresence>
 
+      {/* 5. QUIZ TAKING MODAL - MOBILE ADAPTED */}
+      <AnimatePresence>
+         {isQuizModalOpen && activeQuiz && (
+            <div className="fixed inset-0 z-[120] bg-slate-900 shadow-2xl flex flex-col pt-safe">
+               <div className="p-6 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 shadow-inner">
+                        <FileText size={20} className="text-white" />
+                     </div>
+                     <div>
+                        <h2 className="text-lg font-black tracking-tight leading-tight">{activeQuiz.title}</h2>
+                        <p className="text-[8px] text-blue-100 font-bold uppercase tracking-widest mt-0.5">{activeQuiz.module_name || "Assessment"}</p>
+                     </div>
+                  </div>
+                  <button onClick={() => setIsQuizModalOpen(false)} className="p-2 bg-white/10 rounded-xl">
+                     <X size={20} className="text-white" />
+                  </button>
+               </div>
+
+               <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
+                  {activeQuiz.quiz_data.questions.map((q: any, qi: number) => (
+                     <div key={qi} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm space-y-4">
+                        <div className="flex items-start gap-4">
+                           <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 font-black text-xs mt-0.5">
+                              {qi+1}
+                           </div>
+                           <h3 className="text-sm font-black text-slate-800 leading-snug">{q.text}</h3>
+                        </div>
+                        <div className="space-y-2">
+                           {q.options.map((opt: string, oi: number) => (
+                              <button 
+                                key={oi}
+                                onClick={() => setQuizAnswers({ ...quizAnswers, [qi]: oi })}
+                                className={`w-full p-4 rounded-[20px] text-left border-2 transition-all duration-200 font-bold text-xs flex items-center justify-between ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-50 bg-slate-50/50 text-slate-500'}`}
+                              >
+                                 <span className="pr-3 leading-snug">{opt}</span>
+                                 <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200'}`}>
+                                    {quizAnswers[qi] === oi && <Check size={8} strokeWidth={4} />}
+                                 </div>
+                              </button>
+                           ))}
+                        </div>
+                     </div>
+                  ))}
+               </div>
+
+               <div className="p-6 bg-white border-t border-slate-100 space-y-4 pb-safe-offset-4">
+                  <div className="flex items-center justify-between px-2">
+                     <p className="text-[10px] font-bold text-slate-400">PROGRESS</p>
+                     <p className="text-sm font-black text-blue-600">{Object.keys(quizAnswers).length} / {activeQuiz.quiz_data.questions.length}</p>
+                  </div>
+                  <Button 
+                     onClick={handleSubmitQuiz}
+                     disabled={Object.keys(quizAnswers).length < activeQuiz.quiz_data.questions.length || isLoading}
+                     className="w-full h-14 rounded-2xl bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100"
+                  >
+                     {isLoading ? 'SUBMITTING...' : 'FINISH & SUBMIT RESULTS'}
+                  </Button>
+               </div>
+            </div>
+         )}
+      </AnimatePresence>
+
+      {/* 6. RESULT MODAL - MOBILE ADAPTED */}
+      <AnimatePresence>
+         {isResultModalOpen && (() => {
+            const questions = activeQuiz?.quiz_data?.questions || [];
+            const wrongAnswers = questions.map((q: any, qi: number) => {
+               const studentAnswer = quizAnswers[qi];
+               if (studentAnswer !== q.correct) {
+                  return {
+                     number: qi + 1,
+                     questionHtml: q.text,
+                     studentChoice: studentAnswer !== undefined ? q.options[studentAnswer] : "No Answer",
+                     correctChoice: q.options[q.correct]
+                  };
+               }
+               return null;
+            }).filter(Boolean);
+
+            return (
+               <div className="fixed inset-0 z-[130] bg-slate-950/90 backdrop-blur-xl p-6 flex items-center justify-center">
+                  <motion.div 
+                     initial={{ scale: 0.9, opacity: 0 }}
+                     animate={{ scale: 1, opacity: 1 }}
+                     className="w-full max-h-[90vh] bg-white rounded-[44px] overflow-hidden flex flex-col"
+                  >
+                     <div className="w-full h-1 bg-gradient-to-r from-blue-600 to-indigo-600" />
+                     <div className="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-hide">
+                        <div className="text-center space-y-4">
+                           <div className={`w-20 h-20 rounded-[32px] mx-auto flex items-center justify-center shadow-2xl ${lastQuizResult >= 80 ? 'bg-emerald-500' : lastQuizResult >= 60 ? 'bg-blue-600' : 'bg-rose-500'} text-white`}>
+                              {lastQuizResult >= 80 ? <Award size={40} /> : <Check size={40} strokeWidth={3} />}
+                           </div>
+                           <div>
+                              <h3 className="text-2xl font-black text-slate-900 tracking-tighter">Your Score Report</h3>
+                              <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-1">Quiz Completed Successfully</p>
+                           </div>
+                        </div>
+
+                        <div className="p-8 rounded-[36px] bg-slate-50 border border-slate-100 text-center">
+                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Achievements</p>
+                           <div className="flex items-baseline justify-center gap-1">
+                              <span className={`text-5xl font-black ${lastQuizResult >= 80 ? 'text-emerald-500' : lastQuizResult >= 60 ? 'text-blue-600' : 'text-rose-500'}`}>{lastQuizResult}</span>
+                              <span className="text-lg font-black text-slate-200">/100</span>
+                           </div>
+                        </div>
+
+                        {wrongAnswers.length > 0 && (
+                           <div className="space-y-6 pt-6 border-t border-slate-100">
+                              <div className="flex items-center gap-3">
+                                 <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center font-black text-[10px] border border-rose-100">
+                                    {wrongAnswers.length}
+                                 </div>
+                                 <h4 className="text-base font-black text-slate-800 tracking-tight">Koreksi Jawaban</h4>
+                              </div>
+                              <div className="space-y-4">
+                                 {wrongAnswers.map((wa: any, i: number) => (
+                                    <div key={i} className="p-5 bg-slate-50 rounded-[28px] border border-slate-100 space-y-4">
+                                       <div className="flex gap-3">
+                                          <span className="text-[9px] font-black text-slate-400 px-2 py-1 bg-white rounded-lg border border-slate-100 h-fit italic">Q{wa.number}</span>
+                                          <p className="text-xs font-bold text-slate-700 leading-relaxed">{wa.questionHtml}</p>
+                                       </div>
+                                       <div className="pl-4 space-y-2 border-l-2 border-slate-200">
+                                          <p className="text-[10px] text-rose-500 font-medium line-through decoration-rose-200">Chosen: {wa.studentChoice}</p>
+                                          <p className="text-xs text-emerald-600 font-black">Correct: {wa.correctChoice}</p>
+                                       </div>
+                                    </div>
+                                 ))}
+                              </div>
+                           </div>
+                        )}
+
+                        <Button onClick={() => setIsResultModalOpen(false)} className="w-full h-14 rounded-2xl bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest mt-4">BACK TO CLASSROOM</Button>
+                     </div>
+                  </motion.div>
+               </div>
+            );
+         })()}
+      </AnimatePresence>
+
+      {/* 7. ASSIGNMENT SUBMIT MODAL - MOBILE */}
+      <AnimatePresence>
+         {isSubmitModalOpen && (
+            <div className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-xl p-6 flex items-end pb-12">
+               <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="w-full bg-white rounded-[40px] p-8 space-y-8 shadow-2xl">
+                  <div className="flex items-center justify-between">
+                     <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center"><Target size={24} /></div>
+                     <button onClick={() => setIsSubmitModalOpen(false)} className="w-10 h-10 bg-slate-50 text-slate-300 rounded-xl flex items-center justify-center"><X size={18} /></button>
+                  </div>
+                  <div className="space-y-2">
+                     <h2 className="text-xl font-black text-slate-900 tracking-tighter">Submit Assignment</h2>
+                     <p className="text-[10px] font-medium text-slate-400">Input link Canva / Gdrive yang bisa diakses oleh mentor.</p>
+                  </div>
+                  <input 
+                     value={submitForm.file_link}
+                     onChange={(e) => setSubmitForm({ file_link: e.target.value })}
+                     placeholder="https://canva.com/..."
+                     className="w-full h-14 bg-slate-50 rounded-2xl px-6 text-sm font-bold border border-slate-100 focus:border-blue-500 focus:outline-none transition-all"
+                  />
+                  <Button onClick={handleSubmitAssignment} disabled={isLoading} className="w-full h-14 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-100">
+                     SUBMIT NOW
+                  </Button>
+               </motion.div>
+            </div>
+         )}
+      </AnimatePresence>
+
       {/* 4. NATIVE BOTTOM NAV - LIGHT AMBIENT THEME */}
       <nav className="fixed bottom-8 left-6 right-6 z-[100] h-20 bg-white/70 backdrop-blur-2xl rounded-2xl border border-white/40 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] flex items-center justify-around px-4">
          {[
             { id: 'home', icon: <Home size={22} strokeWidth={2.5} />, label: 'Home' },
             { id: 'learning', icon: <PlayCircle size={22} strokeWidth={2.5} />, label: 'Classes' },
             { id: 'tasks', icon: <FileText size={22} strokeWidth={2.5} />, label: 'Tasks' },
+            { id: 'ranking', icon: <Trophy size={22} strokeWidth={2.5} />, label: 'Hall of Fame' },
             { id: 'profile', icon: <User size={22} strokeWidth={2.5} />, label: 'Me' }
          ].map((t) => (
             <button key={t.id} onClick={() => setActiveTab(t.id)} className={`relative flex flex-col items-center justify-center gap-1 transition-all ${activeTab === t.id ? 'text-sky-600 scale-105 font-black' : 'text-slate-400 font-bold'}`}>
