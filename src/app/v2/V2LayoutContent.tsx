@@ -103,36 +103,36 @@ export default function V2LayoutContent({
 
   const pathname = usePathname();
   const isLoginPage = pathname === "/v2/login";
+  const isPortalPage = pathname.includes("/v2/portal");
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-blue-100 selection:text-blue-700">
-      {/* V2 Branding / Header */}
-      {/* V2 Branding / Header */}
-      {!isLoginPage && isAdmin && (
-        <nav className="fixed top-0 left-0 right-0 h-24 bg-slate-950 border-b border-white/5 z-50 flex items-center justify-between px-10 shadow-2xl">
+      {/* V2 Branding / Header - ONLY SHOW ON ADMIN PAGES, HIDDEN ON PORTAL/PREVIEW */}
+      {!isLoginPage && !isPortalPage && isAdmin && (
+        <nav className="fixed top-0 left-0 right-0 h-24 bg-white border-b border-slate-100 z-50 flex items-center justify-between px-10 shadow-sm transition-all duration-300">
           <Link href="/v2" className="flex items-center group">
             <img 
               src={pathname.startsWith('/v2/batch') ? '/logo_rs.png' : '/logo.png'} 
-              className="h-14 w-auto object-contain transition-all group-hover:scale-105 brightness-0 invert" 
+              className="h-14 w-auto object-contain transition-all group-hover:scale-105" 
               alt="Workspace Logo" 
             />
           </Link>
           
           <div className="flex items-center gap-6">
             {isAdmin && (
-              <Link href="/admin/dashboard" className="px-6 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white/40 hover:text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 border border-white/5">
+              <Link href="/admin/dashboard" className="px-6 py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center gap-3 border border-slate-100">
                 <LogOut size={14} className="rotate-180" /> Back to V1
               </Link>
             )}
             
-            <div className="h-8 w-px bg-white/10" />
+            <div className="h-8 w-px bg-slate-100" />
             
             <div className="flex items-center gap-4 pl-2">
                <div className="text-right hidden sm:block">
-                  <p className="text-[11px] font-black leading-none text-white">{mentorProfile?.name || "Premium Mentor"}</p>
+                  <p className="text-[11px] font-black leading-none text-slate-800">{mentorProfile?.name || "Premium Mentor"}</p>
                   <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mt-1">Online</p>
                </div>
-               <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 overflow-hidden shadow-inner flex items-center justify-center text-white/20">
+               <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden shadow-inner flex items-center justify-center text-slate-300">
                   {mentorProfile?.avatar ? (
                     <img src={mentorProfile.avatar} className="w-full h-full object-cover" alt="Avatar" />
                   ) : (

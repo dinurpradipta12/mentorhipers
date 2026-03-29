@@ -1197,8 +1197,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                       const totalTasks = curriculum.filter(t => t.type !== 'material').length;
                                       const pending = Math.max(0, totalTasks - submissions);
                                       const riskScore = (absents * 2) + pending;
-                                      return { mem, absents, pending, score: riskScore };
-                                   }).filter(r => r.score > 2).sort((a, b) => b.score - a.score).slice(0, 2);
+                                      return { mem, absents, pending, score: riskScore, submissions };
+                                   }).filter(r => r.score > 2 && (r.submissions > 0 || r.absents > 0)).sort((a, b) => b.score - a.score).slice(0, 2);
 
                                    if (risky.length === 0) return (
                                       <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
