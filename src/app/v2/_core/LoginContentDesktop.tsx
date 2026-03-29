@@ -34,18 +34,16 @@ export default function LoginContentDesktop() {
       setLoading(true);
       setError("");
 
-      // 1. ARUNIKA LEGACY BYPASS
-      if (email === "arunika" && password === "ar4925") {
-         await supabase.auth.signOut(); // Clear any cached student sessions
-         localStorage.setItem("v2_legacy_admin", "true");
-         router.push('/v2');
-         return;
-      }
-
       try {
-         // INTERCEPT FOR USERNAME LOGIN
+         // INTERCEPT FOR USERNAME / ADMIN LOGIN
          let loginIdentifier = email;
-         if (email && !email.includes('@')) {
+         
+         // 1. ARUNIKA ADMIN MAPPING
+         if (email === "arunika" && password === "ar4925") {
+            loginIdentifier = "arunika@mentorhipers.local";
+         } 
+         // 2. STUDENT USERNAME MAPPING
+         else if (email && !email.includes('@')) {
             loginIdentifier = `${email.toLowerCase().trim()}@mentorhipers.local`;
          }
 
