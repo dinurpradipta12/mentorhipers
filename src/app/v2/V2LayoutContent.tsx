@@ -5,7 +5,7 @@ import { LogOut, User, Upload } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabaseV2 as supabase } from "@/lib/supabase";
+import { supabase, supabaseV2 } from "@/lib/supabase";
 
 export default function V2LayoutContent({
   children,
@@ -30,12 +30,12 @@ export default function V2LayoutContent({
   }, []);
 
   const checkRole = async () => {
-    // 1. USE getSession() instead of getUser() in Layout to avoid auth-lock competition with Page
-    const { data: { session } } = await supabase.auth.getSession();
+    // 1. USE V2 CLIENT (supabaseV2) for Profiles
+    const { data: { session } } = await supabaseV2.auth.getSession();
     const user = session?.user;
     
     if (user) {
-       const { data: profile } = await supabase.from('v2_profiles').select('*').eq('id', user.id).single();
+       const { data: profile } = await supabaseV2.from('v2_profiles').select('*').eq('id', user.id).single();
        if (profile) {
           setUserProfile(profile);
           if (profile.role === 'admin') {
@@ -53,6 +53,7 @@ export default function V2LayoutContent({
   };
 
   const fetchSettings = async () => {
+    // 2. USE V1 CLIENT (supabase) for Legacy Mentor Profile
     const { data: mentor } = await supabase.from('mentor_profile').select('*').eq('id', 1).single();
     if (mentor) setMentorProfile(mentor);
   };
@@ -66,17 +67,18 @@ export default function V2LayoutContent({
       const fileName = `${userProfile.id}-${Math.random()}.${fileExt}`;
       const filePath = `profiles/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      // 3. STORAGE ALSO MOVED to V2 (supabaseV2)
+      const { error: uploadError } = await supabaseV2.storage
         .from('avatars')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = supabaseV2.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      const { error: dbError } = await supabase
+      const { error: dbError } = await supabaseV2
         .from("v2_profiles")
         .update({ avatar_url: publicUrl })
         .eq("id", userProfile.id);
@@ -87,7 +89,7 @@ export default function V2LayoutContent({
       setShowOnboarding(false);
 
       // Auto-Redirect to Portal
-      const { data: membership } = await supabase.from('v2_memberships').select('workspace_id').eq('profile_id', userProfile.id).single();
+      const { data: membership } = await supabaseV2.from('v2_memberships').select('workspace_id').eq('profile_id', userProfile.id).single();
       if (membership?.workspace_id) {
          router.push(`/v2/portal/${membership.workspace_id}`);
       }
