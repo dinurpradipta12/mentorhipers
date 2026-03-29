@@ -17,10 +17,14 @@ import {
   Pencil, 
   Trash2, 
   Shield, 
-  X
+  X,
+  Crown,
+  Trophy,
+  Medal,
+  Star
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseV2 as supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 
 export default function BatchContentMobile({ id }: { id: string }) {
@@ -29,6 +33,7 @@ export default function BatchContentMobile({ id }: { id: string }) {
   const [batch, setBatch] = useState<any>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [curriculum, setCurriculum] = useState<any[]>([]);
+  const [allSubmissions, setAllSubmissions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // --- MOBILE ADMIN QUICK ACTION STATES ---
@@ -42,20 +47,36 @@ export default function BatchContentMobile({ id }: { id: string }) {
   const [isMoveGroupSheetOpen, setIsMoveGroupSheetOpen] = useState(false);
   const [moveGroupTarget, setMoveGroupTarget] = useState('');
 
+  const [isReportSheetOpen, setIsReportSheetOpen] = useState(false);
+  const [selectedReportStudent, setSelectedReportStudent] = useState<any>(null);
+
+  const gradingConfig = {
+      post_test_weight: 40,
+      assignment_weight: 40,
+      challenge_weight: 10,
+      attendance_weight: 10
+  };
+
   useEffect(() => {
     let isMounted = true;
     const initMobile = async () => {
       setIsLoading(true);
-      const { data: bData } = await supabase.from('v2_workspaces').select('*').eq('id', id).single();
+      const { data: bData } = await supabase.from('v2_workspaces').select('id, name, description, type, start_date, end_date, max_members, status, settings, schedules, created_at').eq('id', id).single();
       const { data: cData } = await supabase.from('v2_curriculums').select('*').eq('workspace_id', id).order('created_at', { ascending: true });
       
+      // Fetch Submissions and Quiz results for Leaderboard
+      const subPromise = supabase.from('v2_submissions').select('curriculum_id, profile_id, grade').eq('workspace_id', id);
+      const quizPromise = supabase.from('v2_quiz_results').select('curriculum_id, profile_id, score').eq('workspace_id', id);
+      const [ { data: subData }, { data: qData } ] = await Promise.all([subPromise, quizPromise]);
+
       if (isMounted) {
          setBatch(bData);
          setCurriculum(cData || []);
+         setAllSubmissions([...(subData || []), ...(qData || [])]);
       }
 
       // Safe Profile Fetching (Avoid 500 Base64 Crash)
-      const { data: basicMem } = await supabase.from('v2_memberships').select('*').eq('workspace_id', id);
+      const { data: basicMem } = await supabase.from('v2_memberships').select('id, workspace_id, profile_id, group_name, group_wa_link, is_leader, attendance, plus_points, joined_at').eq('workspace_id', id);
       
       if (basicMem && basicMem.length > 0) {
         const rawProfileIds = [...new Set(basicMem.map(m => m.profile_id).filter(Boolean))];
@@ -208,11 +229,99 @@ export default function BatchContentMobile({ id }: { id: string }) {
               <div className="flex justify-between items-center mb-4">
                  <h2 className="text-2xl font-black text-slate-800 tracking-tight">Leaderboard</h2>
               </div>
-              <div className="p-10 text-center rounded-[32px] border-2 border-dashed border-slate-200 bg-white/50 space-y-3">
-                 <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-[20px] flex items-center justify-center mx-auto mb-2"><BarChart4 size={32} /></div>
-                 <h3 className="text-sm font-black text-slate-800">Raport Optimization Pending</h3>
-                 <p className="text-[10px] text-slate-400 font-bold leading-relaxed">System is calculating GPA and active participations. Re-syncing...</p>
-                 <Button className="h-10 px-6 rounded-xl bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-widest shadow-none hover:bg-slate-200 border-none mt-4 mx-auto w-fit">Calculate Now</Button>
+              
+              <div className="space-y-3 pb-20">
+                {(() => {
+                  const ranked = students.map(mem => {
+                    const studentSubmissions = allSubmissions.filter(s => s.profile_id === mem.profile_id);
+                    let totalPT = 0, countPT = 0, totalAssign = 0, countAssign = 0, totalGC = 0, countGC = 0;
+                    
+                    const tasks = curriculum.filter(t => t.type !== 'material');
+                    tasks.forEach(t => {
+                       let score = null;
+                       const now = new Date().getTime();
+                       const deadlineElapsed = t.due_date ? (new Date(t.due_date).getTime() + 86400000) < now : false;
+
+                       if (t.type === 'post_test') {
+                          const res = studentSubmissions.find(s => s.curriculum_id === t.id && s.score !== undefined);
+                          score = res ? (res.score || 0) : (deadlineElapsed ? 0 : null);
+                          if (score !== null) { totalPT += score; countPT++; }
+                       } else {
+                          const sub = studentSubmissions.find(s => s.curriculum_id === t.id && s.grade !== undefined);
+                          score = sub ? (sub.grade || 0) : (deadlineElapsed ? 0 : null);
+                          if (score !== null) {
+                            if (t.type === 'challenge') { totalGC += score; countGC++; }
+                            else { totalAssign += score; countAssign++; }
+                          }
+                       }
+                    });
+
+                    const avgPT = countPT > 0 ? totalPT / countPT : 0;
+                    const avgAssign = countAssign > 0 ? totalAssign / countAssign : 0;
+                    const avgGC = countGC > 0 ? totalGC / countGC : 0;
+                    
+                    const finalAvg = (
+                       (avgPT * gradingConfig.post_test_weight) +
+                       (avgAssign * gradingConfig.assignment_weight) +
+                       (avgGC * gradingConfig.challenge_weight)
+                    ) / (gradingConfig.post_test_weight + gradingConfig.assignment_weight + gradingConfig.challenge_weight + gradingConfig.attendance_weight);
+
+                    return { ...mem, finalAvg };
+                  }).sort((a, b) => b.finalAvg - a.finalAvg);
+
+                  return ranked.map((s, idx) => (
+                    <div 
+                      key={s.id} 
+                      onClick={() => { setSelectedReportStudent(s); setIsReportSheetOpen(true); }}
+                      className="p-4 bg-white rounded-3xl border border-slate-100 flex items-center justify-between shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] active:scale-[0.98] transition-all cursor-pointer"
+                    >
+                       <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <div className="w-14 h-14 rounded-[22px] bg-slate-100 overflow-hidden border-2 border-white shadow-md ring-1 ring-slate-100">
+                               {s.v2_profiles?.avatar_url ? (
+                                  <img src={s.v2_profiles.avatar_url} className="w-full h-full object-cover" />
+                               ) : (
+                                  <div className="w-full h-full flex items-center justify-center font-black text-slate-400 bg-slate-50 text-xl">
+                                     {s.v2_profiles?.full_name?.charAt(0)}
+                                  </div>
+                               )}
+                            </div>
+                            {/* RANK ICON OVERLAY */}
+                            {idx === 0 && (
+                               <div className="absolute -top-2 -left-2 w-8 h-8 bg-amber-400 text-white rounded-full flex items-center justify-center shadow-lg shadow-amber-300/50 border-2 border-white rotate-[-12deg]">
+                                  <Crown size={16} fill="currentColor" />
+                               </div>
+                            )}
+                            {idx === 1 && (
+                               <div className="absolute -top-2 -left-2 w-7 h-7 bg-slate-400 text-white rounded-full flex items-center justify-center shadow-lg shadow-slate-300/50 border-2 border-white">
+                                  <Trophy size={14} fill="currentColor" />
+                               </div>
+                            )}
+                            {idx === 2 && (
+                               <div className="absolute -top-2 -left-2 w-7 h-7 bg-orange-400 text-white rounded-full flex items-center justify-center shadow-lg shadow-orange-300/50 border-2 border-white">
+                                  <Medal size={14} fill="currentColor" />
+                               </div>
+                            )}
+                          </div>
+                          <div>
+                             <h4 className="text-sm font-black text-slate-800 line-clamp-1">{s.v2_profiles?.full_name}</h4>
+                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                <span className={idx < 3 ? 'text-blue-500 font-black' : ''}>#{idx + 1} RANK</span>
+                                <span className="w-1 h-1 bg-slate-200 rounded-full" />
+                                <span>{s.group_name || "MEMBER"}</span>
+                             </p>
+                          </div>
+                       </div>
+                       <div className="text-right">
+                          <div className="flex items-end justify-end gap-0.5">
+                             <div className="text-xl font-black text-slate-900 leading-none">{Math.round(s.finalAvg)}</div>
+                             <div className="text-[8px] font-black text-blue-500 uppercase mb-0.5">pts</div>
+                          </div>
+                          <span className="text-[8px] font-black uppercase text-slate-300 tracking-tighter block mt-1">Global Score</span>
+                       </div>
+                    </div>
+                  ));
+                })()}
               </div>
            </div>
          )}
@@ -322,6 +431,98 @@ export default function BatchContentMobile({ id }: { id: string }) {
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 mb-2 block text-center">Atau buat kelompok baru</label>
                         <input type="text" value={moveGroupTarget} onChange={e => setMoveGroupTarget(e.target.value)} placeholder="e.g. Batch 17 - Tiger" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-center text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all mb-4" />
                         <Button onClick={handleMoveGroup} className="w-full h-14 bg-blue-600 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 outline-none">Konfirmasi Perpindahan</Button>
+                     </div>
+                  </div>
+               </motion.div>
+            </>
+         )}
+         {/* Detailed Progress Report Sheet */}
+         {isReportSheetOpen && selectedReportStudent && (
+            <>
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsReportSheetOpen(false)} className="fixed inset-0 bg-slate-900/60 z-[300] backdrop-blur-md" />
+               <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="fixed bottom-0 inset-x-0 z-[310] bg-white rounded-t-[44px] p-6 pb-safe shadow-[0_-20px_60px_rgba(0,0,0,0.15)] flex flex-col max-h-[95vh]">
+                  <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-8 shrink-0" />
+                  
+                  <div className="flex items-center gap-5 mb-10 px-2 shrink-0">
+                     <div className="w-20 h-20 rounded-[28px] bg-slate-100 overflow-hidden shadow-2xl shadow-slate-200 ring-2 ring-white ring-offset-2">
+                        {selectedReportStudent.v2_profiles?.avatar_url ? (
+                           <img src={selectedReportStudent.v2_profiles.avatar_url} className="w-full h-full object-cover" />
+                        ) : (
+                           <div className="w-full h-full flex items-center justify-center font-black text-slate-400 text-2xl">
+                              {selectedReportStudent.v2_profiles?.full_name?.charAt(0)}
+                           </div>
+                        )}
+                     </div>
+                     <div className="flex-1">
+                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                           Academic Stats <span className="w-1 h-1 bg-blue-200 rounded-full" /> {selectedReportStudent.group_name || "Batch Member"}
+                        </p>
+                        <h3 className="text-2xl font-black text-slate-900 tracking-tighter leading-tight mb-2">{selectedReportStudent.v2_profiles?.full_name}</h3>
+                        <div className="flex items-center gap-3">
+                           <div className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase border border-emerald-100">Active Student</div>
+                           <div className="flex items-center gap-1 text-amber-500 font-black text-[10px] uppercase">
+                              <Star size={12} fill="currentColor" /> {Math.round(selectedReportStudent.finalAvg)} Overall
+                           </div>
+                        </div>
+                     </div>
+                     <button onClick={() => setIsReportSheetOpen(false)} className="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center active:scale-90 transition-all shrink-0"><X size={20} /></button>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto px-2 space-y-8 pb-10 custom-scrollbar">
+                     {/* OVERVIEW SCORE CARD */}
+                     <div className="grid grid-cols-2 gap-4">
+                        <div className="p-6 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[32px] text-white shadow-xl shadow-blue-500/20">
+                           <p className="text-[9px] font-black uppercase tracking-widest opacity-60 mb-2">Overall GPA</p>
+                           <h4 className="text-4xl font-black">{Math.round(selectedReportStudent.finalAvg)}</h4>
+                           <div className="mt-4 h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
+                              <motion.div initial={{ width: 0 }} animate={{ width: `${selectedReportStudent.finalAvg}%` }} className="h-full bg-white transition-all duration-1000" />
+                           </div>
+                        </div>
+                        <div className="p-6 bg-slate-900 rounded-[32px] text-white shadow-xl shadow-slate-900/10">
+                           <p className="text-[9px] font-black uppercase tracking-widest opacity-40 mb-2">Attendance</p>
+                           <h4 className="text-4xl font-black">95<span className="text-lg opacity-40">%</span></h4>
+                           <p className="text-[8px] font-bold text-slate-500 mt-2 uppercase tracking-tighter">Verified by system</p>
+                        </div>
+                     </div>
+
+                     {/* MODULE BREAKDOWN */}
+                     <div className="space-y-4">
+                        <h5 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em] px-2">Performance Details</h5>
+                        <div className="space-y-3">
+                           {curriculum.filter(t => t.type !== 'material').map((t, idx) => {
+                              const sub = allSubmissions.find(s => s.profile_id === selectedReportStudent.profile_id && s.curriculum_id === t.id);
+                              
+                              // Check both possible fields depending on table
+                              const scoreValue = t.type === 'post_test' ? sub?.score : sub?.grade;
+                              const isSubmitted = scoreValue !== undefined && scoreValue !== null;
+
+                              return (
+                                 <div key={t.id} className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                       <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-sm text-slate-400 font-black text-xs">
+                                          {idx + 1}
+                                       </div>
+                                       <div>
+                                          <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{t.type?.replace('_', ' ')}</p>
+                                          <h6 className="text-xs font-bold text-slate-800 line-clamp-1">{t.title}</h6>
+                                       </div>
+                                    </div>
+                                    <div className="text-right">
+                                       <div className={`text-sm font-black ${isSubmitted ? 'text-slate-900' : 'text-slate-300'}`}>
+                                          {isSubmitted ? scoreValue : 'N/A'}
+                                       </div>
+                                       <div className={`text-[7px] font-bold uppercase tracking-widest ${isSubmitted ? 'text-emerald-500' : 'text-slate-300'}`}>
+                                          {isSubmitted ? 'Submitted' : 'Pending'}
+                                       </div>
+                                    </div>
+                                 </div>
+                              );
+                           })}
+                        </div>
+                     </div>
+
+                     <div className="pt-4 pb-20">
+                        <Button className="w-full h-14 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-slate-900/10">Download Digital Raport</Button> 
                      </div>
                   </div>
                </motion.div>

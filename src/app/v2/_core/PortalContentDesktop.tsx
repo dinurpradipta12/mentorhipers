@@ -42,7 +42,7 @@ import {
   Fingerprint,
   Camera
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseV2 as supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -183,28 +183,15 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     const savedTab = localStorage.getItem(`portal_tab_${resolvedParams.id}`);
     if (savedTab) setActiveTab(savedTab);
 
-    // SETUP REALTIME SYNC FOR BATCH & SCHEDULE UPDATES
-    const channel = supabase.channel('portal_sync')
-       .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'v2_workspaces', filter: `id=eq.${resolvedParams.id}` },
-          (payload) => {
-             console.log("Batch Update Received:", payload);
-             fetchBatchDetail();
-          }
-       )
-       .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'v2_memberships', filter: `workspace_id=eq.${resolvedParams.id}` },
-          () => {
-             fetchStudents();
-          }
-       )
-       .subscribe();
-
-    return () => {
-       supabase.removeChannel(channel);
-    };
+    // ⚠️ REALTIME DISABLED to reduce connection load on Nano plan.
+    // Each portal page open = 1 realtime connection. With many students, this exhausts Nano limits.
+    // Re-enable after upgrading to Pro plan, or implement a polling fallback.
+    //
+    // const channel = supabase.channel('portal_sync')
+    //   .on('postgres_changes', { event: '*', schema: 'public', table: 'v2_workspaces', filter: `id=eq.${resolvedParams.id}` }, () => fetchBatchDetail())
+    //   .on('postgres_changes', { event: '*', schema: 'public', table: 'v2_memberships', filter: `workspace_id=eq.${resolvedParams.id}` }, () => fetchStudents())
+    //   .subscribe();
+    // return () => { supabase.removeChannel(channel); };
   }, [resolvedParams.id]);
 
   const initPage = async () => {
@@ -296,7 +283,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
   const fetchUserData = async (userId: string) => {
     if (!userId) return;
 
-    const { data: profile } = await supabase.from('v2_profiles').select('*').eq('id', userId).single();
+    const { data: profile } = await supabase.from('v2_profiles').select('id, full_name, username, role, avatar_url, updated_at').eq('id', userId).single();
     if (!profile) return;
 
     if (profile.role !== 'admin') {
@@ -326,7 +313,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
   const me = students.find(s => s.profile_id === currentUser?.id);
 
   const fetchBatchDetail = async () => {
-    const { data } = await supabase.from('v2_workspaces').select('*').eq('id', resolvedParams.id).single();
+    const { data } = await supabase.from('v2_workspaces').select('id, name, description, type, start_date, end_date, max_members, status, settings, schedules, created_at').eq('id', resolvedParams.id).single();
     if (data) setBatch(data);
   };
 

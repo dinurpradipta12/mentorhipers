@@ -17,7 +17,7 @@ import {
    ChevronRight
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseV2 as supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 

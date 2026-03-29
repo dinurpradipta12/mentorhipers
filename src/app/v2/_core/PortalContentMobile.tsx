@@ -39,7 +39,7 @@ import {
   MessageCircle,
   RotateCcw
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseV2 as supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { getYouTubeEmbedUrl } from "@/lib/utils";
 import dynamic from "next/dynamic";
@@ -88,12 +88,12 @@ export default function PortalContentMobile({ id }: { id: string }) {
     }
 
     const [bRes, cRes, pRes, mRes, qRes, sRes] = await Promise.all([
-      supabase.from('v2_workspaces').select('*').eq('id', id).single(),
-      supabase.from('v2_curriculums').select('*').eq('workspace_id', id).order('created_at', { ascending: true }),
-      supabase.from('v2_profiles').select('*').eq('id', user.id).single(),
-      supabase.from('v2_memberships').select('*').eq('workspace_id', id).eq('profile_id', user.id).single(),
+      supabase.from('v2_workspaces').select('id, name, description, type, start_date, end_date, max_members, status, settings, schedules, created_at').eq('id', id).single(),
+      supabase.from('v2_curriculums').select('id, title, type, module_name, description, due_date, video_url, quiz_data, assets_json, is_published, created_at').eq('workspace_id', id).order('created_at', { ascending: true }),
+      supabase.from('v2_profiles').select('id, full_name, username, role, avatar_url, updated_at').eq('id', user.id).single(),
+      supabase.from('v2_memberships').select('id, workspace_id, profile_id, group_name, group_wa_link, is_leader, attendance, plus_points, joined_at').eq('workspace_id', id).eq('profile_id', user.id).single(),
       supabase.from('v2_quiz_results').select('curriculum_id, score').eq('profile_id', user.id).eq('workspace_id', id),
-      supabase.from('v2_submissions').select('*, v2_curriculums(title)').eq('profile_id', user.id).eq('workspace_id', id)
+      supabase.from('v2_submissions').select('id, curriculum_id, file_link, status, grade, mentor_feedback, is_feedback_read, created_at, v2_curriculums(title)').eq('profile_id', user.id).eq('workspace_id', id)
     ]);
 
     const batchData = bRes.data;
@@ -185,7 +185,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
         if (joinErr) {
           console.error("❌ Mobile Group Join Failed:", joinErr.message);
           // Fallback
-          const { data: fallback } = await supabase.from('v2_memberships').select('*').eq('workspace_id', id).eq('group_name', membershipData.group_name);
+          const { data: fallback } = await supabase.from('v2_memberships').select('id, workspace_id, profile_id, group_name, group_wa_link, is_leader, attendance, plus_points, joined_at').eq('workspace_id', id).eq('group_name', membershipData.group_name);
           if (fallback) setGroupMembers(fallback);
         } else {
           setGroupMembers(memWithProfs || []);

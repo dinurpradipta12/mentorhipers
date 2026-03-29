@@ -20,7 +20,7 @@ import {
   ArrowUpRight,
   Shield
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { supabaseV2 as supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";

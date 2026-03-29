@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseV2 as supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
@@ -53,9 +53,9 @@ export default function BatchListContent() {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
+    // Run auth + data fetch in PARALLEL — no more sequential blocking!
     const init = async () => {
-      await checkAdmin();
-      await fetchBatches();
+      await Promise.all([checkAdmin(), fetchBatches()]);
     };
     init();
   }, []);
@@ -85,21 +85,27 @@ export default function BatchListContent() {
   const fetchBatches = async () => {
     setIsLoading(true);
     
-    // Safety fallback timeout to prevent infinite loading screens
+    // Safety fallback: force render after 20s to prevent infinite loading
     const safetyTimeout = setTimeout(() => {
-        console.warn("⚠️ fetching batches taking too long. Forcing UI render.");
+        console.warn("⚠️ [BatchList] Fetch timeout (20s). Forcing UI render. Check RLS policies or network.");
         setIsLoading(false);
-    }, 10000);
+    }, 20000);
 
     try {
+      console.log("📡 [BatchList] Fetching workspaces...");
+      const startTime = Date.now();
+      
       const { data, error } = await supabase
         .from('v2_workspaces')
-        .select('*')
+        .select('id, name, description, type, start_date, end_date, max_members, created_at, schedules, settings')
         .eq('type', 'batch')
         .order('created_at', { ascending: false });
       
+      const elapsed = Date.now() - startTime;
+      console.log(`📡 [BatchList] Query done in ${elapsed}ms. Count: ${data?.length ?? 0}`);
+
       if (error) {
-        console.error("❌ Failed to fetch batches:", error.message);
+        console.error("❌ [BatchList] Supabase error:", error.code, error.message, error.hint);
       }
       
       if (data) {
@@ -108,11 +114,16 @@ export default function BatchListContent() {
         const savedId = localStorage.getItem('batch_list_selected');
         if (savedId) {
           const found = data.find((b: any) => b.id === savedId);
-          if (found) handleSelectBatch(found);
+          if (found) {
+            handleSelectBatch(found);
+          } else {
+            console.log("📍 [BatchList] Saved ID not found in new DB. Clearing cache.");
+            localStorage.removeItem('batch_list_selected');
+          }
         }
       }
     } catch (err: any) {
-      console.error("❌ Unexpected error fetching batches:", err.message);
+      console.error("❌ [BatchList] Unexpected error:", err.message);
     } finally {
       clearTimeout(safetyTimeout);
       setIsLoading(false);

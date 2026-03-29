@@ -47,7 +47,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabaseV2 as supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -228,25 +228,20 @@ export default function BatchContentDesktop({ id }: { id: string }) {
     const savedTab = localStorage.getItem(`batch_tab_${resolvedParams.id}`);
     if (savedTab) setActiveTab(savedTab);
 
-    // 3. Realtime Listener for Instant Presence & Profile Updates
+    // ⚠️ REALTIME DISABLED on v2_profiles (global table, no row filter = full DB scan per update)
+    // This was the primary cause of resource exhaustion on Nano plan.
+    // Re-enable only after upgrading to Pro plan.
+    //
+    // Minimal realtime: only membership changes for THIS workspace
     const channel = supabase
-      .channel('batch_realtime_sync')
+      .channel(`batch_${resolvedParams.id}_memberships`)
       .on('postgres_changes', { 
-        event: '*', 
+        event: 'INSERT', // Only INSERT, not UPDATE/DELETE to reduce triggers
         schema: 'public', 
         table: 'v2_memberships',
         filter: `workspace_id=eq.${resolvedParams.id}`
       }, () => {
-        console.log("⚡ Realtime Sync (Membership): Refreshing data...");
-        fetchStudents();
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'v2_profiles'
-      }, (payload) => {
-        // Only refresh if the updated profile belongs to one of our current students
-        console.log("⚡ Realtime Sync (Profile): Update detected", payload.new.id);
+        console.log("⚡ New member joined — refreshing students list...");
         fetchStudents();
       })
       .subscribe();
@@ -272,7 +267,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
     try {
       if (user) {
-         const { data: profile } = await supabase.from('v2_profiles').select('*').eq('id', user.id).single();
+         const { data: profile } = await supabase.from('v2_profiles').select('id, full_name, username, role, updated_at').eq('id', user.id).single();
          
          if (profile) {
            const updatedUser = { ...profile, email: user.email, role: isArunika ? 'admin' : profile.role };
@@ -296,21 +291,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   };
 
   const fetchAllSubmissions = async () => {
-     // Fetch all submissions for the whole batch for Matrix calculation
-     const { data: subData } = await supabase
-       .from('v2_submissions')
-       .select('id, curriculum_id, profile_id, grade, created_at')
-       .eq('workspace_id', resolvedParams.id);
+     // Run both queries in PARALLEL to halve connection time
+     const [subResult, qResult] = await Promise.all([
+       supabase.from('v2_submissions').select('id, curriculum_id, profile_id, grade').eq('workspace_id', resolvedParams.id),
+       supabase.from('v2_quiz_results').select('id, curriculum_id, profile_id, score').eq('workspace_id', resolvedParams.id)
+     ]);
      
-     const { data: qData } = await supabase
-       .from('v2_quiz_results')
-       .select('id, curriculum_id, profile_id, score, created_at')
-       .eq('workspace_id', resolvedParams.id);
-       
-     let combined: any[] = [];
-     if (subData) combined = [...subData];
-     if (qData) combined = [...combined, ...qData];
-     
+     const combined = [...(subResult.data || []), ...(qResult.data || [])];
      setAllSubmissions(combined);
   };
 
@@ -837,89 +824,54 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   };
 
   const fetchBatchDetail = async () => {
-    const { data } = await supabase.from('v2_workspaces').select('*').eq('id', resolvedParams.id).single();
+    const { data } = await supabase.from('v2_workspaces').select('id, name, description, type, start_date, end_date, max_members, status, settings, schedules, created_at').eq('id', resolvedParams.id).single();
     if (data) setBatch(data);
   };
 
   const fetchStudents = async () => {
     try {
-      console.log(`🔍 Querying students joined with profiles for Workspace ID: ${resolvedParams.id}`);
-
-      // We no longer attempt a massive SQL JOIN (v2_profiles:profile_id) here!
       const { data: basicMem, error: basicErr } = await supabase
         .from('v2_memberships')
-        .select('id, profile_id, group_name, role, is_leader, attendance, plus_points')
+        .select('id, profile_id, group_name, is_leader, attendance, plus_points')
         .eq('workspace_id', resolvedParams.id);
       
-      if (basicErr) console.error("❌ Basic Mem Fetch Error:", basicErr.message);
-      if (!basicMem || basicMem.length === 0) {
+      if (basicErr || !basicMem) {
         setStudents([]);
         return;
       }
 
-      // Fetch profile IDs to look up identities
       const rawProfileIds = [...new Set(basicMem.map(m => m.profile_id).filter(Boolean))];
-      const profileIds = rawProfileIds.filter(id => 
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)
-      );
-
-      // Phase 1: ULTRA-LIGHTWEIGHT Identity fetch (No Avatars/Base64)
-      // This ensures names appear IMMEDIATELY even if DB is on fire.
-      if (profileIds.length > 0) {
-        console.log(`📡 Phase 1: Fetching identities (names) for ${profileIds.length} profiles...`);
+      
+      if (rawProfileIds.length > 0) {
         const { data: nameData } = await supabase
           .from('v2_profiles')
-          .select('id, full_name')
-          .in('id', profileIds);
+          .select('id, full_name, username')
+          .in('id', rawProfileIds);
 
         if (nameData) {
           const nameMap = new Map(nameData.map(p => [p.id, p]));
-          const withNames = basicMem.map(m => ({
+          setStudents(basicMem.map(m => ({
             ...m,
-            v2_profiles: nameMap.get(m.profile_id) || null
-          }));
-          setStudents(withNames);
-          console.log(`✅ Phase 1 Complete: Initial names loaded.`);
+            v2_profiles: nameMap.get(m.profile_id) || { full_name: 'Unknown Student', username: 'unknown' }
+          })));
         }
 
-        // Phase 2: HEAVY Background Fetch (Avatars/Base64)
-        // We do this separately so the large Base64 strings don't block the UI render.
-        console.log("📡 Phase 2: Starting background avatar fetch...");
-        
-        // Use batched loop for avatars to be gentle on CPU/Network
         const BATCH_SIZE = 4;
-        for (let i = 0; i < profileIds.length; i += BATCH_SIZE) {
-          const batchIds = profileIds.slice(i, i + BATCH_SIZE);
-          const { data: avatarBatch } = await supabase
-            .from('v2_profiles')
-            .select('id, avatar_url')
-            .in('id', batchIds);
-          
+        for (let i = 0; i < rawProfileIds.length; i += BATCH_SIZE) {
+          const batchIds = rawProfileIds.slice(i, i + BATCH_SIZE);
+          const { data: avatarBatch } = await supabase.from('v2_profiles').select('id, avatar_url').in('id', batchIds);
           if (avatarBatch) {
             setStudents(prev => {
               const avatarMap = new Map(avatarBatch.map(p => [p.id, p.avatar_url]));
-              return prev.map(s => {
-                if (avatarMap.has(s.profile_id)) {
-                  return {
-                    ...s,
-                    v2_profiles: {
-                      ...(s.v2_profiles || {}),
-                      avatar_url: avatarMap.get(s.profile_id)
-                    }
-                  };
-                }
-                return s;
-              });
+              return prev.map(s => avatarMap.has(s.profile_id) ? { ...s, v2_profiles: { ...s.v2_profiles, avatar_url: avatarMap.get(s.profile_id) } } : s);
             });
           }
         }
-        console.log("✅ Phase 2 Complete: Avatars background loaded.");
-      } else {
-        setStudents(basicMem.map(m => ({ ...m, v2_profiles: null })));
       }
-
     } catch (err: any) {
-      console.error("❌ Unexpected Error in fetchStudents:", err.message);
+      console.error("❌ fetchStudents error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
