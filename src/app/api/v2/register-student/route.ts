@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       email_confirm: true,
       user_metadata: {
         full_name: fullName,
+        display_name: fullName, // Added for Supabase Auth Dashboard visibility
         username: username.toLowerCase().trim()
       }
     });
