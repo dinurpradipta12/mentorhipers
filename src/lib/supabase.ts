@@ -24,10 +24,15 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 // ================================
 // V2 CLIENT (LMS / Batch System)
 // ================================
-const rawV2Url = process.env.NEXT_PUBLIC_SUPABASE_V2_URL || '';
-const rawV2Key = process.env.NEXT_PUBLIC_SUPABASE_V2_ANON_KEY || '';
+const rawV2Url = process.env.NEXT_PUBLIC_SUPABASE_V2_URL;
+const rawV2Key = process.env.NEXT_PUBLIC_SUPABASE_V2_ANON_KEY;
 
-const supabaseV2Url = isValidUrl(rawV2Url) ? rawV2Url : supabaseUrl;
-const supabaseV2Key = (rawV2Url && rawV2Key) ? rawV2Key : supabaseKey;
+// Browser-side check to alert about missing build-time environment variables
+if (typeof window !== 'undefined' && (!rawV2Url || !rawV2Key)) {
+  console.warn("⚠️ SUPABASE V2 CONFIG MISSING! Environment variables must be set in the Cloudflare Dashboard BEFORE building.");
+}
 
-export const supabaseV2 = createClient(supabaseV2Url, supabaseV2Key);
+export const supabaseV2 = createClient(
+  isValidUrl(rawV2Url || '') ? rawV2Url! : supabaseUrl,
+  rawV2Key || supabaseKey
+);
