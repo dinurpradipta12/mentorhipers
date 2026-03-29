@@ -38,9 +38,9 @@ export default function LoginContentDesktop() {
          // INTERCEPT FOR USERNAME / ADMIN LOGIN
          let loginIdentifier = email;
          
-         // 1. ARUNIKA ADMIN MAPPING
+         // 1. ARUNIKA ADMIN MAPPING (Mapping to Real Admin Email)
          if (email === "arunika" && password === "ar4925") {
-            loginIdentifier = "arunika@mentorhipers.local";
+            loginIdentifier = "contact.dinurpradipta@gmail.com";
          } 
          // 2. STUDENT USERNAME MAPPING
          else if (email && !email.includes('@')) {
