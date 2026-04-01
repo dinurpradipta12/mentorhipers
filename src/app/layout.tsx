@@ -50,8 +50,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]">
+      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]" suppressHydrationWarning>
         {children}
         <AppGlobalConfig />
         <AppUpdateNotifier />

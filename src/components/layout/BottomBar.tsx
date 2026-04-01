@@ -201,12 +201,6 @@ const BottomNavigation = ({
     const senderAvatar = clientInfo?.avatar || session.avatar || `https://i.pravatar.cc/150?u=${senderName}`;
     const senderEmail = clientInfo?.email || session.email || "mentee@example.com";
 
-    // Convert local selection to UTC for DB
-    const [h, m] = bookingData.time.split(':');
-    const bookingFullDate = new Date(bookingData.date);
-    bookingFullDate.setHours(parseInt(h), parseInt(m), 0, 0);
-    const utcTime = bookingFullDate.toISOString();
-
     const payload: {
       client_id: string | null;
       sender_name: string;
@@ -230,8 +224,13 @@ const BottomNavigation = ({
     };
 
     if (activeModal === 'booking') {
-      const localTimeStr = bookingFullDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const localDateStr = bookingFullDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      const [h, m] = bookingData.time.split(':');
+      const bookingFullDate = new Date(bookingData.date);
+      bookingFullDate.setHours(parseInt(h), parseInt(m), 0, 0);
+      const utcTime = !isNaN(bookingFullDate.getTime()) ? bookingFullDate.toISOString() : "";
+      
+      const localTimeStr = !isNaN(bookingFullDate.getTime()) ? bookingFullDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+      const localDateStr = !isNaN(bookingFullDate.getTime()) ? bookingFullDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : "";
       
       payload.subject = bookingData.subject || `Booking Consultation`;
       payload.snippet = `Jadwal: ${localDateStr} | ${localTimeStr}. Topik: ${bookingData.topic}`;
