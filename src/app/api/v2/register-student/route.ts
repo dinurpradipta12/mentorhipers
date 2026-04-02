@@ -4,11 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_V2_URL || '';
+  const supabaseServiceKey = process.env.SUPABASE_V2_SERVICE_ROLE_KEY || '';
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    return NextResponse.json({ success: false, error: 'SUPABASE_SERVICE_ROLE_KEY is missing.' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'SUPABASE_V2_SERVICE_ROLE_KEY is missing.' }, { status: 500 });
   }
 
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
