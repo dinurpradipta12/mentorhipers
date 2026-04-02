@@ -60,9 +60,9 @@ export default function LoginContentDesktop() {
 
          if (data.user) {
             // Intelligent Redirect
-            const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', data.user.id).single();
+            const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', data.user.id).maybeSingle();
             if (profile && profile.role !== 'admin') {
-               const { data: membership } = await supabase.from('v2_memberships').select('workspace_id').eq('profile_id', data.user.id).single();
+               const { data: membership } = await supabase.from('v2_memberships').select('workspace_id').eq('profile_id', data.user.id).maybeSingle();
                if (membership?.workspace_id) {
                   router.push(`/v2/portal/${membership.workspace_id}`);
                   return;
