@@ -1,6 +1,6 @@
 'use server'
 
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
+import { supabaseAdminV2 } from '@/lib/supabaseAdmin'
 
 /**
  * Register a new student into the V2 platform.
@@ -8,11 +8,11 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
  * 2. Creates a profile in v2_profiles.
  * 3. Adds the student to a specific batch (v2_memberships).
  * 
- * NOTE: Requires SUPABASE_SERVICE_ROLE_KEY to work.
+ * NOTE: Requires SUPABASE_V2_SERVICE_ROLE_KEY to work.
  */
 export async function registerStudentAction(data: { fullName: string, username: string, password: string, workspaceId: string }) {
-  if (!supabaseAdmin) {
-     return { success: false, error: 'SUPABASE_SERVICE_ROLE_KEY is missing in env. Server Action restricted.' }
+  if (!supabaseAdminV2) {
+     return { success: false, error: 'SUPABASE_V2_SERVICE_ROLE_KEY is missing in env. Server Action restricted.' }
   }
 
   try {
@@ -20,7 +20,7 @@ export async function registerStudentAction(data: { fullName: string, username: 
     const syntheticEmail = `${data.username.toLowerCase().trim()}@mentorhipers.local`;
 
     // 1. Create Auth User (Admin bypass)
-    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+    const { data: authUser, error: authError } = await supabaseAdminV2.auth.admin.createUser({
       email: syntheticEmail,
       password: data.password,
       email_confirm: true,
@@ -41,7 +41,7 @@ export async function registerStudentAction(data: { fullName: string, username: 
     // Note: We include username in the payload. 
     // If the database column doesn't exist yet, this will error - 
     // but it's the correct path for the feature.
-    const { error: profileError } = await supabaseAdmin
+    const { error: profileError } = await supabaseAdminV2
       .from('v2_profiles')
       .upsert({
         id: authUser.user.id,
@@ -57,7 +57,7 @@ export async function registerStudentAction(data: { fullName: string, username: 
     }
 
     // 3. Create Membership for the Batch
-    const { error: memberError } = await supabaseAdmin
+    const { error: memberError } = await supabaseAdminV2
       .from('v2_memberships')
       .insert({
         profile_id: authUser.user.id,
@@ -81,12 +81,12 @@ export async function registerStudentAction(data: { fullName: string, username: 
 }
 
 export async function updateWorkspaceSchedulesAction(workspaceId: string, schedules: any[]) {
-   if (!supabaseAdmin) {
-     return { success: false, error: 'SUPABASE_SERVICE_ROLE_KEY is missing in env. Server Action restricted.' }
+   if (!supabaseAdminV2) {
+     return { success: false, error: 'SUPABASE_V2_SERVICE_ROLE_KEY is missing in env. Server Action restricted.' }
    }
    
    try {
-      const { error } = await supabaseAdmin
+      const { error } = await supabaseAdminV2
         .from('v2_workspaces')
         .update({ schedules })
         .eq('id', workspaceId);
