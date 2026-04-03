@@ -32,6 +32,8 @@ if (typeof window !== 'undefined' && (!rawV2Url || !rawV2Key)) {
   console.warn("⚠️ SUPABASE V2 CONFIG MISSING! Environment variables must be set in the Cloudflare Dashboard BEFORE building.");
 }
 
+console.log("📡 [DEBUG] Supabase V2 URL being used:", rawV2Url || supabaseUrl);
+
 export const supabaseV2 = createClient(
   isValidUrl(rawV2Url || '') ? rawV2Url! : supabaseUrl,
   rawV2Key || supabaseKey
