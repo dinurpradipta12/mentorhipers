@@ -48,6 +48,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
+import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -250,11 +251,12 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   }, [resolvedParams.id]);
 
    const fetchUserData = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    // Use cached session — avoids network call on every mount
+    const session = await getCachedSession();
     const user = session?.user;
     
     // 2. CHECK LEGACY BYPASS (From localStorage)
-    const legacyAdmin = typeof window !== 'undefined' ? localStorage.getItem('v2_legacy_admin') === 'true' : false;
+    const legacyAdmin = isLegacyAdmin();
     const isArunika = (user?.email?.toLowerCase().includes('arunika')) || legacyAdmin;
 
     if (isArunika) {

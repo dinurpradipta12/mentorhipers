@@ -44,6 +44,7 @@ import {
   Eye
 } from "lucide-react";
 import { supabaseV2 as supabase } from "@/lib/supabase";
+import { getCachedSession } from "@/lib/authCache";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -199,7 +200,8 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     console.log("🚀 Initializing Student Portal...");
     setIsLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Use cached session — avoids network call on every mount/refresh
+      const session = await getCachedSession();
       const user = session?.user;
       
       if (!user) {

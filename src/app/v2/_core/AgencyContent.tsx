@@ -21,6 +21,7 @@ import {
   Shield
 } from "lucide-react";
 import { supabaseV2 as supabase } from "@/lib/supabase";
+import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -45,21 +46,21 @@ export default function AgencyContent({ id }: { id: string }) {
   }, [resolvedParams.id]);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const legacyAdmin = typeof window !== 'undefined' ? localStorage.getItem('v2_legacy_admin') === 'true' : false;
-
-    if (!session && !legacyAdmin) {
-      router.push('/v2/login');
-      return;
-    }
-
+    // Use cached session — avoids network call on every mount
+    const legacyAdmin = isLegacyAdmin();
     if (legacyAdmin) {
       setIsAuthorized(true);
       return;
     }
 
+    const session = await getCachedSession();
+    if (!session) {
+      router.push('/v2/login');
+      return;
+    }
+
     // Check if global admin or has membership in THIS workspace
-    const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session?.user.id).single();
+    const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session.user.id).single();
     
     if (profile?.role === 'admin') {
       setIsAuthorized(true);
@@ -69,7 +70,7 @@ export default function AgencyContent({ id }: { id: string }) {
     const { data: membership } = await supabase.from('v2_memberships')
       .select('id')
       .eq('workspace_id', resolvedParams.id)
-      .eq('profile_id', session?.user.id)
+      .eq('profile_id', session.user.id)
       .maybeSingle();
 
     if (membership) {

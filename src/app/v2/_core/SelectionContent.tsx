@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
+import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
 
 export default function SelectionContent() {
   const [roleChecked, setRoleChecked] = useState(false);
@@ -20,13 +21,14 @@ export default function SelectionContent() {
 
   useEffect(() => {
     const handleRoute = async () => {
-      // 1. Check Legacy Admin
-      if (typeof window !== 'undefined' && localStorage.getItem('v2_legacy_admin') === 'true') {
+      // 1. Check Legacy Admin — no network call needed
+      if (isLegacyAdmin()) {
          setRoleChecked(true);
          return; 
       }
       
-      const { data: { session } } = await supabase.auth.getSession();
+      // Use cached session — avoids network call on every mount
+      const session = await getCachedSession();
       
       // If no session, redirect to login
       if (!session) {
@@ -50,8 +52,6 @@ export default function SelectionContent() {
           if (membership?.workspace_id) {
             router.push(`/v2/portal/${membership.workspace_id}`);
           } else {
-            // No membership found, could be an error or newly registered
-            // For safety, redirect to login or a generic 404
             router.push('/v2/login');
           }
         }

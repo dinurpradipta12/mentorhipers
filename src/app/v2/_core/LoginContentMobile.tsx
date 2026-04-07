@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
+import { invalidateSessionCache } from "@/lib/authCache";
 import { Button } from "@/components/ui/Button";
 
 export default function LoginContentMobile() {
@@ -49,6 +50,8 @@ export default function LoginContentMobile() {
          }
 
          if (data.user) {
+            // Invalidate cache so the new session is picked up immediately
+            invalidateSessionCache();
             const { data: profile } = await supabase
               .from('v2_profiles')
               .select('role')

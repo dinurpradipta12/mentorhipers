@@ -44,6 +44,7 @@ import {
   Trophy
 } from "lucide-react";
 import { supabaseV2 as supabase } from "@/lib/supabase";
+import { getCachedSession, invalidateSessionCache } from "@/lib/authCache";
 import { useRouter } from "next/navigation";
 import { getYouTubeEmbedUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -99,7 +100,8 @@ export default function PortalContentMobile({ id }: { id: string }) {
 
   const initMobile = async () => {
     setIsLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
+    // Use cached session — avoids network call on every mount/refresh
+    const session = await getCachedSession();
     const user = session?.user;
     if (!user) {
        router.push('/v2/login');
@@ -287,6 +289,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
   };
 
   const handleSignOut = async () => {
+    invalidateSessionCache(); // Clear cache before sign out
     await supabase.auth.signOut();
     router.push('/v2/login');
   };

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
+import { invalidateSessionCache } from "@/lib/authCache";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
@@ -59,6 +60,8 @@ export default function LoginContentDesktop() {
          }
 
          if (data.user) {
+            // Invalidate cache so the new session is picked up immediately
+            invalidateSessionCache();
             // Intelligent Redirect
             const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', data.user.id).maybeSingle();
             if (profile && profile.role !== 'admin') {
