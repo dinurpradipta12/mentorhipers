@@ -472,18 +472,40 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     if (!selectedAvatar || !currentUser) return;
     setIsLoading(true);
     try {
-      const finalUrl = selectedAvatar;
+      let finalUrl = selectedAvatar;
 
-      // If it's a base64 from custom upload, we might want to upload to storage 
-      // but for simplicity and immediate use, we update the profile. 
-      // (Assuming v2_profiles.avatar_url can store base64 or you have a storage setup)
+      // 1. If it's a new upload (Base64), send to Storage Bucket
+      if (selectedAvatar.startsWith('data:')) {
+         const res = await fetch(selectedAvatar);
+         const blob = await res.blob();
+         const file = new File([blob], `avatar-${currentUser.id}.png`, { type: blob.type });
+
+         const fileName = `${currentUser.id}/profile.png`;
+         const { error: uploadError } = await supabase.storage
+           .from('avatars')
+           .upload(fileName, file, { 
+              upsert: true,
+              cacheControl: '3600'
+           });
+
+         if (uploadError) throw uploadError;
+
+         const { data: { publicUrl } } = supabase.storage
+           .from('avatars')
+           .getPublicUrl(fileName);
+         
+         finalUrl = publicUrl;
+      }
       
+      // 2. Save the lightweight Public URL to DB
       const { error } = await supabase.from('v2_profiles').update({ avatar_url: finalUrl }).eq('id', currentUser.id);
       if (error) throw error;
+      
       setCurrentUser({ ...currentUser, avatar_url: finalUrl });
       setIsPhotoSetupOpen(false);
+      alert("Profil diperbarui dengan aman! 🛸✨");
     } catch (err: any) {
-      alert("Failed to save profile: " + err.message);
+      alert("Gagal simpan profil: " + err.message);
     } finally {
       setIsLoading(false);
     }
