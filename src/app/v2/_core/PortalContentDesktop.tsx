@@ -264,7 +264,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
           const chunk = uniqueIds.slice(i, i + CHUNK_SIZE);
           const { data } = await supabase
             .from('v2_profiles')
-            .select('id, full_name, avatar_url')
+            .select('id, full_name') // REMOVED avatar_url to save massive egress bandwidth
             .in('id', chunk);
           if (data) allProfData = [...allProfData, ...data];
         }
