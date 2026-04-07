@@ -28,8 +28,14 @@ export default function LoginContentDesktop() {
    const [email, setEmail] = useState("");
    const [password, setPassword] = useState("");
    const [error, setError] = useState("");
+   const [cooldown, setCooldown] = useState(0);
 
-
+   // Cooldown countdown timer
+   React.useEffect(() => {
+      if (cooldown <= 0) return;
+      const t = setTimeout(() => setCooldown(c => c - 1), 1000);
+      return () => clearTimeout(t);
+   }, [cooldown]);
    const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
       setLoading(true);
@@ -55,6 +61,7 @@ export default function LoginContentDesktop() {
 
          if (authError) {
             setError(authError.message === "Invalid login credentials" ? "Username atau Password salah." : authError.message);
+            setCooldown(10);
             setLoading(false);
             return;
          }
@@ -73,8 +80,15 @@ export default function LoginContentDesktop() {
             }
             router.push('/v2');
          }
-      } catch (err) {
-         setError("Terjadi kesalahan sistem.");
+      } catch (err: any) {
+         const isNetworkError = err?.message?.includes('fetch') || err?.message?.includes('network') || err instanceof TypeError;
+         if (isNetworkError) {
+            setError('🔧 Server sedang dalam pemeliharaan. Silakan coba lagi dalam beberapa menit.');
+            setCooldown(60);
+         } else {
+            setError("Terjadi kesalahan sistem.");
+            setCooldown(10);
+         }
          setLoading(false);
       }
    };
@@ -185,11 +199,13 @@ export default function LoginContentDesktop() {
                      </div>
 
                      <Button
-                        disabled={loading}
-                        className="w-full h-20 rounded-[32px] bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-black text-lg shadow-2xl shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-4 hover:brightness-110"
+                        disabled={loading || cooldown > 0}
+                        className="w-full h-20 rounded-[32px] bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-black text-lg shadow-2xl shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-4 hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
                      >
                         {loading ? (
                            <div className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+                        ) : cooldown > 0 ? (
+                           <span className="text-base">Coba lagi dalam {cooldown}s...</span>
                         ) : (
                            <>
                               Access Platform

@@ -19,6 +19,14 @@ export default function LoginContentMobile() {
    const [email, setEmail] = useState("");
    const [password, setPassword] = useState("");
    const [error, setError] = useState("");
+   const [cooldown, setCooldown] = useState(0); // seconds remaining before retry allowed
+
+   // Cooldown timer countdown
+   React.useEffect(() => {
+      if (cooldown <= 0) return;
+      const t = setTimeout(() => setCooldown(c => c - 1), 1000);
+      return () => clearTimeout(t);
+   }, [cooldown]);
 
    const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -45,6 +53,7 @@ export default function LoginContentMobile() {
 
          if (authError) {
             setError(authError.message === "Invalid login credentials" ? "Username atau Password salah." : authError.message);
+            setCooldown(10); // 10s cooldown after wrong credentials
             setLoading(false);
             return;
          }
@@ -72,8 +81,16 @@ export default function LoginContentMobile() {
             }
             router.push('/v2');
          }
-      } catch (err) {
-         setError("Terjadi kesalahan sistem.");
+      } catch (err: any) {
+         // Detect CORS / network error = server is temporarily down
+         const isNetworkError = err?.message?.includes('fetch') || err?.message?.includes('network') || err?.message?.includes('CORS') || err instanceof TypeError;
+         if (isNetworkError) {
+            setError('🔧 Server sedang dalam pemeliharaan. Silakan coba lagi dalam beberapa menit.');
+            setCooldown(60); // 60s cooldown — don\'t spam during outage
+         } else {
+            setError("Terjadi kesalahan sistem.");
+            setCooldown(10);
+         }
          setLoading(false);
       }
    };
@@ -144,11 +161,13 @@ export default function LoginContentMobile() {
                </div>
 
                <Button
-                  disabled={loading}
-                  className="w-full h-16 rounded-[24px] bg-blue-600 text-white font-black text-sm shadow-2xl shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-4 hover:bg-blue-500"
+                  disabled={loading || cooldown > 0}
+                  className="w-full h-16 rounded-[24px] bg-blue-600 text-white font-black text-sm shadow-2xl shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-4 hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
                >
                   {loading ? (
                      <div className="w-5 h-5 border-3 border-white/20 border-t-white rounded-full animate-spin" />
+                  ) : cooldown > 0 ? (
+                     <span>Coba lagi dalam {cooldown}s...</span>
                   ) : (
                      <>
                         Access Platform
