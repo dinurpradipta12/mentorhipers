@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase, supabaseV2 } from "@/lib/supabase";
+import { Button } from "@/components/ui/Button";
 import AvatarCreator from "./_core/AvatarCreator";
 
 export default function RuangSosmedLayoutContent({
