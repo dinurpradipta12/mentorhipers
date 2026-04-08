@@ -2,9 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Home, Compass } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Compass } from "lucide-react";
 
 export default function NotFoundContent() {
   return (
@@ -64,21 +62,6 @@ export default function NotFoundContent() {
             Sepertinya koordinat yang Anda tuju tidak terdaftar di sistem Ruang Sosmed. 
             Mungkin link sudah kedaluwarsa atau terjadi kesalahan ketik.
           </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
-           <Button 
-             onClick={() => window.history.back()}
-             className="h-16 px-10 rounded-[28px] bg-white/5 border border-white/10 hover:bg-white/10 text-white font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3"
-           >
-             <ArrowLeft size={18}/> Kembali
-           </Button>
-           
-           <Link href="/ruang-sosmed">
-             <Button className="h-16 px-10 rounded-[28px] bg-blue-600 hover:bg-blue-500 text-white font-black text-xs uppercase tracking-widest shadow-2xl shadow-blue-500/20 transition-all flex items-center gap-3">
-               Portal Utama <Home size={18}/>
-             </Button>
-           </Link>
         </div>
       </motion.div>
 
