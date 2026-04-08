@@ -2,9 +2,11 @@ name: 🛰️ Mentorhipers Daily Backup
 
 on:
   schedule:
-    # Berjalan setiap hari pada jam 17:00 UTC (jam 00:00 WIB)
-    - cron: '0 17 * * *'
-  workflow_dispatch: # Memungkinkan backup manual via tombol di GitHub UI
+    - cron: '0 17 * * *' # Jam 00:00 WIB
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   backup:
@@ -19,7 +21,6 @@ jobs:
           node-version: '20'
 
       - name: 📦 Install Dependencies
-          # Menambahkan instalasi manual jika package.json belum ada di root
         run: npm install @supabase/supabase-js
 
       - name: 🚀 Run Backup Script
@@ -32,6 +33,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          mkdir -p backups
           git add backups/
           git commit -m "🚀 Automated Daily Backup [$(date +'%Y-%m-%d')]" || echo "No changes to commit"
           git push
