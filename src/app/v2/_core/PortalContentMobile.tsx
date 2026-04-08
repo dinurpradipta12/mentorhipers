@@ -98,6 +98,10 @@ export default function PortalContentMobile({ id }: { id: string }) {
     activeSessionToday: null as any
   });
 
+  // Profile Setup State
+  const [isPhotoSetupOpen, setIsPhotoSetupOpen] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+
   const initMobile = async () => {
     setIsLoading(true);
     // Use cached session — avoids network call on every mount/refresh
