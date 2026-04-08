@@ -184,42 +184,28 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const [studentActionTarget, setStudentActionTarget] = useState<any>(null);
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+  const [studentSearch, setStudentSearch] = useState('');
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [editStudentName, setEditStudentName] = useState('');
   const [certUrl, setCertUrl] = useState('');
   const [moveGroupTarget, setMoveGroupTarget] = useState('');
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-
     const initPage = async () => {
       setIsLoading(true);
       console.log("🚀 Starting V2 Batch Initialization (Sequential Mode)...");
-      
-     //Safety Timeout: If Supabase takes > 40s, show UI anyway to prevent infinite hang
       const timeout = setTimeout(() => {
         console.warn("⚠️ Initialization taking too long (40s limit). Forcing UI render.");
         setIsLoading(false);
       }, 40000);
 
       try {
-       //Load user first
         await fetchUserData();
-        
-       //Sequential fetching
-        console.log("📡 Fetching Batch Details...");
         await fetchBatchDetail();
-        
-        console.log("📡 Fetching Curriculum...");
         await fetchCurriculum();
-        
-        console.log("📡 Fetching Students & Profiles...");
         await fetchStudents();
-        
-        console.log("📡 Fetching Matrices & Submissions...");
         await fetchAllSubmissions();
-        
         console.log("✅ Initialization Complete.");
       } catch (err: any) {
         console.error("❌ Overall Page Initialization Failed:", err.message);
@@ -228,22 +214,38 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         setIsLoading(false);
       }
     };
-    
     initPage();
-
-   //Restore last active tab from localStorage
     const savedTab = localStorage.getItem(`batch_tab_${resolvedParams.id}`);
     if (savedTab) setActiveTab(savedTab);
+  }, [resolvedParams.id]);
 
-   //⚠️ REALTIME DISABLED on v2_profiles (global table, no row filter = full DB scan per update)
-   //This was the primary cause of resource exhaustion on Nano plan.
-   //Re-enable only after upgrading to Pro plan.
-   //
-   //Minimal realtime: only membership changes for THIS workspace
+  useEffect(() => {
+    if (!resolvedParams.id) return;
     const channel = supabase
+      .channel(`batch_${resolvedParams.id}_presence`)
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const onlineIds = new Set<string>();
+        Object.values(state).forEach((presences: any) => {
+          presences.forEach((p: any) => {
+            if (p.profile_id) onlineIds.add(p.profile_id);
+          });
+        });
+        setOnlineUsers(onlineIds);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({
+            profile_id: currentUser?.id,
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
+
+    const memChannel = supabase
       .channel(`batch_${resolvedParams.id}_memberships`)
       .on('postgres_changes', { 
-        event: 'INSERT',//Only INSERT, not UPDATE/DELETE to reduce triggers
+        event: 'INSERT',
         schema: 'public', 
         table: 'v2_memberships',
         filter: `workspace_id=eq.${resolvedParams.id}`
@@ -253,8 +255,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
-  }, [resolvedParams.id]);
+    return () => { 
+      supabase.removeChannel(channel); 
+      supabase.removeChannel(memChannel);
+    };
+  }, [resolvedParams.id, currentUser?.id]);
 
    const fetchUserData = async () => {
    //Use cached session — avoids network call on every mount
@@ -858,7 +863,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       if (rawProfileIds.length > 0) {
         const { data: nameData } = await supabase
           .from('v2_profiles')
-          .select('id, full_name, username')
+          .select('id, full_name, username, updated_at')
           .in('id', rawProfileIds);
 
         if (nameData) {
@@ -1043,11 +1048,24 @@ export default function BatchContentDesktop({ id }: { id: string }) {
              <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
                 {/* Master Student List Table */}
                 <Card className="xl:col-span-8 p-0 border-none shadow-xl shadow-slate-200/50 bg-white overflow-hidden rounded-[44px]">
-                  <div className="p-10 border-b border-slate-50 flex items-center justify-between">
+                  <div className="p-10 border-b border-slate-50 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Active Students</h3>
-                    <div className="flex items-center gap-4 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100">
-                      <Search size={16} className="text-slate-400"/>
-                      <input placeholder="Cari nama murid..." className="bg-transparent border-none focus:outline-none text-sm font-bold w-48"/>
+                    <div className="flex items-center gap-4">
+                       <div className="flex items-center gap-4 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                         <Search size={16} className="text-slate-400"/>
+                         <input 
+                           value={studentSearch}
+                           onChange={(e) => setStudentSearch(e.target.value)}
+                           placeholder="Cari nama murid..." 
+                           className="bg-transparent border-none focus:outline-none text-sm font-bold w-48"
+                         />
+                       </div>
+                       <Button 
+                         onClick={() => setIsRegModalOpen(true)}
+                         className="h-12 px-6 rounded-2xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-200 hover:scale-[1.02] transition-all flex items-center gap-2 border-none"
+                       >
+                         <Plus size={16}/> Add Student
+                       </Button>
                     </div>
                   </div>
                   
@@ -1062,7 +1080,9 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {students.map((mem) => (
+                        {students
+                          .filter(s => s.v2_profiles?.full_name?.toLowerCase().includes(studentSearch.toLowerCase()))
+                          .map((mem) => (
                            <tr 
                              key={mem.id} 
                              onClick={() => { setSelectedStudentDetail(mem); setIsDetailModalOpen(true); }}
@@ -1070,16 +1090,29 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            >
                              <td className="px-10 py-6">
                                <div className="flex items-center gap-4">
-                                 <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border-2 border-transparent group-hover/row:border-blue-200 transition-all flex items-center justify-center">
-                                    {mem.v2_profiles?.avatar_url ? (
-                                       <img src={mem.v2_profiles.avatar_url} className="w-full h-full object-contain scale-[1.3] translate-y-1"/>
-                                    ) : (
-                                       <User size={16} className="text-slate-300"/>
-                                    )}
+                                 <div className="relative flex-shrink-0">
+                                   <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden p-0.5 border-2 border-transparent group-hover/row:border-blue-200 transition-all flex items-center justify-center">
+                                      {mem.v2_profiles?.avatar_url ? (
+                                         <img src={mem.v2_profiles.avatar_url} className="w-full h-full object-contain" alt=""/>
+                                      ) : (
+                                         <User size={16} className="text-slate-300"/>
+                                      )}
+                                    </div>
+                                    {/* Online Indicator Dot - Outside overflow container to prevent clipping */}
+                                    <div className={`absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full border-2 border-white shadow-sm transition-colors duration-500 z-10 ${onlineUsers.has(mem.profile_id) ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20' : 'bg-slate-300'}`}/>
                                   </div>
                                  <div className="group-hover/row:translate-x-1 transition-transform">
                                    <p className="text-sm font-black text-[#0F172A] group-hover/row:text-blue-600 transition-colors">{mem.v2_profiles?.full_name}</p>
-                                   <p className="text-[10px] font-bold text-slate-400">Student ID: {mem.id.slice(0, 8)}</p>
+                                   <div className="space-y-0.5">
+                                      <p className="text-[10px] font-bold text-slate-400">Student ID: {mem.id.slice(0, 8)}</p>
+                                      <p className={`text-[9px] font-black uppercase tracking-tight flex items-center gap-1.5 ${onlineUsers.has(mem.profile_id) ? 'text-emerald-500' : 'text-slate-300'}`}>
+                                         {onlineUsers.has(mem.profile_id) ? (
+                                            <><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> LIVE NOW</>
+                                         ) : (
+                                            mem.v2_profiles?.updated_at ? `Last active: ${new Date(mem.v2_profiles.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Last active: Unknown'
+                                         )}
+                                      </p>
+                                   </div>
                                  </div>
                                </div>
                              </td>
@@ -1156,9 +1189,9 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                       <Star size={60} fill="currentColor" className="text-amber-500"/>
                                    </div>
                                    <div className="relative z-10 flex items-center gap-4">
-                                      <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-200 flex items-center justify-center font-black text-amber-600 shadow-sm overflow-hidden">
+                                      <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-200 flex items-center justify-center font-black text-amber-600 shadow-sm overflow-hidden p-1">
                                          {star.mem.v2_profiles?.avatar_url ? (
-                                            <img src={star.mem.v2_profiles.avatar_url} className="w-full h-full object-cover"/>
+                                            <img src={star.mem.v2_profiles.avatar_url} className="w-full h-full object-contain"/>
                                          ) : star.mem.v2_profiles?.full_name?.charAt(0)}
                                       </div>
                                       <div>
@@ -2409,9 +2442,9 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                               >
                                  <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                       <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-inner flex items-center justify-center font-black text-xs text-slate-400 uppercase overflow-hidden shrink-0">
+                                       <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-inner flex items-center justify-center font-black text-xs text-slate-400 uppercase overflow-hidden shrink-0 p-1">
                                           {sub.v2_profiles?.avatar_url ? (
-                                             <img src={sub.v2_profiles.avatar_url} alt="Profile" className="w-full h-full object-cover"/>
+                                             <img src={sub.v2_profiles.avatar_url} alt="Profile" className="w-full h-full object-contain"/>
                                           ) : (
                                              <span className="text-slate-300">{sub.v2_profiles?.full_name?.charAt(0) || 'S'}</span>
                                           )}
@@ -2844,6 +2877,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
               className="fixed z-[151] w-56 bg-white border border-slate-100 rounded-3xl shadow-2xl shadow-slate-300/40 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
               style={{ top: menuPos.top, right: menuPos.right }}
             >
+              <button 
+                onClick={() => { setSelectedStudentDetail(mem); setIsDetailModalOpen(true); setOpenActionMenuId(null); }}
+                className="w-full flex items-center gap-3 px-5 py-4 text-xs font-bold text-blue-600 hover:bg-blue-50 transition-all text-left"
+              >
+                <Eye size={15}/> Lihat Profile Card
+              </button>
+              <div className="border-t border-slate-50"/>
               <button onClick={() => { setStudentActionTarget({ ...mem, mode: 'cert' }); setCertUrl(mem.certificate_url || ''); setOpenActionMenuId(null); }} className="w-full flex items-center gap-3 px-5 py-4 text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-600 transition-all text-left">
                 <Medal size={15}/> Upload Sertifikat
               </button>
