@@ -59,10 +59,24 @@ export default function LoginContentDesktop() {
             loginIdentifier = `${email.toLowerCase().trim()}@ruangsosmed.local`;
          }
 
-         const { data, error: authError } = await supabase.auth.signInWithPassword({
+         let { data, error: authError } = await supabase.auth.signInWithPassword({
             email: loginIdentifier,
             password
          });
+
+         // FALLBACK: If login fails with new domain, try the legacy mentorhipers domain
+         if (authError && email && !email.includes('@') && loginIdentifier.endsWith('@ruangsosmed.local')) {
+            const legacyEmail = `${email.toLowerCase().trim()}@mentorhipers.local`;
+            const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+               email: legacyEmail,
+               password
+            });
+            
+            if (!retryError) {
+               data = retryData;
+               authError = null;
+            }
+         }
 
          if (authError) {
             setError(authError.message === "Invalid login credentials" ? "Username atau Password salah." : authError.message);
