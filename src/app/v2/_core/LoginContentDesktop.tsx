@@ -72,9 +72,15 @@ export default function LoginContentDesktop() {
             // Intelligent Redirect
             const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', data.user.id).maybeSingle();
             if (profile && profile.role !== 'admin') {
-               const { data: membership } = await supabase.from('v2_memberships').select('workspace_id').eq('profile_id', data.user.id).maybeSingle();
-               if (membership?.workspace_id) {
-                  router.push(`/v2/portal/${membership.workspace_id}`);
+               const { data: memberships } = await supabase.from('v2_memberships').select('workspace_id').eq('profile_id', data.user.id);
+               if (memberships && memberships.length > 0) {
+                  if (memberships.length === 1) {
+                    router.push(`/v2/portal/${memberships[0].workspace_id}`);
+                    return;
+                  }
+               } else {
+                  setError("Akun Anda belum terdaftar di Batch manapun. Admin belum memasukkan data Anda ke Project Baru ini.");
+                  setLoading(false);
                   return;
                }
             }

@@ -68,14 +68,21 @@ export default function LoginContentMobile() {
               .maybeSingle();
 
             if (profile && profile.role !== 'admin') {
-               const { data: membership } = await supabase
+               const { data: memberships } = await supabase
                  .from('v2_memberships')
                  .select('workspace_id')
-                 .eq('profile_id', data.user.id)
-                 .maybeSingle();
+                 .eq('profile_id', data.user.id);
 
-               if (membership?.workspace_id) {
-                  router.push(`/v2/portal/${membership.workspace_id}`);
+               if (memberships && memberships.length > 0) {
+                  // If has multiple, still allow them to pick, but normally they have one
+                  if (memberships.length === 1) {
+                    router.push(`/v2/portal/${memberships[0].workspace_id}`);
+                    return;
+                  }
+               } else {
+                  // NO MEMBERSHIP FOUND IN NEW DB
+                  setError("Akun Anda belum terdaftar di Batch manapun di sistem baru ini.");
+                  setLoading(false);
                   return;
                }
             }
