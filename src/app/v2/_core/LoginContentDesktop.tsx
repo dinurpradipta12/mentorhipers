@@ -46,8 +46,12 @@ export default function LoginContentDesktop() {
          let loginIdentifier = email;
          
          // 1. ARUNIKA ADMIN MAPPING (Mapping to Synthetic Local Email)
+         // 1. ARUNIKA ADMIN BYPASS (LOCAL ONLY)
          if (email === "arunika" && password === "ar4925") {
-            loginIdentifier = "arunika@mentorhipers.local";
+            await supabase.auth.signOut();
+            localStorage.setItem("v2_legacy_admin", "true");
+            router.push('/v2');
+            return;
          } 
          // 2. STUDENT USERNAME MAPPING
          else if (email && !email.includes('@')) {
