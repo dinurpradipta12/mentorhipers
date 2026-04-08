@@ -150,7 +150,6 @@ export default function QuizTemplatesContent() {
 
   // ─── Question helpers ─────────────────────────────────────────
   const addQuestion = () => {
-    if (form.questions_json.length >= 10) { alert("Maksimal 10 soal per template!"); return; }
     setForm(f => ({ ...f, questions_json: [...f.questions_json, EMPTY_QUESTION()] }));
   };
 
@@ -243,12 +242,11 @@ export default function QuizTemplatesContent() {
             <div className="flex items-center justify-between px-2">
               <div>
                 <h3 className="text-lg font-black text-[#0F172A]">Bank Soal</h3>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{form.questions_json.length}/10 Soal</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{form.questions_json.length} Total Soal</p>
               </div>
               <button
                 onClick={addQuestion}
-                disabled={form.questions_json.length >= 10}
-                className="h-11 px-6 rounded-2xl bg-blue-600 text-white text-xs font-black hover:bg-blue-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-blue-500/20"
+                className="h-11 px-6 rounded-2xl bg-blue-600 text-white text-xs font-black hover:bg-blue-700 transition-all flex items-center gap-2 shadow-lg shadow-blue-500/20"
               >
                 <Plus size={16}/> Tambah Soal
               </button>
