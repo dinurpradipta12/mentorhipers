@@ -1,0 +1,37 @@
+name: 🛰️ Mentorhipers Daily Backup
+
+on:
+  schedule:
+    # Berjalan setiap hari pada jam 17:00 UTC (jam 00:00 WIB)
+    - cron: '0 17 * * *'
+  workflow_dispatch: # Memungkinkan backup manual via tombol di GitHub UI
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 📦 Install Dependencies
+          # Menambahkan instalasi manual jika package.json belum ada di root
+        run: npm install @supabase/supabase-js
+
+      - name: 🚀 Run Backup Script
+        env:
+          NEXT_PUBLIC_SUPABASE_V2_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_V2_URL }}
+          SUPABASE_V2_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_V2_SERVICE_ROLE_KEY }}
+        run: node scripts/database_backup.js
+
+      - name: 📂 Commit & Push Backups
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add backups/
+          git commit -m "🚀 Automated Daily Backup [$(date +'%Y-%m-%d')]" || echo "No changes to commit"
+          git push
