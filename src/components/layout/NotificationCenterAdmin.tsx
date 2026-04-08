@@ -111,35 +111,55 @@ export default function NotificationCenterAdmin() {
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
+  const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  if (!mounted) return null;
+
   return (
     <>
       {/* 1. Floating Bell Icon (Admin Style) */}
-      <div className="fixed bottom-8 right-8 z-[100]">
+      <div className={`fixed bottom-8 right-8 z-[100] ${isMobile ? '!bottom-24 !right-6' : ''}`}>
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsOpen(!isOpen)}
-          className="relative w-[52px] h-[52px] rounded-2xl bg-white border border-slate-200 shadow-xl flex items-center justify-center text-[#202224] group hover:bg-[#4880FF] hover:text-white transition-all duration-300"
+          className={`relative ${isMobile ? 'w-14 h-14' : 'w-[52px] h-[52px]'} rounded-2xl bg-white border border-slate-200 shadow-xl flex items-center justify-center text-[#202224] group hover:bg-[#4880FF] hover:text-white transition-all duration-300`}
         >
           <Bell className={`w-6 h-6 ${unreadCount > 0 ? 'animate-bounce' : ''}`} />
           
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-6 h-6 bg-[#F93C65] text-white text-[10px] font-black rounded-full border-4 border-white flex items-center justify-center shadow-lg">
+            <span className={`absolute -top-1 -right-1 ${isMobile ? 'w-5 h-5 text-[9px]' : 'w-6 h-6 text-[10px]'} bg-[#F93C65] text-white font-black rounded-full border-4 border-white flex items-center justify-center shadow-lg`}>
               {unreadCount}
             </span>
           )}
         </motion.button>
 
-        {/* 2. Dropdown Panel (Opens upward from bottom-right) */}
+        {/* 2. Panel (Opens upward) */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95, x: 20 }}
-              animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95, x: 20 }}
-              className="absolute bottom-[70px] right-0 w-[400px] bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden z-20 origin-bottom-right text-left"
+              initial={isMobile ? { opacity: 0, y: 100 } : { opacity: 0, y: -10, scale: 0.95, x: 20 }}
+              animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, scale: 1, x: 0 }}
+              exit={isMobile ? { opacity: 0, y: 100 } : { opacity: 0, y: -10, scale: 0.95, x: 20 }}
+              className={`absolute bottom-[70px] right-0 ${isMobile ? 'fixed inset-x-0 bottom-0 top-[15vh] w-full rounded-t-[40px] shadow-[0_-20px_50px_rgba(0,0,0,0.1)]' : 'w-[400px] rounded-[2.5rem] shadow-2xl origin-bottom-right'} bg-white border border-slate-100 overflow-hidden z-20 text-left`}
             >
-              <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+
+              {isMobile && (
+                <div className="w-full h-1.5 flex justify-center mt-4 mb-2">
+                   <div className="w-12 h-1 bg-slate-100 rounded-full" />
+                </div>
+              )}
+              <div className={`${isMobile ? 'p-10' : 'p-8'} border-b border-slate-50 flex items-center justify-between ${isMobile ? 'bg-white' : 'bg-slate-50/50'}`}>
+
                 <div>
                   <h3 className="text-xl font-extrabold text-[#202224] leading-none tracking-tight">System Events</h3>
                   <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Mentee Activity Center</p>

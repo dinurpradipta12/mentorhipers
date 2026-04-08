@@ -259,10 +259,16 @@ export default function BatchListContent() {
           <p className="text-slate-500 font-medium text-sm sm:text-base max-w-lg">Kelola seluruh kelas bootcamp dalam satu dashboard terpusat.</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <Link
+            href="/admin/dashboard"
+            className="w-full sm:w-auto h-16 md:h-20 px-6 rounded-2xl md:rounded-3xl bg-slate-100 text-slate-500 font-black text-[10px] uppercase tracking-wider hover:bg-slate-900 hover:text-white active:scale-95 transition-all flex items-center justify-center gap-2 border border-slate-200"
+          >
+            <ArrowLeft size={16}/> Back to V1
+          </Link>
           <Link
             href="/ruang-sosmed/admin/templates"
-            className="h-16 md:h-20 px-8 rounded-2xl md:rounded-3xl bg-white border-2 border-slate-200 text-slate-600 font-black text-sm hover:border-blue-300 hover:text-blue-600 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-sm"
+            className="w-full sm:w-auto h-16 md:h-20 px-8 rounded-2xl md:rounded-3xl bg-white border-2 border-slate-200 text-slate-600 font-black text-sm hover:border-blue-300 hover:text-blue-600 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-sm"
           >
             <BookOpen size={18}/> Quiz Templates
           </Link>

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
+import BoardMobileV1 from "./BoardMobileV1";
 
 const DailyGrowthChart = dynamic(() => import("@/components/charts/DailyGrowthChart"), {
   loading: () => <div className="h-64 flex items-center justify-center text-slate-200 font-bold uppercase tracking-widest text-[10px]">Preparing Data Chart...</div>,
@@ -630,8 +631,29 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
     }
   }, [activeTab, boardData.enabled_features]);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   if (isLoading) {
     return <AppLoading />;
+  }
+
+  if (isMobile) {
+    return (
+      <BoardMobileV1 
+        boardData={boardData}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        isAdmin={isAdmin}
+        calculateRemainingWeeks={calculateRemainingWeeks}
+      />
+    );
   }
 
   return (

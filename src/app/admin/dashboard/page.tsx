@@ -38,6 +38,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/layout/AdminHeader";
 import AdminSidebar from "@/components/layout/AdminSidebar";
+import DashboardMobileV1 from "./_core/DashboardMobileV1";
 
 /**
  * StatCard
@@ -349,32 +350,58 @@ export default function AdminDashboardV2() {
       return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
    };
 
+   const [isMobile, setIsMobile] = useState(false);
+
+   useEffect(() => {
+      const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+   }, []);
+
    return (
-      <div className="min-h-screen bg-[#F5F6FA] flex overflow-x-hidden font-sans">
+      <div className="min-h-screen bg-[#F5F6FA] block lg:flex overflow-x-hidden font-sans">
          <style jsx global>{`
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
             * { font-family: 'Plus Jakarta Sans', sans-serif !important; }
             .no-scrollbar::-webkit-scrollbar { display: none; }
          `}</style>
+         
+         {isMobile ? (
+            <div className="w-full min-h-screen">
+               <DashboardMobileV1 
+                  clients={clients}
+                  stats={stats}
+                  appSettings={appSettings}
+                  handleEditClick={handleEditClick}
+                  copyToClipboard={copyToClipboard}
+                  copiedId={copiedId}
+                  setIsRegisterModalOpen={setIsRegisterModalOpen}
+                  setIsScheduleModalOpen={setIsScheduleModalOpen}
+                  mentorProfile={mentorProfile}
+                  handleDeleteSchedule={handleDeleteSchedule}
+               />
+            </div>
+         ) : (
+            <>
+               {/* ADMIN SIDEBAR */}
+               <AdminSidebar isSidebarOpen={isSidebarOpen} appSettings={appSettings} />
 
-         {/* ADMIN SIDEBAR */}
-         <AdminSidebar isSidebarOpen={isSidebarOpen} appSettings={appSettings} />
+               {/* MAIN CONTENT AREA */}
+               <motion.main
+                  initial={false}
+                  animate={{
+                     marginLeft: isSidebarOpen ? 240 : 80,
+                     width: `calc(100% - ${isSidebarOpen ? 240 : 80}px)`
+                  }}
+                  transition={{ duration: isLoaded ? 0.3 : 0, ease: "easeInOut" }}
+                  className="flex-1 flex flex-col min-h-screen"
+               >
+                  {/* TOP HEADER */}
+                  <AdminHeader isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-         {/* MAIN CONTENT AREA */}
-         <motion.main
-            initial={false}
-            animate={{
-               marginLeft: isSidebarOpen ? 240 : 80,
-               width: `calc(100% - ${isSidebarOpen ? 240 : 80}px)`
-            }}
-            transition={{ duration: isLoaded ? 0.3 : 0, ease: "easeInOut" }}
-            className="flex-1 flex flex-col min-h-screen"
-         >
-            {/* TOP HEADER */}
-            <AdminHeader isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-
-            {/* PAGE CONTENT */}
-            <div className="p-6 xl:p-10 pt-32 xl:pt-36 space-y-10">
+                  {/* PAGE CONTENT */}
+                  <div className="p-6 xl:p-10 pt-32 xl:pt-36 space-y-10">
                <div className="flex items-center justify-between">
                   <h2 className="text-[32px] font-extrabold text-[#202224] tracking-tight text-left">Dashboard</h2>
                   <div className="flex gap-4">
@@ -552,6 +579,8 @@ export default function AdminDashboardV2() {
                </div>
             </div>
          </motion.main>
+      </>
+   )}
 
          {/* REGISTRATION MODAL */}
          <AnimatePresence>

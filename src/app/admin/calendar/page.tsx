@@ -27,6 +27,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/layout/AdminHeader";
 import AdminSidebar from "@/components/layout/AdminSidebar";
+import CalendarMobileV1 from "./CalendarMobileV1";
 
 // --- Components ---
 
@@ -72,6 +73,15 @@ const InputField = ({ label, placeholder, type = "text", value, onChange }: Inpu
 );
 
 export default function AdminCalendarPage() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const [clients, setClients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [appSettings, setAppSettings] = useState({
@@ -213,6 +223,18 @@ export default function AdminCalendarPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F6FA] flex font-sans overflow-x-hidden">
+      {isMobile ? (
+        <CalendarMobileV1 
+          clients={clients}
+          allEvents={allEvents}
+          currentDate={currentDate}
+          handlePrevMonth={handlePrevMonth}
+          handleNextMonth={handleNextMonth}
+          setIsScheduleModalOpen={setIsScheduleModalOpen}
+        />
+      ) : (
+        <>
+
       <style jsx global>{`
         .bg-grid-line {
           background-image: linear-gradient(45deg, #f1f5f9 25%, transparent 25%), linear-gradient(-45deg, #f1f5f9 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f1f5f9 75%), linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
@@ -384,6 +406,8 @@ export default function AdminCalendarPage() {
           </div>
         )}
       </AnimatePresence>
+        </>
+      )}
       <NotificationCenterAdmin />
     </div>
   );
