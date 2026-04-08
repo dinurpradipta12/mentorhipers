@@ -199,7 +199,7 @@ export default function LoginContentDesktop() {
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
                               placeholder="e.g. budisantoso atau nama@agency.com"
-                              className="w-full h-16 rounded-3xl bg-slate-900 border border-white/5 pl-14 pr-6 text-white font-bold text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/30 transition-all placeholder:text-slate-700"
+                              className="w-full h-16 rounded-3xl bg-slate-900 border border-white/5 pl-14 pr-6 text-white font-bold text-base focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/30 transition-all placeholder:text-slate-700"
                               required
                           />
                         </div>
@@ -217,7 +217,7 @@ export default function LoginContentDesktop() {
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               placeholder="••••••••"
-                              className="w-full h-16 rounded-3xl bg-slate-900 border border-white/5 pl-14 pr-6 text-white font-bold text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/30 transition-all placeholder:text-slate-700"
+                              className="w-full h-16 rounded-3xl bg-slate-900 border border-white/5 pl-14 pr-6 text-white font-bold text-base focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500/30 transition-all placeholder:text-slate-700"
                               required
                           />
                         </div>

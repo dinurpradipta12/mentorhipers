@@ -1398,25 +1398,25 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
                     {/* Class Assets */}
                     {selectedLesson && selectedLesson.assets_json && selectedLesson.assets_json.length > 0 && (
-                       <Card className="p-10 border-none shadow-2xl shadow-blue-900/10 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white rounded-[44px] space-y-8 relative overflow-hidden">
-                          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full pointer-events-none"/>
-                          <h3 className="text-xl font-black tracking-tight px-2">Classroom Assets</h3>
+                       <Card className="p-10 border-none shadow-xl shadow-slate-200/50 bg-white rounded-[44px] space-y-8 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-64 h-64 bg-slate-100/60 blur-[80px] rounded-full pointer-events-none"/>
+                          <h3 className="text-xl font-black tracking-tight px-2 text-[#0F172A]">Classroom Assets</h3>
                           <div className="space-y-4">
                              {selectedLesson.assets_json.map((asset: any, i: number) => (
                                 <a 
                                   key={i}
                                   href={asset.url}
                                   target="_blank"
-                                  className="flex items-center justify-between p-6 rounded-[32px] bg-white/10 border border-white/10 hover:bg-white/20 transition-all group backdrop-blur-md shadow-lg"
+                                  className="flex items-center justify-between p-6 rounded-[32px] bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-lg hover:border-slate-200 transition-all group shadow-sm"
                                 >
                                    <div className="flex items-center gap-5">
-                                      <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center font-black shadow-lg shadow-blue-500/20"><Download size={20}/></div>
+                                      <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 text-slate-600 flex items-center justify-center shadow-sm"><Download size={20}/></div>
                                       <div className="space-y-1">
-                                         <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest">Resource {i + 1}</p>
-                                         <span className="text-sm font-bold tracking-tight">{asset.name}</span>
+                                         <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Resource {i + 1}</p>
+                                         <span className="text-sm font-bold tracking-tight text-slate-800">{asset.name}</span>
                                       </div>
                                    </div>
-                                   <ChevronRight size={18} className="opacity-20 group-hover:opacity-100 transition-opacity"/>
+                                   <ChevronRight size={18} className="text-slate-300 group-hover:text-slate-600 transition-colors"/>
                                 </a>
                              ))}
                           </div>
@@ -1850,7 +1850,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                     value={newStudent.fullName || ''}
                     onChange={(e) => setNewStudent({ ...newStudent, fullName: e.target.value })}
                     placeholder="e.g. Budi Santoso"
-                    className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
+                    className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-base border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
                  />
                 </div>
                 <div className="space-y-2">
@@ -1859,7 +1859,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                     value={newStudent.username || ''}
                     onChange={(e) => setNewStudent({ ...newStudent, username: e.target.value.toLowerCase().trim() })}
                     placeholder="e.g. budisantoso"
-                    className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
+                    className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-base border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
                  />
                 </div>
                 <div className="space-y-2">
@@ -1868,7 +1868,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                     value={newStudent.password || ''}
                     onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })}
                     placeholder="e.g. Ruang Sosmed2024!"
-                    className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
+                    className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-base border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
                  />
                 </div>
               </div>
@@ -1974,7 +1974,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                         <select 
                            value={lmsForm.type}
                            onChange={(e) => setLmsForm({ ...lmsForm, type: e.target.value })}
-                           className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
+                           className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-base border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
                         >
                            <option value="material">Video Material</option>
                            <option value="post_test">Post Test</option>
@@ -1988,7 +1988,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            value={lmsForm.module_name || ''}
                            onChange={(e) => setLmsForm({ ...lmsForm, module_name: e.target.value })}
                            placeholder="e.g. Modul 01: Fundamental"
-                           className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
+                           className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-base border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
                        />
                      </div>
                   </div>
@@ -2000,7 +2000,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            value={lmsForm.title || ''}
                            onChange={(e) => setLmsForm({ ...lmsForm, title: e.target.value })}
                            placeholder="Judul Materi atau Tugas"
-                           className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
+                           className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-base border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
                        />
                      </div>
                       <div className="space-y-2">
@@ -2034,7 +2034,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            value={lmsForm.video_url || ''}
                            onChange={(e) => setLmsForm({ ...lmsForm, video_url: e.target.value })}
                            placeholder="https://www.youtube.com/embed/..."
-                           className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
+                           className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-base border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
                        />
                      </div>
                   )}

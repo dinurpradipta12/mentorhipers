@@ -91,7 +91,7 @@ export default function LoginPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="e.g. MH-2024-CLIENT" 
-                  className="w-full h-14 rounded-2xl border border-border/50 bg-[#FAFAFA] pl-12 pr-4 text-sm focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent/40 shadow-sm transition-all text-slate-800"
+                  className="w-full h-14 rounded-2xl border border-border/50 bg-[#FAFAFA] pl-12 pr-4 text-base focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent/40 shadow-sm transition-all text-slate-800"
                   required
                 />
               </div>
@@ -106,7 +106,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••" 
-                  className="w-full h-14 rounded-2xl border border-border/50 bg-[#FAFAFA] pl-12 pr-4 text-sm focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent/40 shadow-sm transition-all text-slate-800"
+                  className="w-full h-14 rounded-2xl border border-border/50 bg-[#FAFAFA] pl-12 pr-4 text-base focus:outline-none focus:ring-4 focus:ring-accent/10 focus:border-accent/40 shadow-sm transition-all text-slate-800"
                   required
                 />
               </div>

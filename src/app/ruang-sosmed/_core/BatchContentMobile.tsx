@@ -377,15 +377,15 @@ export default function BatchContentMobile({ id }: { id: string }) {
                   <div className="space-y-5 flex-1 pb-32">
                      <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 mb-2 block">Minggu/Modul Ke-</label>
-                        <input type="text" value={lmsForm.module_name} onChange={e => setLmsForm({...lmsForm, module_name: e.target.value})} placeholder="e.g. Pertemuan 1" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"/>
+                        <input type="text" value={lmsForm.module_name} onChange={e => setLmsForm({...lmsForm, module_name: e.target.value})} placeholder="e.g. Pertemuan 1" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-base font-bold text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"/>
                      </div>
                      <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 mb-2 block">Judul Materi</label>
-                        <input type="text" value={lmsForm.title} onChange={e => setLmsForm({...lmsForm, title: e.target.value})} placeholder="e.g. Fundamental Social Media" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"/>
+                        <input type="text" value={lmsForm.title} onChange={e => setLmsForm({...lmsForm, title: e.target.value})} placeholder="e.g. Fundamental Social Media" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-base font-bold text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"/>
                      </div>
                      <div>
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 mb-2 block">Link Zoom/Video Rekaman</label>
-                        <input type="text" value={lmsForm.video_url} onChange={e => setLmsForm({...lmsForm, video_url: e.target.value})} placeholder="https://zoom.us/j/..." className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-blue-600 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"/>
+                        <input type="text" value={lmsForm.video_url} onChange={e => setLmsForm({...lmsForm, video_url: e.target.value})} placeholder="https://zoom.us/j/..." className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-base font-bold text-blue-600 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"/>
                      </div>
                      <Button onClick={handleSaveLms} className="w-full h-14 bg-blue-600 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 mt-4 outline-none">Simpan Perubahan</Button>
                      {editingLmsItem && (
@@ -459,7 +459,7 @@ export default function BatchContentMobile({ id }: { id: string }) {
                      </div>
                      <div className="px-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2 mb-2 block text-center">Atau buat kelompok baru</label>
-                        <input type="text" value={moveGroupTarget} onChange={e => setMoveGroupTarget(e.target.value)} placeholder="e.g. Batch 17 - Tiger" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-center text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all mb-4"/>
+                        <input type="text" value={moveGroupTarget} onChange={e => setMoveGroupTarget(e.target.value)} placeholder="e.g. Batch 17 - Tiger" className="w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-base font-bold text-center text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all mb-4"/>
                         <Button onClick={handleMoveGroup} className="w-full h-14 bg-blue-600 rounded-2xl text-[10px] font-black text-white uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 outline-none">Konfirmasi Perpindahan</Button>
                      </div>
                   </div>

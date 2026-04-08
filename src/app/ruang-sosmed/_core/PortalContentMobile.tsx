@@ -1093,7 +1093,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
                      value={submitForm.file_link}
                      onChange={(e) => setSubmitForm({ file_link: e.target.value })}
                      placeholder="https://canva.com/..."
-                     className="w-full h-14 bg-slate-50 rounded-2xl px-6 text-sm font-bold border border-slate-100 focus:border-blue-500 focus:outline-none transition-all"
+                     className="w-full h-14 bg-slate-50 rounded-2xl px-6 text-base font-bold border border-slate-100 focus:border-blue-500 focus:outline-none transition-all"
                  />
                   <Button onClick={handleSubmitAssignment} disabled={isLoading} className="w-full h-14 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-100">
                      SUBMIT NOW
