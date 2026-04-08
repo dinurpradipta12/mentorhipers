@@ -3135,18 +3135,20 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         {isQuizReviewModalOpen && activeQuizReview && (() => {
            const quizDef = curriculum.find((c: any) => c.id === activeQuizReview.curriculum_id);
            const questions = quizDef?.quiz_data?.questions || [];
-           const wrongAnswers = questions.map((q: any, qi: number) => {
+           const allReports = questions.map((q: any, qi: number) => {
               const studentAnswer = activeQuizReview.answers_json?.[qi];
-              if (studentAnswer !== q.correct) {
-                 return {
-                    number: qi + 1,
-                    questionHtml: q.text,
-                    studentChoice: studentAnswer !== undefined ? q.options[studentAnswer] : "Tidak Dijawab",
-                    correctChoice: q.options[q.correct]
-                 };
-              }
-              return null;
-           }).filter(Boolean);
+              const isCorrect = studentAnswer === q.correct;
+              const isText = q.type === 'long_text' || !q.options;
+
+              return {
+                 number: qi + 1,
+                 type: isText ? 'text' : 'mc',
+                 questionHtml: q.text,
+                 studentChoice: isText ? studentAnswer : (studentAnswer !== undefined ? q.options[studentAnswer] : "Tidak Dijawab"),
+                 correctChoice: isText ? "Manual Review" : q.options[q.correct],
+                 isCorrect
+              };
+           });
 
            return (
              <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-xl">
@@ -3164,7 +3166,25 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                          <h2 className="text-2xl font-black text-[#0F172A] tracking-tighter pt-2">
                            {activeQuizReview.v2_profiles?.full_name || 'Student'}
                          </h2>
-                         <p className="text-xs font-bold text-slate-400">Score Achieved: <span className={activeQuizReview.score >= 80 ? "text-emerald-500" : activeQuizReview.score >= 60 ? "text-amber-500" : "text-rose-500"}>{activeQuizReview.score}</span>/100</p>
+                         <div className="flex items-center gap-4 pt-1">
+                            <p className="text-xs font-bold text-slate-400">Score: <span className={activeQuizReview.score >= 80 ? "text-emerald-500" : "text-rose-500"}>{activeQuizReview.score}</span>/100</p>
+                            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-xl border border-blue-100">
+                               <label className="text-[9px] font-black text-blue-600 uppercase">Adjust:</label>
+                               <input 
+                                  type="number" 
+                                  defaultValue={activeQuizReview.score}
+                                  className="w-10 bg-transparent border-none text-xs font-black text-blue-700 focus:outline-none"
+                                  onBlur={(e) => {
+                                     const newScore = parseInt(e.target.value);
+                                     if (!isNaN(newScore)) {
+                                        supabase.from('v2_quiz_results').update({ score: newScore }).eq('id', activeQuizReview.id).then(() => {
+                                           fetchAllSubmissions();
+                                        });
+                                     }
+                                  }}
+                               />
+                            </div>
+                         </div>
                       </div>
                       <button onClick={() => setIsQuizReviewModalOpen(false)} className="p-3 bg-white border border-slate-100 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all shadow-sm">
                          <X size={20}/>
@@ -3172,71 +3192,53 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                    </div>
 
                    <div className="flex-1 overflow-y-auto p-8 space-y-10">
-                      {/* WRONG ANSWERS REPORT */}
-                      {wrongAnswers.length > 0 ? (
-                         <div className="space-y-4">
-                            <div className="flex items-center gap-3 mb-6">
-                               <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center font-black text-xs border border-rose-100 shadow-sm">
-                                  {wrongAnswers.length}
-                               </div>
-                               <div>
-                                  <h3 className="text-lg font-black text-slate-800 tracking-tight">Koreksi Jawaban Salah</h3>
-                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Needs Improvement</p>
-                               </div>
+                      <div className="space-y-4">
+                         <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center font-black text-xs border border-blue-100 shadow-sm">
+                               {allReports.length}
                             </div>
-                            
-                            <div className="grid grid-cols-1 gap-4">
-                               {wrongAnswers.map((wa: any, idx: number) => (
-                                  <div key={idx} className="p-5 bg-white border border-slate-200 rounded-[24px] shadow-sm space-y-4">
-                                     <div className="flex gap-3 items-start">
-                                        <span className="shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-[10px] font-black">{wa.number}</span>
-                                        <p className="text-sm font-bold text-slate-800 leading-snug pt-0.5">{wa.questionHtml}</p>
-                                     </div>
-                                     <div className="pl-9 space-y-3 pt-1 border-t border-slate-50 mt-4">
-                                        <div className="flex gap-2 items-start">
-                                           <span className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-[10px] font-black uppercase shrink-0 mt-0.5 shadow-inner">Tebakan</span>
-                                           <p className="text-xs font-medium text-slate-500 line-through decoration-rose-300">{wa.studentChoice}</p>
-                                        </div>
-                                        <div className="flex gap-2 items-start">
-                                           <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase shrink-0 mt-0.5 shadow-inner">Benar</span>
-                                           <p className="text-xs font-bold text-emerald-600 bg-emerald-50/50">{wa.correctChoice}</p>
+                            <div>
+                               <h3 className="text-lg font-black text-slate-800 tracking-tight">Question Analysis</h3>
+                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Full Response Report</p>
+                            </div>
+                         </div>
+                         
+                         <div className="grid grid-cols-1 gap-6">
+                            {allReports.map((report: any, idx: number) => (
+                               <div key={idx} className={`p-6 bg-white border ${report.isCorrect || report.type === 'text' ? 'border-slate-100' : 'border-rose-100 bg-rose-50/20'} rounded-[32px] shadow-sm space-y-4 relative overflow-hidden group`}>
+                                  <div className="flex gap-4 items-start relative z-10">
+                                     <span className={`shrink-0 w-8 h-8 rounded-xl ${report.isCorrect || report.type === 'text' ? 'bg-slate-100 text-slate-500' : 'bg-rose-100 text-rose-600'} flex items-center justify-center text-xs font-black shadow-sm`}>{report.number}</span>
+                                     <div className="space-y-4 flex-1">
+                                        <p className="text-[15px] font-black text-slate-800 leading-snug">{report.questionHtml}</p>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-50">
+                                           <div className="space-y-1.5">
+                                              <span className={`px-2 py-0.5 rounded-md ${report.isCorrect || report.type === 'text' ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-600'} text-[9px] font-black uppercase tracking-wider shadow-inner`}>Student Answer</span>
+                                              <p className={`text-sm ${report.type === 'text' ? 'font-medium text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100' : (report.isCorrect ? 'font-black text-emerald-600' : 'font-bold text-rose-600')}`}>
+                                                 {report.studentChoice || <span className="italic opacity-50 text-slate-400 underline decoration-dotted">No Answer Provided</span>}
+                                              </p>
+                                           </div>
+                                           {report.type === 'mc' && !report.isCorrect && (
+                                              <div className="space-y-1.5">
+                                                 <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-wider shadow-inner">Correct Key</span>
+                                                 <p className="text-sm font-black text-emerald-600">{report.correctChoice}</p>
+                                              </div>
+                                           )}
+                                           {report.type === 'text' && (
+                                              <div className="space-y-1.5">
+                                                 <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 text-[9px] font-black uppercase tracking-wider shadow-inner">Review Note</span>
+                                                 <p className="text-xs font-bold text-amber-600 italic">Open-ended question. Adjust score above if needed.</p>
+                                              </div>
+                                           )}
                                         </div>
                                      </div>
                                   </div>
-                               ))}
-                            </div>
-                         </div>
-                      ) : (
-                         <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-[24px] flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                               <Award fill="currentColor" size={24}/>
-                            </div>
-                            <div>
-                               <h4 className="text-base font-black text-emerald-700">Perfect Score!</h4>
-                               <p className="text-xs font-medium text-emerald-600">They answered all questions correctly without a single mistake.</p>
-                            </div>
-                         </div>
-                      )}
-
-                      {/* CLASS FEEDBACK */}
-                      <div className="space-y-4">
-                         <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 text-amber-500 flex items-center justify-center shrink-0 border border-amber-100 shadow-sm">
-                               <MessageSquare size={16} fill="currentColor"/>
-                            </div>
-                            <div>
-                               <h3 className="text-lg font-black text-slate-800 tracking-tight">Class Feedback</h3>
-                               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">From Student's Perspective</p>
-                            </div>
-                         </div>
-                         <div className="w-full p-6 rounded-[24px] bg-slate-50 border border-slate-100 text-sm font-medium text-slate-600 leading-relaxed shadow-inner">
-                            {activeQuizReview.answers_json?.feedback ? (
-                               `"${activeQuizReview.answers_json.feedback}"`
-                            ) : (
-                               <span className="italic text-slate-400">No additional feedback provided by the student for this module.</span>
-                            )}
+                               </div>
+                            ))}
                          </div>
                       </div>
+
+
                    </div>
                    
                    <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex items-center justify-end shrink-0">
