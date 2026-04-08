@@ -139,6 +139,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      assets_json: [],
      quiz_data: { questions: [] }
   });
+
+ //Template Picker State (for Quiz Builder)
+  const [quizTemplates, setQuizTemplates] = useState<any[]>([]);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [templateSearch, setTemplateSearch] = useState('');
   
  //Registration Success Interaction
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -2066,19 +2071,71 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                   {/* QUIZ BUILDER (If Post Test) */}
                   {lmsForm.type === 'post_test' && (
                      <div className="p-10 rounded-[44px] bg-slate-900 space-y-8">
+                        {/* Template Picker */}
+                        {showTemplatePicker && (
+                           <div className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">
+                              <div className="flex items-center justify-between">
+                                 <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Pilih Template Soal</p>
+                                 <button onClick={() => setShowTemplatePicker(false)} className="text-white/30 hover:text-white transition-colors"><X size={16}/></button>
+                              </div>
+                              <input
+                                 value={templateSearch}
+                                 onChange={e => setTemplateSearch(e.target.value)}
+                                 placeholder="Cari nama template..."
+                                 className="w-full h-11 rounded-2xl bg-white/5 border border-white/10 px-5 text-white font-bold text-sm focus:outline-none focus:border-blue-500/40 transition-all"
+                              />
+                              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                                 {quizTemplates.filter((t: any) => t.title.toLowerCase().includes(templateSearch.toLowerCase())).map((t: any) => (
+                                    <button
+                                       key={t.id}
+                                       onClick={() => {
+                                          setLmsForm({ ...lmsForm, quiz_data: { questions: t.questions_json } });
+                                          setShowTemplatePicker(false);
+                                          setTemplateSearch('');
+                                       }}
+                                       className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-blue-500/20 hover:border-blue-400/30 transition-all text-left group/tpl"
+                                    >
+                                       <div>
+                                          <p className="text-sm font-black text-white">{t.title}</p>
+                                          <p className="text-[10px] font-bold text-white/40 mt-0.5">{t.category} · {t.questions_json.length} soal</p>
+                                       </div>
+                                       <ChevronRight size={16} className="text-white/20 group-hover/tpl:text-blue-400 transition-colors"/>
+                                    </button>
+                                 ))}
+                                 {quizTemplates.filter((t: any) => t.title.toLowerCase().includes(templateSearch.toLowerCase())).length === 0 && (
+                                    <p className="text-white/30 text-xs font-bold text-center py-6">Tidak ada template ditemukan.</p>
+                                 )}
+                              </div>
+                           </div>
+                        )}
+
                         <div className="flex items-center justify-between">
                            <div className="flex items-center gap-4">
                               <div className="w-10 h-10 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20"><Sparkles size={20}/></div>
                               <h4 className="text-xl font-black text-white px-2">Quiz Builder Engine</h4>
                            </div>
-                           <button 
-                             onClick={() => {
-                                const newQuiz = { ...lmsForm.quiz_data || { questions: [] } };
-                                newQuiz.questions = [...(newQuiz.questions || []), { id: Date.now(), text: '', options: ['', ''], correct: 0 }];
-                                setLmsForm({ ...lmsForm, quiz_data: newQuiz });
-                             }}
-                             className="h-12 px-6 rounded-xl bg-white/10 text-white text-xs font-black hover:bg-white/20 transition-all border border-white/10"
-                           >+ Add Question</button>
+                           <div className="flex items-center gap-3">
+                              <button
+                                 onClick={async () => {
+                                    if (quizTemplates.length === 0) {
+                                       const { data } = await supabase.from('v2_quiz_templates').select('*').order('updated_at', { ascending: false });
+                                       if (data) setQuizTemplates(data);
+                                    }
+                                    setShowTemplatePicker(v => !v);
+                                 }}
+                                 className="h-12 px-5 rounded-xl bg-blue-500/20 text-blue-300 text-xs font-black hover:bg-blue-500/30 transition-all border border-blue-500/20 flex items-center gap-2"
+                              >
+                                 <BookOpen size={14}/> Load Template
+                              </button>
+                              <button
+                                 onClick={() => {
+                                    const newQuiz = { ...lmsForm.quiz_data || { questions: [] } };
+                                    newQuiz.questions = [...(newQuiz.questions || []), { id: Date.now(), text: '', type: 'mc', options: ['', '', '', ''], correct: 0, required: true }];
+                                    setLmsForm({ ...lmsForm, quiz_data: newQuiz });
+                                 }}
+                                 className="h-12 px-6 rounded-xl bg-white/10 text-white text-xs font-black hover:bg-white/20 transition-all border border-white/10"
+                              >+ Add Question</button>
+                           </div>
                         </div>
 
                         <div className="space-y-6">
@@ -2094,7 +2151,27 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                  ><Trash2 size={16}/></button>
 
                                   <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Question {qi + 1}</label>
+                                    <div className="flex items-center justify-between px-2">
+                                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Question {qi + 1} {q.required && <span className="text-rose-500">*</span>}</label>
+                                       <div className="flex bg-white/5 p-1 rounded-xl gap-1 border border-white/5">
+                                          {[
+                                             { id: 'mc', label: 'MC' },
+                                             { id: 'essay', label: 'Short' },
+                                             { id: 'long_text', label: 'Long' },
+                                             { id: 'other', label: 'Other' }
+                                          ].map(t => (
+                                             <button
+                                                key={t.id}
+                                                onClick={() => {
+                                                   const nq = { ...lmsForm.quiz_data };
+                                                   nq.questions[qi].type = t.id;
+                                                   setLmsForm({ ...lmsForm, quiz_data: nq });
+                                                }}
+                                                className={`px-3 py-1.5 rounded-lg text-[9px] font-black transition-all ${q.type === t.id || (!q.type && t.id === 'mc') ? 'bg-blue-600 text-white shadow-sm' : 'text-white/40 hover:text-white/60'}`}
+                                             >{t.label}</button>
+                                          ))}
+                                       </div>
+                                    </div>
                                     <input 
                                        value={q.text || ''}
                                        onChange={(e) => {
@@ -2102,45 +2179,66 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                           newQuiz.questions[qi].text = e.target.value;
                                           setLmsForm({ ...lmsForm, quiz_data: newQuiz });
                                        }}
-                                       placeholder="What is the color of the sky?"
+                                       placeholder="Enter question text..."
                                        className="w-full h-14 rounded-2xl bg-white/5 border border-white/5 px-6 text-white font-bold text-sm focus:border-blue-500/40 focus:outline-none transition-all"
-                                   />
-                                 </div>
+                                    />
+                                    <div className="flex items-center gap-2 px-2">
+                                       <button 
+                                          onClick={() => {
+                                             const nq = { ...lmsForm.quiz_data };
+                                             nq.questions[qi].required = !q.required;
+                                             setLmsForm({ ...lmsForm, quiz_data: nq });
+                                          }}
+                                          className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${q.required ? 'bg-blue-600 border-blue-600 text-white' : 'bg-transparent border-white/20'}`}
+                                       >
+                                          {q.required && <Check size={10} strokeWidth={4}/>}
+                                       </button>
+                                       <span className="text-[10px] font-bold text-white/40 uppercase tracking-tight">Required Field</span>
+                                    </div>
+                                  </div>
 
-                                 <div className="grid grid-cols-2 gap-4">
-                                    {q.options.map((opt:string, oi:number) => (
-                                       <div key={oi} className="relative">
-                                          <input 
-                                             value={opt || ''}
-                                             onChange={(e) => {
-                                                const newQuiz = { ...lmsForm.quiz_data };
-                                                newQuiz.questions[qi].options[oi] = e.target.value;
-                                                setLmsForm({ ...lmsForm, quiz_data: newQuiz });
-                                             }}
-                                             placeholder={`Option ${oi + 1}`}
-                                             className={`w-full h-14 rounded-2xl bg-white/5 border px-6 pr-14 text-white font-bold text-sm focus:outline-none transition-all ${q.correct === oi ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-white/5'}`}
-                                         />
-                                          <button 
-                                             onClick={() => {
-                                                const newQuiz = { ...lmsForm.quiz_data };
-                                                newQuiz.questions[qi].correct = oi;
-                                                setLmsForm({ ...lmsForm, quiz_data: newQuiz });
-                                             }}
-                                             className={`absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${q.correct === oi ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/20 hover:text-white'}`}
-                                          >
-                                             <Check size={14}/>
-                                          </button>
-                                       </div>
-                                    ))}
-                                    <button 
-                                      onClick={() => {
-                                         const newQuiz = { ...lmsForm.quiz_data };
-                                         newQuiz.questions[qi].options = [...newQuiz.questions[qi].options, ''];
-                                         setLmsForm({ ...lmsForm, quiz_data: newQuiz });
-                                      }}
-                                      className="h-14 rounded-2xl border border-dashed border-white/10 text-white/20 hover:text-white hover:border-white/30 transition-all text-[10px] font-black uppercase tracking-widest"
-                                    >+ New Option</button>
-                                 </div>
+                                  {(q.type === 'mc' || !q.type) && (
+                                    <div className="grid grid-cols-2 gap-4">
+                                       {q.options.map((opt:string, oi:number) => (
+                                          <div key={oi} className="relative">
+                                             <input 
+                                                value={opt || ''}
+                                                onChange={(e) => {
+                                                   const newQuiz = { ...lmsForm.quiz_data };
+                                                   newQuiz.questions[qi].options[oi] = e.target.value;
+                                                   setLmsForm({ ...lmsForm, quiz_data: newQuiz });
+                                                }}
+                                                placeholder={`Option ${oi + 1}`}
+                                                className={`w-full h-14 rounded-2xl bg-white/5 border px-6 pr-14 text-white font-bold text-sm focus:outline-none transition-all ${q.correct === oi ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-white/5'}`}
+                                            />
+                                             <button 
+                                                onClick={() => {
+                                                   const newQuiz = { ...lmsForm.quiz_data };
+                                                   newQuiz.questions[qi].correct = oi;
+                                                   setLmsForm({ ...lmsForm, quiz_data: newQuiz });
+                                                }}
+                                                className={`absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${q.correct === oi ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/20 hover:text-white'}`}
+                                             >
+                                                <Check size={14}/>
+                                             </button>
+                                          </div>
+                                       ))}
+                                       <button 
+                                         onClick={() => {
+                                            const newQuiz = { ...lmsForm.quiz_data };
+                                            newQuiz.questions[qi].options = [...newQuiz.questions[qi].options, ''];
+                                            setLmsForm({ ...lmsForm, quiz_data: newQuiz });
+                                         }}
+                                         className="h-14 rounded-2xl border border-dashed border-white/10 text-white/20 hover:text-white hover:border-white/30 transition-all text-[10px] font-black uppercase tracking-widest"
+                                       >+ New Option</button>
+                                    </div>
+                                  )}
+
+                                  {q.type && q.type !== 'mc' && (
+                                    <div className="p-8 rounded-[24px] bg-white/5 border border-white/10 border-dashed text-center">
+                                       <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Input Area: {q.type.replace('_', ' ')}</p>
+                                    </div>
+                                  )}
                               </div>
                            ))}
                         </div>

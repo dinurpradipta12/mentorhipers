@@ -369,12 +369,18 @@ export default function PortalContentDesktop({ id }: { id: string }) {
         }
 
         const questions = activeQuiz.quiz_data.questions;
+        const mcQuestions = questions.filter((q: any) => !q.type || q.type === 'mc');
         let correctCount = 0;
-        questions.forEach((q: any, i: number) => {
-           if (quizAnswers[i] === q.correct) correctCount++;
+        
+        mcQuestions.forEach((q: any) => {
+           // Find original index to match quizAnswers key
+           const originalIdx = questions.indexOf(q);
+           if (quizAnswers[originalIdx] === q.correct) correctCount++;
         });
 
-        const score = Math.round((correctCount/questions.length) * 100);
+        const score = mcQuestions.length > 0 
+          ? Math.round((correctCount/mcQuestions.length) * 100)
+          : 100; // Default to 100 if participation-only (all essays)
 
        //1. Save Result
         const { error: resError } = await supabase.from('v2_quiz_results').insert([
@@ -718,7 +724,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                        <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-4 py-2 rounded-full border border-slate-100">{curriculum.filter(c => c.type === 'material' && c.is_published !== false).length} Modules</span>
                     </div>
                      <div className="space-y-4">
-                        {curriculum.filter(c => (c.type === 'material' || c.type === 'material') && c.is_published !== false).map((lesson, idx) => (
+                        {curriculum.filter(c => c.type === 'material' && c.is_published !== false).map((lesson, idx) => (
                            <div 
                              key={lesson.id}
                              onClick={() => setSelectedLesson(lesson)}
@@ -1277,49 +1283,60 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                   </div>
 
                   <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50/50">
-                     {activeQuiz.quiz_data.questions.map((q: any, qi: number) => (
-                        <div key={qi} className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm space-y-5">
+                     {activeQuiz.quiz_data.questions.map((q: any, qi: number) => {
+                        const isMC = !q.type || q.type === 'mc';
+                        return (
+                        <div key={qi} className="bg-white p-6 md:p-8 rounded-[32px] border border-slate-100 shadow-sm space-y-6">
                            <div className="flex items-start gap-4">
-                              <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 font-black text-sm mt-0.5 ring-1 ring-blue-100">
+                              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 font-black text-sm mt-0.5 ring-1 ring-blue-100">
                                  {qi+1}
                               </div>
-                              <h3 className="text-base md:text-lg font-bold text-slate-800 leading-snug">{q.text}</h3>
+                              <div className="flex-1 space-y-1">
+                                 <h3 className="text-base md:text-lg font-bold text-slate-800 leading-snug">{q.text} {q.required && <span className="text-rose-500">*</span>}</h3>
+                                 {!isMC && <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{q.type === 'essay' ? 'Jawaban Singkat' : q.type === 'long_text' ? 'Teks Panjang' : 'Lainnya'}</span>}
+                              </div>
                            </div>
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:pl-12">
-                              {q.options.map((opt: string, oi: number) => (
-                                 <button 
-                                   key={oi}
-                                   onClick={() => setQuizAnswers({ ...quizAnswers, [qi]: oi })}
-                                   className={`p-4 rounded-xl text-left border-2 transition-all duration-200 font-bold text-sm flex items-center justify-between group ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-100 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/30 hover:text-blue-700'}`}
-                                 >
-                                    <span className="pr-3 leading-snug">{opt}</span>
-                                    <div className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200 bg-white group-hover:border-blue-300'}`}>
-                                       {quizAnswers[qi] === oi && <Check size={10} strokeWidth={4}/>}
-                                    </div>
-                                 </button>
-                              ))}
-                           </div>
+                           
+                           {isMC ? (
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:pl-12">
+                                {q.options.map((opt: string, oi: number) => (
+                                   <button 
+                                     key={oi}
+                                     onClick={() => setQuizAnswers({ ...quizAnswers, [qi]: oi })}
+                                     className={`p-4 rounded-2xl text-left border-2 transition-all duration-200 font-bold text-sm flex items-center justify-between group ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-100 bg-white text-slate-500 hover:border-blue-200 hover:bg-blue-50/30 hover:text-blue-700'}`}
+                                   >
+                                      <span className="pr-3 leading-snug">{opt}</span>
+                                      <div className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200 bg-white group-hover:border-blue-300'}`}>
+                                         {quizAnswers[qi] === oi && <Check size={10} strokeWidth={4}/>}
+                                      </div>
+                                   </button>
+                                ))}
+                             </div>
+                           ) : (
+                             <div className="md:pl-12">
+                               {q.type === 'long_text' ? (
+                                 <textarea
+                                   value={quizAnswers[qi] || ''}
+                                   onChange={(e) => setQuizAnswers({ ...quizAnswers, [qi]: e.target.value })}
+                                   placeholder="Tulis jawaban lengkap kamu di sini..."
+                                   rows={4}
+                                   className="w-full p-5 rounded-2xl bg-slate-50 border-2 border-slate-100 focus:border-blue-400 focus:bg-white transition-all text-sm font-medium resize-none outline-none"
+                                 />
+                               ) : (
+                                 <input
+                                   value={quizAnswers[qi] || ''}
+                                   onChange={(e) => setQuizAnswers({ ...quizAnswers, [qi]: e.target.value })}
+                                   placeholder={q.type === 'essay' ? "Contoh: 100.000" : "Isi di sini..."}
+                                   className="w-full h-14 px-6 rounded-2xl bg-slate-50 border-2 border-slate-100 focus:border-blue-400 focus:bg-white transition-all text-sm font-medium outline-none"
+                                 />
+                               )}
+                               <p className="text-[10px] font-bold text-slate-400 mt-3 italic">* Bagian ini akan ditinjau oleh mentor secara manual.</p>
+                             </div>
+                           )}
                         </div>
-                     ))}
+                      )})}
 
-                     {/* Class Feedback Insertion */}
-                     <div className="bg-white p-6 rounded-[24px] border border-amber-100 shadow-sm space-y-4">
-                        <div className="flex items-center gap-4">
-                           <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shrink-0 border border-amber-100">
-                              <MessageSquare size={18} fill="currentColor"/>
-                           </div>
-                           <div>
-                              <h3 className="text-base font-black text-slate-800 tracking-tight">Class Feedback (Optional)</h3>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Saran/Masukan Untuk Modul Ini</p>
-                           </div>
-                        </div>
-                        <textarea
-                           placeholder="Tuliskan saran yang membangun atau bagian mana yang paling menarik dari materi ini..."
-                           className="w-full h-24 p-5 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-amber-400 focus:bg-white transition-all text-sm font-medium resize-none outline-none block"
-                           value={quizAnswers['feedback'] || ''}
-                           onChange={(e) => setQuizAnswers({ ...quizAnswers, feedback: e.target.value })}
-                       />
-                     </div>
+
                   </div>
 
                   <div className="p-6 md:p-8 bg-white border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)] relative z-10">
@@ -1345,19 +1362,21 @@ export default function PortalContentDesktop({ id }: { id: string }) {
         {/* RESULTS MODAL - Premium Experience */}
         <AnimatePresence>
           {isResultModalOpen && (() => {
-             const questions = activeQuiz?.quiz_data?.questions || [];
-             const wrongAnswers = questions.map((q: any, qi: number) => {
-                const studentAnswer = quizAnswers[qi];
-                if (studentAnswer !== q.correct) {
-                   return {
-                      number: qi + 1,
-                      questionHtml: q.text,
-                      studentChoice: studentAnswer !== undefined ? q.options[studentAnswer] : "Tidak Dijawab",
-                      correctChoice: q.options[q.correct]
-                   };
-                }
-                return null;
-             }).filter(Boolean);
+              const questions = activeQuiz?.quiz_data?.questions || [];
+              const mcQuestions = questions.filter((q: any) => !q.type || q.type === 'mc');
+              const wrongAnswers = mcQuestions.map((q: any) => {
+                 const qi = questions.indexOf(q);
+                 const studentAnswer = quizAnswers[qi];
+                 if (studentAnswer !== q.correct) {
+                    return {
+                       number: qi + 1,
+                       questionHtml: q.text,
+                       studentChoice: studentAnswer !== undefined ? q.options[studentAnswer] : "Tidak Dijawab",
+                       correctChoice: q.options[q.correct]
+                    };
+                 }
+                 return null;
+              }).filter(Boolean);
 
              return (
             <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-2xl">

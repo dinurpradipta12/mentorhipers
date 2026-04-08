@@ -18,6 +18,7 @@ const AgencyListContent = nextDynamic(() => import("../_core/AgencyListContent")
 const AgencyContent = nextDynamic(() => import("../_core/AgencyContent"), { ssr: false });
 const PortalContent = nextDynamic(() => import("../_core/PortalContent"), { ssr: false });
 const NotFoundContent = nextDynamic(() => import("../_core/NotFoundContent"), { ssr: false });
+const QuizTemplatesContent = nextDynamic(() => import("../_core/QuizTemplatesContent"), { ssr: false });
 
 export default function V2MasterRouter({ params }: { params: Promise<{ slug?: string[] }> }) {
   const resolvedParams = use(params);
@@ -35,6 +36,10 @@ export default function V2MasterRouter({ params }: { params: Promise<{ slug?: st
     if (slug[0] === "agency") {
       if (slug[1]) return <AgencyContent id={slug[1]} />;
       return <AgencyListContent />;
+    }
+
+    if (slug[0] === "admin") {
+      if (slug[1] === "templates") return <QuizTemplatesContent />;
     }
     
     if (slug[0]) {

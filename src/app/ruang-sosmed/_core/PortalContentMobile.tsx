@@ -352,12 +352,13 @@ export default function PortalContentMobile({ id }: { id: string }) {
        }
 
        const questions = activeQuiz.quiz_data.questions;
+       const mcQuestions = questions.filter((q: any) => !q.type || q.type === 'mc');
        let correctCount = 0;
-       questions.forEach((q: any, i: number) => {
-          if (quizAnswers[i] === q.correct) correctCount++;
+       mcQuestions.forEach((q: any) => {
+          const originalIdx = questions.indexOf(q);
+          if (quizAnswers[originalIdx] === q.correct) correctCount++;
        });
-
-       const score = Math.round((correctCount/questions.length) * 100);
+       const score = mcQuestions.length > 0 ? Math.round((correctCount/mcQuestions.length) * 100) : 100;
 
        const { error: resError } = await supabase.from('v2_quiz_results').insert([
           {
@@ -427,7 +428,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans pb-32">
       
       {/* 1. TOP NATIVE HEADER */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 pt-10 pb-4 flex items-center justify-between shadow-sm">
          <div className="flex items-center gap-3">
             <div className="w-9 h-9 active:scale-90 transition-transform">
                <img src="/logo_rs.png" alt="Logo" className="w-full h-full object-contain"/>
@@ -445,7 +446,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
                 style={{ backgroundColor: currentUser?.avatar_url?.includes('bg=') ? decodeURIComponent(currentUser.avatar_url.split('bg=')[1]) : '#f1f5f9' }}
                 onClick={() => setActiveTab('profile')}
              >
-                 {currentUser?.avatar_url ? <img src={currentUser.avatar_url} className="w-full h-full object-contain scale-[1.3] translate-y-1"/> : <div className="w-full h-full flex items-center justify-center font-black text-xs text-slate-400">{currentUser?.full_name?.charAt(0)}</div>}
+                 {currentUser?.avatar_url ? <img src={currentUser.avatar_url} className="w-full h-full object-contain scale-[1.1] translate-y-0.5"/> : <div className="w-full h-full flex items-center justify-center font-black text-xs text-slate-400">{currentUser?.full_name?.charAt(0)}</div>}
               </div>
          </div>
       </header>
@@ -572,7 +573,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
                                  style={{ backgroundColor: m.v2_profiles?.avatar_url?.includes('bg=') ? decodeURIComponent(m.v2_profiles.avatar_url.split('bg=')[1]) : '#f1f5f9' }}
                                >
                                  {m.v2_profiles?.avatar_url ? (
-                                   <img src={m.v2_profiles.avatar_url} alt={m.v2_profiles?.full_name} className="w-full h-full object-contain scale-[1.3] translate-y-1"/>
+                                   <img src={m.v2_profiles.avatar_url} alt={m.v2_profiles?.full_name} className="w-full h-full object-contain scale-[1.1] translate-y-0.5"/>
                                  ) : (
                                    <div className="w-full h-full bg-slate-200 flex items-center justify-center font-black text-xs text-slate-500">
                                      {m.v2_profiles?.full_name?.charAt(0) || '?'}
@@ -657,7 +658,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
                   </div>
                </div>
                <div className="px-6 py-6 space-y-3 pb-8">
-                  {curriculum.map((item, idx) => (
+                  {curriculum.filter(item => item.type === 'material').map((item, idx) => (
                      <div key={item.id} onClick={() => { setSelectedLesson(item); setIsAssetsExpanded(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`p-5 rounded-[28px] border-2 flex items-center justify-between transition-all ${selectedLesson?.id === item.id ? 'bg-blue-600 border-blue-600 text-white shadow-xl shadow-blue-200' : 'bg-white border-slate-100 text-slate-800'}`}>
                         <div className="flex items-center gap-4"><div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${selectedLesson?.id === item.id ? 'bg-white/20 text-white' : 'bg-slate-50 text-slate-300'}`}>{item.type === 'material' ? <Play size={16} fill="currentColor"/> : <FileText size={16}/>}</div><div className="max-w-[170px]"><p className={`text-[8px] font-bold uppercase tracking-widest mb-0.5 ${selectedLesson?.id === item.id ? 'text-white/60' : 'text-slate-400'}`}>{item.module_name || `Module ${idx+1}`}</p><h4 className="text-sm font-black tracking-tight truncate">{item.title}</h4></div></div>
                         <ChevronRight size={16} className={selectedLesson?.id === item.id ? 'text-white' : 'text-slate-200'}/>
@@ -721,7 +722,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
                          style={{ backgroundColor: currentUser?.avatar_url?.includes('bg=') ? decodeURIComponent(currentUser.avatar_url.split('bg=')[1]) : '#f1f5f9' }}
                       >
                          {currentUser?.avatar_url ? (
-                            <img src={currentUser.avatar_url} alt={currentUser?.full_name} className="w-full h-full object-contain scale-[1.3] translate-y-1.5"/>
+                            <img src={currentUser.avatar_url} alt={currentUser?.full_name} className="w-full h-full object-contain scale-[1.1] translate-y-0.5"/>
                          ) : (
                             <div className="w-full h-full flex items-center justify-center font-black text-3xl text-slate-400">{currentUser?.full_name?.charAt(0)}</div>
                          )}
@@ -895,18 +896,18 @@ export default function PortalContentMobile({ id }: { id: string }) {
 
                {/* MY RANK STICKY INDICATOR (Optional if not in top 10) */}
                {leaderboard.findIndex(l => l.isMe) >= 10 && (
-                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed bottom-32 left-8 right-8 bg-slate-900 p-4 rounded-3xl text-white flex items-center justify-between shadow-2xl border border-white/10">
+                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="fixed bottom-32 left-8 right-8 bg-blue-600 p-4 rounded-3xl text-white flex items-center justify-between shadow-2xl border border-white/10">
                      <div className="flex items-center gap-4">
                         <div className="w-6 text-[10px] font-black text-white/40">#{leaderboard.findIndex(l => l.isMe) + 1}</div>
-                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/20">
-                           {currentUser?.avatar_url ? <img src={currentUser.avatar_url} className="w-full h-full object-cover"/> : <div className="w-full h-full bg-white/10 flex items-center justify-center font-black text-xs">{currentUser?.full_name?.charAt(0)}</div>}
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-white/20 bg-white shadow-inner">
+                           {currentUser?.avatar_url ? <img src={currentUser.avatar_url} className="w-full h-full object-contain scale-[1.1] translate-y-0.5"/> : <div className="w-full h-full bg-white/10 flex items-center justify-center font-black text-xs">{currentUser?.full_name?.charAt(0)}</div>}
                         </div>
                         <div className="space-y-0.5">
                            <p className="text-xs font-black">Your Current Position</p>
-                           <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest">Academic Excellence</p>
+                           <p className="text-[8px] text-white/60 font-bold uppercase tracking-widest">Academic Excellence</p>
                         </div>
                      </div>
-                     <div className="text-lg font-black text-sky-400">{stats.gpa}%</div>
+                     <div className="text-lg font-black text-white">{stats.gpa}%</div>
                   </motion.div>
                )}
             </div>
@@ -956,30 +957,58 @@ export default function PortalContentMobile({ id }: { id: string }) {
                </div>
 
                <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
-                  {activeQuiz.quiz_data.questions.map((q: any, qi: number) => (
+                  {activeQuiz.quiz_data.questions.map((q: any, qi: number) => {
+                     const isMC = !q.type || q.type === 'mc';
+                     return (
                      <div key={qi} className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm space-y-4">
-                        <div className="flex items-start gap-4">
-                           <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 font-black text-xs mt-0.5">
+                        <div className="flex items-start gap-3">
+                           <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 font-black text-xs mt-0.5">
                               {qi+1}
                            </div>
-                           <h3 className="text-sm font-black text-slate-800 leading-snug">{q.text}</h3>
+                           <div className="flex-1 space-y-0.5">
+                              <h3 className="text-sm font-black text-slate-800 leading-snug">{q.text} {q.required && <span className="text-rose-500">*</span>}</h3>
+                              {!isMC && <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{q.type === 'essay' ? 'Jawaban Singkat' : q.type === 'long_text' ? 'Teks Panjang' : 'Lainnya'}</p>}
+                           </div>
                         </div>
-                        <div className="space-y-2">
-                           {q.options.map((opt: string, oi: number) => (
-                              <button 
-                                key={oi}
-                                onClick={() => setQuizAnswers({ ...quizAnswers, [qi]: oi })}
-                                className={`w-full p-4 rounded-[20px] text-left border-2 transition-all duration-200 font-bold text-xs flex items-center justify-between ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-50 bg-slate-50/50 text-slate-500'}`}
-                              >
-                                 <span className="pr-3 leading-snug">{opt}</span>
-                                 <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200'}`}>
-                                    {quizAnswers[qi] === oi && <Check size={8} strokeWidth={4}/>}
-                                 </div>
-                              </button>
-                           ))}
-                        </div>
+                        
+                        {isMC ? (
+                          <div className="space-y-2">
+                             {q.options.map((opt: string, oi: number) => (
+                                <button 
+                                  key={oi}
+                                  onClick={() => setQuizAnswers({ ...quizAnswers, [qi]: oi })}
+                                  className={`w-full p-4 rounded-[20px] text-left border-2 transition-all duration-200 font-bold text-xs flex items-center justify-between ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-50 bg-slate-50/50 text-slate-500'}`}
+                                >
+                                   <span className="pr-3 leading-snug">{opt}</span>
+                                   <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200'}`}>
+                                      {quizAnswers[qi] === oi && <Check size={8} strokeWidth={4}/>}
+                                   </div>
+                                </button>
+                             ))}
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                             {q.type === 'long_text' ? (
+                               <textarea
+                                 value={quizAnswers[qi] || ''}
+                                 onChange={(e) => setQuizAnswers({ ...quizAnswers, [qi]: e.target.value })}
+                                 placeholder="Tulis jawaban..."
+                                 rows={3}
+                                 className="w-full p-4 rounded-[20px] bg-slate-50 border-2 border-slate-100 focus:border-blue-500 focus:bg-white text-xs font-bold outline-none resize-none"
+                               />
+                             ) : (
+                               <input
+                                 value={quizAnswers[qi] || ''}
+                                 onChange={(e) => setQuizAnswers({ ...quizAnswers, [qi]: e.target.value })}
+                                 placeholder={q.type === 'essay' ? "Contoh: 100.000" : "Isi di sini..."}
+                                 className="w-full h-12 px-4 rounded-[20px] bg-slate-50 border-2 border-slate-100 focus:border-blue-500 focus:bg-white text-xs font-bold outline-none"
+                               />
+                             )}
+                             <p className="text-[8px] font-bold text-slate-400 italic">* Jawaban essay akan ditinjau mentor.</p>
+                          </div>
+                        )}
                      </div>
-                  ))}
+                  )})}
                </div>
 
                <div className="p-6 bg-white border-t border-slate-100 space-y-4 pb-safe-offset-4">
@@ -1003,7 +1032,9 @@ export default function PortalContentMobile({ id }: { id: string }) {
       <AnimatePresence>
          {isResultModalOpen && (() => {
             const questions = activeQuiz?.quiz_data?.questions || [];
-            const wrongAnswers = questions.map((q: any, qi: number) => {
+            const mcQuestions = questions.filter((q: any) => !q.type || q.type === 'mc');
+            const wrongAnswers = mcQuestions.map((q: any) => {
+               const qi = questions.indexOf(q);
                const studentAnswer = quizAnswers[qi];
                if (studentAnswer !== q.correct) {
                   return {

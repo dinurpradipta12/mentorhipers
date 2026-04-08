@@ -44,7 +44,7 @@ export default function IdCardContent({ batch, currentUser, me, resolvedParams }
                     style={{ backgroundColor: currentUser?.avatar_url?.includes('bg=') ? decodeURIComponent(currentUser.avatar_url.split('bg=')[1]) : '#ffffff' }}
                   >
                      {currentUser?.avatar_url ? (
-                        <img src={currentUser.avatar_url} className="w-full h-full object-contain scale-[1.3] translate-y-2" alt="Avatar"/>
+                        <img src={currentUser.avatar_url} className="w-full h-full object-contain scale-[1.1] translate-y-0.5" alt="Avatar"/>
                      ) : (
                         <div className={`w-full h-full flex items-center justify-center ${isRuangSosmed ? 'text-blue-500' : 'text-indigo-600'} text-6xl font-black italic`}>{currentUser?.full_name?.charAt(0)}</div>
                      )}

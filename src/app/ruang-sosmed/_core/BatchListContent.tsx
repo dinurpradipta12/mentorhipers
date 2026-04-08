@@ -21,7 +21,8 @@ import {
   ArrowRightCircle,
   ArrowRight,
   Settings2,
-  ArrowLeft
+  ArrowLeft,
+  BookOpen
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -258,16 +259,24 @@ export default function BatchListContent() {
           <p className="text-slate-500 font-medium text-sm sm:text-base max-w-lg">Kelola seluruh kelas bootcamp dalam satu dashboard terpusat.</p>
         </div>
 
-        <Button 
-          onClick={() => {
-            setEditingBatchId(null);
-            setBatchForm({ name: "", description: "", start_date: "", end_date: "", max_members: 50 });
-            setIsModalOpen(true);
-          }}
-          className="w-full md:w-auto h-16 md:h-20 px-10 rounded-2xl md:rounded-3xl bg-blue-600 text-white font-black text-sm shadow-2xl shadow-blue-600/30 active:scale-95 hover:scale-[1.02] transition-all flex items-center justify-center gap-3 border-b-4 border-blue-800"
-        >
-          <Plus size={20}/> Create New Batch
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <Link
+            href="/ruang-sosmed/admin/templates"
+            className="h-16 md:h-20 px-8 rounded-2xl md:rounded-3xl bg-white border-2 border-slate-200 text-slate-600 font-black text-sm hover:border-blue-300 hover:text-blue-600 active:scale-95 transition-all flex items-center justify-center gap-3 shadow-sm"
+          >
+            <BookOpen size={18}/> Quiz Templates
+          </Link>
+          <Button 
+            onClick={() => {
+              setEditingBatchId(null);
+              setBatchForm({ name: "", description: "", start_date: "", end_date: "", max_members: 50 });
+              setIsModalOpen(true);
+            }}
+            className="w-full md:w-auto h-16 md:h-20 px-10 rounded-2xl md:rounded-3xl bg-blue-600 text-white font-black text-sm shadow-2xl shadow-blue-600/30 active:scale-95 hover:scale-[1.02] transition-all flex items-center justify-center gap-3 border-b-4 border-blue-800"
+          >
+            <Plus size={20}/> Create New Batch
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
