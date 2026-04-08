@@ -9,6 +9,8 @@ import { supabaseV2 as supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
 
 // ─── Types ────────────────────────────────────────────────────
 interface Question {
@@ -62,8 +64,9 @@ export default function QuizTemplatesContent() {
   const [previewTemplate, setPreviewTemplate] = useState<QuizTemplate | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const router = useRouter();
 
-  // ─── Data ────────────────────────────────────────────────────
   const fetchTemplates = async () => {
     setIsLoading(true);
     const { data, error } = await supabase
@@ -74,7 +77,35 @@ export default function QuizTemplatesContent() {
     setIsLoading(false);
   };
 
-  useEffect(() => { fetchTemplates(); }, []);
+  // ─── Data ────────────────────────────────────────────────────
+  const checkAdmin = async () => {
+    const legacyAdmin = isLegacyAdmin();
+    if (legacyAdmin) {
+      setIsAuthorized(true);
+      return;
+    }
+
+    const session = await getCachedSession();
+    if (!session) {
+      router.push('/ruang-sosmed/login');
+      return;
+    }
+
+    const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session.user.id).single();
+    if (profile?.role === 'admin') {
+      setIsAuthorized(true);
+    } else {
+      router.push('/ruang-sosmed/login');
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      await checkAdmin();
+      fetchTemplates();
+    };
+    init();
+  }, []);
 
   // ─── Handlers ────────────────────────────────────────────────
   const handleCreate = () => {
@@ -438,6 +469,8 @@ export default function QuizTemplatesContent() {
       </div>
     );
   }
+
+  if (!isAuthorized && !isLoading) return null;
 
   // ─────────────────────────────────────────────────────────────
   // RENDER: List View
