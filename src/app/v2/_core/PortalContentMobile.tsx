@@ -55,6 +55,7 @@ const IdCardContent = dynamic(() => import("./IdCardContent"), {
   loading: () => <div className="h-64 flex items-center justify-center text-white/20">Loading Identity...</div>,
   ssr: false
 });
+import AvatarCreator from "./AvatarCreator";
 
 export default function PortalContentMobile({ id }: { id: string }) {
   const router = useRouter();
@@ -292,48 +293,19 @@ export default function PortalContentMobile({ id }: { id: string }) {
     }
   };
 
-  const handleSaveProfilePhoto = async () => {
-    if (!selectedAvatar || !currentUser) return;
+  const handleSaveProfileAvatar = async (avatarUrl: string) => {
+    if (!currentUser) return;
     setIsLoading(true);
     try {
-      // 1. Convert Base64 to File Object if it's a new upload
-      // selectedAvatar might be a dataURL like "data:image/png;base64,..."
-      let finalUrl = selectedAvatar;
-      
-      if (selectedAvatar.startsWith('data:')) {
-         const res = await fetch(selectedAvatar);
-         const blob = await res.blob();
-         const file = new File([blob], `avatar-${currentUser.id}.png`, { type: blob.type });
-
-         // 2. Upload to Supabase Storage 'avatars' bucket
-         // Upsert=true so it replaces the old one with the same path
-         const fileName = `${currentUser.id}/profile.png`;
-         const { data: uploadData, error: uploadError } = await supabase.storage
-           .from('avatars')
-           .upload(fileName, file, { 
-              upsert: true,
-              cacheControl: '3600'
-           });
-
-         if (uploadError) throw uploadError;
-
-         // 3. Get Public URL
-         const { data: { publicUrl } } = supabase.storage
-           .from('avatars')
-           .getPublicUrl(fileName);
-         
-         finalUrl = publicUrl;
-      }
-
-      // 4. Update Database with the URL (NOT the Base64)
-      const { error } = await supabase.from('v2_profiles').update({ avatar_url: finalUrl }).eq('id', currentUser.id);
+      // Update Database with the URL
+      const { error } = await supabase.from('v2_profiles').update({ avatar_url: avatarUrl }).eq('id', currentUser.id);
       if (error) throw error;
       
-      setCurrentUser({ ...currentUser, avatar_url: finalUrl });
+      setCurrentUser({ ...currentUser, avatar_url: avatarUrl });
       setIsPhotoSetupOpen(false);
-      alert("Foto profil berhasil diperbarui! 🚀");
+      alert("Identitas avatar berhasil diperbarui! 🚀");
     } catch (err: any) {
-      alert("Gagal simpan profil: " + err.message);
+      alert("Gagal simpan avatar: " + err.message);
     } finally {
       setIsLoading(false);
     }

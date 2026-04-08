@@ -11,6 +11,7 @@ const IdCardContent = dynamic(() => import("./IdCardContent"), {
   loading: () => <div className="h-64 flex items-center justify-center text-white/20">Loading Identity...</div>,
   ssr: false
 });
+import AvatarCreator from "./AvatarCreator";
 import { 
   PlayCircle, 
   FileText, 
@@ -468,57 +469,21 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     }
   };
 
-  const handleSaveProfilePhoto = async () => {
-    if (!selectedAvatar || !currentUser) return;
+  const handleSaveProfileAvatar = async (avatarUrl: string) => {
+    if (!currentUser) return;
     setIsLoading(true);
     try {
-      let finalUrl = selectedAvatar;
-
-      // 1. If it's a new upload (Base64), send to Storage Bucket
-      if (selectedAvatar.startsWith('data:')) {
-         const res = await fetch(selectedAvatar);
-         const blob = await res.blob();
-         const file = new File([blob], `avatar-${currentUser.id}.png`, { type: blob.type });
-
-         const fileName = `${currentUser.id}/profile.png`;
-         const { error: uploadError } = await supabase.storage
-           .from('avatars')
-           .upload(fileName, file, { 
-              upsert: true,
-              cacheControl: '3600'
-           });
-
-         if (uploadError) throw uploadError;
-
-         const { data: { publicUrl } } = supabase.storage
-           .from('avatars')
-           .getPublicUrl(fileName);
-         
-         finalUrl = publicUrl;
-      }
-      
-      // 2. Save the lightweight Public URL to DB
-      const { error } = await supabase.from('v2_profiles').update({ avatar_url: finalUrl }).eq('id', currentUser.id);
+      // Update Database with the URL
+      const { error } = await supabase.from('v2_profiles').update({ avatar_url: avatarUrl }).eq('id', currentUser.id);
       if (error) throw error;
       
-      setCurrentUser({ ...currentUser, avatar_url: finalUrl });
+      setCurrentUser({ ...currentUser, avatar_url: avatarUrl });
       setIsPhotoSetupOpen(false);
-      alert("Profil diperbarui dengan aman! 🛸✨");
+      alert("Identitas avatar berhasil dipulihkan! 🚀");
     } catch (err: any) {
-      alert("Gagal simpan profil: " + err.message);
+      alert("Gagal simpan avatar: " + err.message);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setSelectedAvatar(reader.result as string);
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -1527,127 +1492,53 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                     <div className="p-8 rounded-[32px] bg-slate-50/50 border border-slate-100 text-lg font-medium text-slate-700 leading-relaxed italic">
                        "{submitForm.mentor_feedback || "Belum ada catatan tambahan dari mentor. Semangat!"}"
                     </div>
-
-                    <Button 
-                       onClick={() => setIsFeedbackModalOpen(false)}
-                       className="h-16 w-full rounded-[24px] bg-gradient-to-r from-[#0ea5e9] to-[#1e3a8a] text-white font-black text-sm shadow-xl shadow-blue-900/20 hover:opacity-90 transition-all"
-                    >
-                       Close Review
-                    </Button>
-                 </motion.div>
-              </div>
-           )}
+                     <Button 
+                        onClick={() => setIsFeedbackModalOpen(false)}
+                        className="h-16 w-full rounded-[24px] bg-gradient-to-r from-[#0ea5e9] to-[#1e3a8a] text-white font-black text-sm shadow-xl shadow-blue-900/20 hover:opacity-90 transition-all"
+                     >
+                        Close Review
+                     </Button>
+                  </motion.div>
+               </div>
+            )}
          </AnimatePresence>
 
-        <AnimatePresence>
-          {isPhotoSetupOpen && (
-             <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-slate-900/80 backdrop-blur-2xl">
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9, y: 40 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  className="w-full max-w-xl bg-white rounded-[56px] shadow-3xl overflow-hidden flex flex-col p-12 text-center space-y-10"
-                >
-                   <div className="space-y-4">
-                      <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
-                         <Sparkles size={40} />
-                      </div>
-                      <h2 className="text-4xl font-black text-[#0F172A] tracking-tighter">Welcome, {currentUser?.full_name}! 🎉</h2>
-                      <p className="text-slate-500 font-medium px-6">Sebelum memulai belajar di <span className="text-blue-600 font-bold">{batch?.name}</span>, yuk pilih foto profilmu dulu agar mentor mengenali kamu!</p>
-                   </div>
-
-                   <div className="flex justify-center py-6">
-                      <div className="relative group">
-                         <div className={`w-40 h-40 rounded-[48px] border-4 border-dashed transition-all flex items-center justify-center overflow-hidden bg-slate-50 ${selectedAvatar ? 'border-blue-600 border-solid shadow-2xl' : 'border-slate-200 hover:border-blue-300'}`}>
-                            {selectedAvatar ? (
-                               <img src={selectedAvatar} className="w-full h-full object-cover" />
-                            ) : (
-                               <div className="text-slate-300 flex flex-col items-center gap-2">
-                                  <Camera size={40} />
-                                  <span className="text-[10px] font-black uppercase tracking-widest">No Photo</span>
-                               </div>
-                            )}
-                         </div>
-                         
-                         <label className="absolute -bottom-4 -right-4 w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-xl cursor-pointer hover:scale-110 active:scale-95 transition-all">
-                            <Upload size={20} />
-                            <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
-                         </label>
-                      </div>
-                   </div>
-
-                   <p className="text-slate-400 text-xs font-medium italic">Klik icon upload untuk memilih foto terbaikmu.</p>
-
-                   <Button 
-                      onClick={handleSaveProfilePhoto}
-                      disabled={!selectedAvatar || isLoading}
-                      className="h-20 w-full rounded-[32px] bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-black text-lg shadow-2xl shadow-blue-500/20 active:scale-95 transition-all disabled:opacity-30 disabled:grayscale"
-                   >
-                      {isLoading ? 'Saving...' : 'Set Photo & Start Learning'}
-                   </Button>
-                </motion.div>
-             </div>
-          )}
-        </AnimatePresence>
-          <AnimatePresence>
-             {isIdCardOpen && (
-               <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-[#0F172A]/80 backdrop-blur-md">
-                 <motion.div 
-                   initial={{ opacity: 0, scale: 0.9, rotateY: 30 }}
-                   animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                   exit={{ opacity: 0, scale: 0.9, rotateY: 30 }}
-                   className="w-full max-w-md relative"
-                 >
-                   {/* CLOSE BUTTON */}
-                   <button 
-                     onClick={() => setIsIdCardOpen(false)}
-                     className="absolute -top-24 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/40 hover:text-white transition-all group"
-                   >
-                     <div className="p-3 rounded-full border border-white/10 group-hover:bg-white/10">
-                       <X size={24} />
+         {/* 4. AVATAR CREATOR MODAL */}
+         <AnimatePresence>
+            {isPhotoSetupOpen && (
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[200] bg-slate-950 flex flex-col items-center justify-center p-8 overflow-y-auto">
+                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="w-full max-w-5xl space-y-12">
+                     <div className="flex flex-col items-center text-center space-y-4">
+                        <div className="px-5 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black uppercase tracking-widest">Identity Setup</div>
+                        <h2 className="text-5xl font-black text-white tracking-tight leading-none">Hello, <span className="text-blue-600">{currentUser?.full_name?.split(' ')[0]}</span>!</h2>
+                        <p className="text-slate-400 text-lg max-w-xl leading-relaxed">Pilih gayamu di ekosistem Mentorhipers.</p>
                      </div>
-                     <span className="text-[10px] font-black uppercase tracking-[0.3em]">Minimize Card</span>
+                     <AvatarCreator initialName={currentUser?.full_name} onSave={handleSaveProfileAvatar} onCancel={() => setIsPhotoSetupOpen(false)} />
+                  </motion.div>
+               </motion.div>
+            )}
+         </AnimatePresence>
+
+         <AnimatePresence>
+            {isIdCardOpen && (
+               <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-[#0F172A]/80 backdrop-blur-md">
+                 <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="w-full max-w-md relative">
+                   <button onClick={() => setIsIdCardOpen(false)} className="absolute -top-24 left-1/2 -translate-x-1/2 text-white/40 hover:text-white flex flex-col items-center gap-2">
+                     <X size={24} /> <span>Close</span>
                    </button>
-
-                   {/* THE DIGITAL ID CARD */}
-                   <div 
-                      ref={idCardRef}
-                      className={`bg-gradient-to-br ${batch?.name?.toLowerCase()?.includes('ruang sosmed') ? 'from-sky-600 to-blue-800' : 'from-indigo-600 to-blue-800'} rounded-[56px] p-10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] overflow-hidden relative border border-white/20`}
-                   >
-                      {/* Decorative Background Elements */}
-                      <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 blur-[80px] rounded-full translate-x-1/2 -translate-y-1/2" />
-                      <div className="absolute bottom-0 left-0 w-60 h-60 bg-sky-400/10 blur-[80px] rounded-full -translate-x-1/2 translate-y-1/2" />
-                      
-                       <Suspense fallback={<div className="h-64 flex items-center justify-center text-white/20">Loading Card...</div>}>
-                          <IdCardContent 
-                             batch={batch}
-                             currentUser={currentUser}
-                             me={me}
-                             resolvedParams={resolvedParams}
-                          />
-                       </Suspense>
-                    </div>
-
-                   {/* DOWNLOAD / SHARE BUTTONS */}
+                   <div ref={idCardRef} className="rounded-[56px] overflow-hidden shadow-2xl border border-white/20">
+                     <Suspense fallback={<div>Loading Card...</div>}>
+                        <IdCardContent batch={batch} currentUser={currentUser} me={me} resolvedParams={resolvedParams} />
+                     </Suspense>
+                   </div>
                    <div className="grid grid-cols-2 gap-4 mt-8">
-                      <Button 
-                        onClick={handleDownloadCard}
-                        disabled={isLoading}
-                        className="h-16 rounded-3xl bg-white/10 border border-white/20 text-white font-black text-xs uppercase tracking-widest hover:bg-white/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                      >
-                         <Download size={18} /> {isLoading ? 'Capturing...' : 'Download Card'}
-                      </Button>
-                      <Button 
-                        onClick={handleShareActivity}
-                        disabled={isLoading}
-                        className={`h-16 rounded-3xl bg-white ${batch?.name?.toLowerCase()?.includes('ruang sosmed') ? 'text-blue-600' : 'text-indigo-600'} font-black text-xs uppercase tracking-widest shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-3 disabled:opacity-50`}
-                      >
-                         <Sparkles size={18} /> Share Activity
-                      </Button>
+                      <Button onClick={handleDownloadCard} className="h-16 rounded-3xl bg-white/10 text-white">Download</Button>
+                      <Button onClick={handleShareActivity} className="h-16 rounded-3xl bg-white text-indigo-600">Share</Button>
                    </div>
                  </motion.div>
                </div>
-             )}
-          </AnimatePresence>
+            )}
+         </AnimatePresence>
       </div>
     </div>
   );
