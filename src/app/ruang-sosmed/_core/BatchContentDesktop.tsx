@@ -186,6 +186,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
   const [studentSearch, setStudentSearch] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const [toasts, setToasts] = useState<any[]>([]);
   const [editStudentName, setEditStudentName] = useState('');
   const [certUrl, setCertUrl] = useState('');
   const [moveGroupTarget, setMoveGroupTarget] = useState('');
@@ -232,6 +233,26 @@ export default function BatchContentDesktop({ id }: { id: string }) {
           });
         });
         setOnlineUsers(onlineIds);
+      })
+      .on('presence', { event: 'join' }, ({ newPresences }) => {
+        // Show toast but only for OTHER users, not myself
+        newPresences.forEach((p: any) => {
+          if (p.profile_id && p.profile_id !== currentUser?.id) {
+            const student = students.find(s => s.profile_id === p.profile_id);
+            if (student) {
+              const toastId = Math.random().toString(36).substring(7);
+              setToasts(prev => [...prev, { 
+                id: toastId, 
+                name: student.v2_profiles?.full_name || 'A Student',
+                avatar: student.v2_profiles?.avatar_url
+              }]);
+              // Auto-remove after 4 seconds
+              setTimeout(() => {
+                setToasts(prev => prev.filter(t => t.id !== toastId));
+              }, 4000);
+            }
+          }
+        });
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
@@ -3228,6 +3249,36 @@ export default function BatchContentDesktop({ id }: { id: string }) {
            );
         })()}
       </AnimatePresence>
+
+      {/* 🛸 REAL-TIME ONLINE NOTIFICATIONS (TOASTS) */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] flex flex-col gap-3 pointer-events-none">
+         <AnimatePresence>
+            {toasts.map((toast) => (
+               <motion.div
+                  key={toast.id}
+                  initial={{ opacity: 0, y: 50, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
+                  className="px-6 py-4 bg-[#0F172A]/90 backdrop-blur-2xl border border-white/10 rounded-[28px] shadow-2xl flex items-center gap-4 min-w-[320px] pointer-events-auto"
+               >
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center p-0.5 border border-blue-400/30 overflow-hidden">
+                     {toast.avatar ? (
+                        <img src={toast.avatar} className="w-full h-full object-contain" alt=""/>
+                     ) : (
+                        <div className="w-full h-full rounded-full bg-blue-500 flex items-center justify-center text-white font-black text-xs">
+                           {toast.name.charAt(0)}
+                        </div>
+                     )}
+                  </div>
+                  <div className="flex-1">
+                     <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mb-0.5">Live Connection</p>
+                     <p className="text-sm font-black text-white">{toast.name} <span className="text-emerald-400 ml-1">Joined</span></p>
+                  </div>
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_12px_rgba(16,185,129,0.5)]"/>
+               </motion.div>
+            ))}
+         </AnimatePresence>
+      </div>
 
     </div>
   );
