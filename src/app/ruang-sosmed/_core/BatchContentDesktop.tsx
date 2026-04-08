@@ -559,13 +559,19 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         return;
      }
 
+     if (!lmsForm.title || !lmsForm.title.trim()) {
+        alert("Judul kurikulum wajib diisi!");
+        return;
+     }
+
      setIsLoading(true);
      try {
+        const payload = { ...lmsForm, title: lmsForm.title.trim() };
         if (editingLmsItem && editingLmsItem.id) {
-           const { error } = await supabase.from('v2_curriculums').update(lmsForm).eq('id', editingLmsItem.id);
+           const { error } = await supabase.from('v2_curriculums').update(payload).eq('id', editingLmsItem.id);
            if (error) throw error;
         } else {
-           const { error } = await supabase.from('v2_curriculums').insert([{ ...lmsForm, workspace_id: resolvedParams.id }]);
+           const { error } = await supabase.from('v2_curriculums').insert([{ ...payload, workspace_id: resolvedParams.id }]);
            if (error) throw error;
         }
        setIsLmsModalOpen(false);

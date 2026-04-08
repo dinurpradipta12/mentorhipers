@@ -124,16 +124,40 @@ export default function BatchContentMobile({ id }: { id: string }) {
   }, [id]);
 
   const handleSaveLms = async () => {
-    setIsLoading(true);
-    if (editingLmsItem) {
-      await supabase.from('v2_curriculums').update({ title: lmsForm.title, module_name: lmsForm.module_name, video_url: lmsForm.video_url }).eq('id', editingLmsItem.id);
-    } else {
-      await supabase.from('v2_curriculums').insert([{ title: lmsForm.title, module_name: lmsForm.module_name, video_url: lmsForm.video_url, workspace_id: id, type: 'material', is_published: true }]);
+    if (!lmsForm.title || !lmsForm.title.trim()) {
+      alert("Judul kurikulum wajib diisi!");
+      return;
     }
-    const { data: cData } = await supabase.from('v2_curriculums').select('*').eq('workspace_id', id).order('created_at', { ascending: true });
-    setCurriculum(cData || []);
-    setIsLmsSheetOpen(false);
-    setIsLoading(false);
+
+    setIsLoading(true);
+    try {
+      const payload = { 
+        title: lmsForm.title.trim(), 
+        module_name: lmsForm.module_name, 
+        video_url: lmsForm.video_url 
+      };
+
+      if (editingLmsItem) {
+        const { error } = await supabase.from('v2_curriculums').update(payload).eq('id', editingLmsItem.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('v2_curriculums').insert([{ 
+          ...payload, 
+          workspace_id: id, 
+          type: 'material', 
+          is_published: true 
+        }]);
+        if (error) throw error;
+      }
+
+      const { data: cData } = await supabase.from('v2_curriculums').select('*').eq('workspace_id', id).order('created_at', { ascending: true });
+      setCurriculum(cData || []);
+      setIsLmsSheetOpen(false);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleMoveGroup = async () => {
