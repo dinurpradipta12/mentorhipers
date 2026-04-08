@@ -54,7 +54,7 @@ export default function BatchListContent() {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    // Run auth + data fetch in PARALLEL — no more sequential blocking!
+   //Run auth + data fetch in PARALLEL — no more sequential blocking!
     const init = async () => {
       await Promise.all([checkAdmin(), fetchBatches()]);
     };
@@ -62,7 +62,7 @@ export default function BatchListContent() {
   }, []);
 
   const checkAdmin = async () => {
-    // Use cached session — avoids network call on every mount
+   //Use cached session — avoids network call on every mount
     const legacyAdmin = isLegacyAdmin();
     if (legacyAdmin) {
       setIsAuthorized(true);
@@ -71,7 +71,7 @@ export default function BatchListContent() {
 
     const session = await getCachedSession();
     if (!session) {
-      router.push('/v2/login');
+      router.push('/ruang-sosmed/login');
       return;
     }
 
@@ -79,14 +79,14 @@ export default function BatchListContent() {
     if (profile?.role === 'admin') {
       setIsAuthorized(true);
     } else {
-      router.push('/v2/login');
+      router.push('/ruang-sosmed/login');
     }
   };
 
   const fetchBatches = async () => {
     setIsLoading(true);
     
-    // Safety fallback: force render after 20s to prevent infinite loading
+   //Safety fallback: force render after 20s to prevent infinite loading
     const safetyTimeout = setTimeout(() => {
         console.warn("⚠️ [BatchList] Fetch timeout (20s). Forcing UI render. Check RLS policies or network.");
         setIsLoading(false);
@@ -111,7 +111,7 @@ export default function BatchListContent() {
       
       if (data) {
         setBatches(data);
-        // Restore last selected batch
+       //Restore last selected batch
         const savedId = localStorage.getItem('batch_list_selected');
         if (savedId) {
           const found = data.find((b: any) => b.id === savedId);
@@ -144,7 +144,7 @@ export default function BatchListContent() {
     fetchBatchStats(batch.id);
     localStorage.setItem('batch_list_selected', batch.id);
 
-    // Auto-open info modal on mobile
+   //Auto-open info modal on mobile
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       setIsInfoModalOpen(true);
     }
@@ -229,7 +229,7 @@ export default function BatchListContent() {
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"/>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
           Verifying Admin Access...
         </p>
@@ -243,8 +243,8 @@ export default function BatchListContent() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 md:gap-6">
         <div className="space-y-4">
-          <Link href="/v2" className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all group/back mb-2 border border-slate-100/50">
-            <ArrowLeft size={14} className="group-hover/back:-translate-x-1 transition-transform" />
+          <Link href="/ruang-sosmed" className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-all group/back mb-2 border border-slate-100/50">
+            <ArrowLeft size={14} className="group-hover/back:-translate-x-1 transition-transform"/>
             <span className="text-[9px] font-black uppercase tracking-widest">Workspace Selection</span>
           </Link>
           <div className="flex flex-col space-y-2">
@@ -252,7 +252,7 @@ export default function BatchListContent() {
               Workspace Control
             </div>
             <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] tracking-tight flex items-center gap-4 py-1">
-              <GraduationCap className="text-blue-600" size={32} /> Batch Management
+              <GraduationCap className="text-blue-600" size={32}/> Batch Management
             </h1>
           </div>
           <p className="text-slate-500 font-medium text-sm sm:text-base max-w-lg">Kelola seluruh kelas bootcamp dalam satu dashboard terpusat.</p>
@@ -266,7 +266,7 @@ export default function BatchListContent() {
           }}
           className="w-full md:w-auto h-16 md:h-20 px-10 rounded-2xl md:rounded-3xl bg-blue-600 text-white font-black text-sm shadow-2xl shadow-blue-600/30 active:scale-95 hover:scale-[1.02] transition-all flex items-center justify-center gap-3 border-b-4 border-blue-800"
         >
-          <Plus size={20} /> Create New Batch
+          <Plus size={20}/> Create New Batch
         </Button>
       </div>
 
@@ -281,7 +281,7 @@ export default function BatchListContent() {
           <div className="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar pb-20 p-1">
             {isLoading && (
               <div className="py-10 text-center">
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"/>
                 <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase tracking-widest">Loading Batches...</p>
               </div>
             )}
@@ -292,11 +292,11 @@ export default function BatchListContent() {
                 className={`p-6 rounded-[32px] border transition-all cursor-pointer group relative overflow-hidden ${selectedBatch?.id === batch.id ? 'bg-blue-600 border-blue-600 shadow-2xl shadow-blue-600/30 text-white ring-4 ring-blue-500/10' : 'bg-white border-slate-100 hover:border-blue-200'}`}
               >
                 {selectedBatch?.id === batch.id && (
-                   <motion.div layoutId="active-bg" className="absolute inset-0 bg-blue-600 -z-10" />
+                   <motion.div layoutId="active-bg" className="absolute inset-0 bg-blue-600 -z-10"/>
                 )}
                 <div className="flex items-center justify-between mb-4">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedBatch?.id === batch.id ? 'bg-white/10' : 'bg-blue-50 text-blue-600'}`}>
-                    <Zap size={18} className="fill-current" />
+                    <Zap size={18} className="fill-current"/>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border ${selectedBatch?.id === batch.id ? 'bg-white/10 text-white border-white/20' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
                     {batch.status || 'Active'}
@@ -305,7 +305,7 @@ export default function BatchListContent() {
                 <h4 className={`text-lg font-black tracking-tight leading-none ${selectedBatch?.id === batch.id ? 'text-white' : 'text-[#0F172A] group-hover:text-blue-600'} transition-colors truncate`}>{batch.name}</h4>
                 <div className="mt-4 flex items-center gap-4 opacity-40">
                   <div className="flex items-center gap-2">
-                    <Users size={12} />
+                    <Users size={12}/>
                     <span className="text-[10px] font-bold">{batch.max_members || 50} Slots</span>
                   </div>
                 </div>
@@ -332,7 +332,7 @@ export default function BatchListContent() {
                 className="h-full min-h-[600px] border border-dashed border-slate-200 bg-white/50 p-12 rounded-[56px] flex flex-col items-center justify-center text-center space-y-8 lg:sticky lg:top-24"
               >
                 <div className="w-24 h-24 bg-blue-50 rounded-[36px] flex items-center justify-center text-blue-600 shadow-inner">
-                  <Sparkles size={44} />
+                  <Sparkles size={44}/>
                 </div>
                 <div className="space-y-4 max-w-sm">
                   <h2 className="text-3xl font-black text-[#0F172A] tracking-tighter leading-none">Pilih Batch.</h2>
@@ -348,8 +348,8 @@ export default function BatchListContent() {
                 className="h-full min-h-[600px] border border-slate-100 bg-white shadow-2xl shadow-slate-200/50 p-14 rounded-[56px] flex flex-col lg:sticky lg:top-24 overflow-hidden group/preview"
               >
                 {/* Background Decor */}
-                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full translate-y-1/2 -translate-x-1/2" />
+                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2"/>
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/5 blur-[80px] rounded-full translate-y-1/2 -translate-x-1/2"/>
 
                 <div className="relative z-10 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-12">
@@ -365,14 +365,14 @@ export default function BatchListContent() {
                           className="p-4 rounded-2xl bg-slate-50 text-slate-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                           title="Edit Information"
                         >
-                          <Pencil size={20} />
+                          <Pencil size={20}/>
                         </button>
                         <button 
                           onClick={(e) => handleDeleteBatch(selectedBatch.id, selectedBatch.name, e)}
                           className="p-4 rounded-2xl bg-slate-50 text-slate-400 hover:bg-rose-600 hover:text-white transition-all shadow-sm"
                           title="Delete Batch"
                         >
-                          <Trash2 size={20} />
+                          <Trash2 size={20}/>
                         </button>
                      </div>
                   </div>
@@ -384,7 +384,7 @@ export default function BatchListContent() {
                      </div>
                      <div className="p-8 rounded-[36px] bg-slate-50 border border-slate-100 space-y-1">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">TOTAL MURID</p>
-                        <p className="text-xl font-black text-blue-600">{selectedBatchMembers} / {selectedBatch.max_members || 50}</p>
+                        <p className="text-xl font-black text-blue-600">{selectedBatchMembers}/{selectedBatch.max_members || 50}</p>
                      </div>
                      <div className="p-8 rounded-[36px] bg-slate-50 border border-slate-100 space-y-1">
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">TANGGAL MULAI</p>
@@ -398,7 +398,7 @@ export default function BatchListContent() {
 
                   <div className="flex-1 space-y-6">
                      <div className="flex items-center gap-3">
-                        <Target className="text-blue-600" size={20} />
+                        <Target className="text-blue-600" size={20}/>
                         <h4 className="text-sm font-black uppercase tracking-widest text-slate-400">Batch Workspace Narrative</h4>
                      </div>
                      <div className="p-10 rounded-[44px] bg-neutral-50/50 border border-slate-100 min-h-[160px]">
@@ -412,14 +412,14 @@ export default function BatchListContent() {
                      <div className="flex items-center gap-4">
                         <div className="flex -space-x-3">
                            {[1,2,3,4].map(i => (
-                              <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-100" />
+                              <div key={i} className="w-10 h-10 rounded-full border-4 border-white bg-slate-100"/>
                            ))}
                         </div>
                         <p className="text-xs font-bold text-slate-400 italic">Students already joined</p>
                      </div>
-                     <Link href={`/v2/batch/${selectedBatch.id}`}>
+                     <Link href={`/ruang-sosmed/batch/${selectedBatch.id}`}>
                         <Button className="h-20 px-12 rounded-[32px] bg-blue-600 text-white font-black text-lg shadow-2xl shadow-blue-500/20 hover:scale-110 active:scale-95 transition-all flex items-center gap-4">
-                           Enter Board Management <ArrowRightCircle size={24} />
+                           Enter Board Management <ArrowRightCircle size={24}/>
                         </Button>
                      </Link>
                   </div>
@@ -445,18 +445,18 @@ export default function BatchListContent() {
                 <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">
                   {editingBatchId ? "Perbarui Informasi Batch" : "Inisialisasi Batch Baru"}
                 </h3>
-                <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all"><X size={24} /></button>
+                <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all"><X size={24}/></button>
               </div>
 
               <div className="p-10 space-y-8 overflow-y-auto no-scrollbar">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">BATCH / CLASS NAME</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">BATCH/CLASS NAME</label>
                   <input 
                     value={batchForm.name}
                     onChange={(e) => setBatchForm({ ...batchForm, name: e.target.value })}
-                    placeholder="e.g. Mentorhipers Batch 1: Social Media Growth"
+                    placeholder="e.g. Ruang Sosmed Batch 1: Social Media Growth"
                     className="w-full h-16 rounded-2xl bg-neutral-50 px-8 font-bold text-lg focus:outline-none focus:ring-4 ring-blue-500/10 border border-slate-100 transition-all"
-                  />
+                 />
                 </div>
 
                 <div className="grid grid-cols-2 gap-8">
@@ -467,7 +467,7 @@ export default function BatchListContent() {
                       value={batchForm.start_date}
                       onChange={(e) => setBatchForm({ ...batchForm, start_date: e.target.value })}
                       className="w-full h-16 rounded-2xl bg-neutral-50 px-8 font-bold text-sm border border-slate-100"
-                    />
+                   />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">END DATE</label>
@@ -476,7 +476,7 @@ export default function BatchListContent() {
                       value={batchForm.end_date}
                       onChange={(e) => setBatchForm({ ...batchForm, end_date: e.target.value })}
                       className="w-full h-16 rounded-2xl bg-neutral-50 px-8 font-bold text-sm border border-slate-100"
-                    />
+                   />
                   </div>
                 </div>
 
@@ -488,7 +488,7 @@ export default function BatchListContent() {
                     value={batchForm.max_members}
                     onChange={(e) => setBatchForm({ ...batchForm, max_members: parseInt(e.target.value) })}
                     className="w-full h-16 rounded-2xl bg-neutral-50 px-8 font-bold text-sm border border-slate-100"
-                  />
+                 />
                 </div>
               </div>
 
@@ -516,7 +516,7 @@ export default function BatchListContent() {
                 exit={{ opacity: 0 }} 
                 onClick={() => setIsInfoModalOpen(false)}
                 className="absolute inset-0 bg-slate-950/60 backdrop-blur-md cursor-pointer" 
-              />
+             />
               {/* Modal Card */}
               <motion.div 
                 initial={{ scale: 0.9, opacity: 0, y: 20 }} 
@@ -526,7 +526,7 @@ export default function BatchListContent() {
               >
                 <div className="flex-shrink-0 flex items-center justify-between mb-6">
                   <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner shrink-0">
-                    <GraduationCap size={24} />
+                    <GraduationCap size={24}/>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button 
@@ -536,13 +536,13 @@ export default function BatchListContent() {
                       }}
                       className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:text-blue-600 transition-all border border-slate-100"
                     >
-                      <Settings2 size={16} />
+                      <Settings2 size={16}/>
                     </button>
                     <button 
                       onClick={() => setIsInfoModalOpen(false)}
                       className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:text-rose-500 transition-all border border-slate-100"
                     >
-                      <X size={16} />
+                      <X size={16}/>
                     </button>
                   </div>
                 </div>
@@ -559,27 +559,27 @@ export default function BatchListContent() {
 
                   <div className="grid grid-cols-1 gap-2">
                     <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-blue-600 shrink-0"><Calendar size={14} /></div>
+                      <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-blue-600 shrink-0"><Calendar size={14}/></div>
                       <div>
                         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Schedule</p>
                         <p className="text-[10px] font-bold text-slate-700 truncate">{formatDate(selectedBatch.start_date)} - {formatDate(selectedBatch.end_date)}</p>
                       </div>
                     </div>
                     <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-blue-600 shrink-0"><Users size={14} /></div>
+                      <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-blue-600 shrink-0"><Users size={14}/></div>
                       <div>
                         <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Capacity</p>
-                        <p className="text-[10px] font-bold text-slate-700">{selectedBatchMembers} / {selectedBatch.max_members || 50} Students</p>
+                        <p className="text-[10px] font-bold text-slate-700">{selectedBatchMembers}/{selectedBatch.max_members || 50} Students</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="pt-2 space-y-2">
                     <Link 
-                      href={`/v2/batch/${selectedBatch.id}`}
+                      href={`/ruang-sosmed/batch/${selectedBatch.id}`}
                       className="w-full h-14 bg-blue-600 text-white rounded-xl font-black text-sm shadow-xl shadow-blue-600/20 flex items-center justify-center gap-2 active:scale-95 transition-all border-b-4 border-blue-800"
                     >
-                      Enter Workspace <ArrowRight size={16} />
+                      Enter Workspace <ArrowRight size={16}/>
                     </Link>
                     <button 
                       onClick={(e) => {

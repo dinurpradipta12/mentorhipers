@@ -44,7 +44,7 @@ export default function AgencyListContent() {
   }, []);
 
   const checkAdmin = async () => {
-    // Use cached session — avoids network call on every mount
+   //Use cached session — avoids network call on every mount
     const legacyAdmin = isLegacyAdmin();
     if (legacyAdmin) {
       setIsAuthorized(true);
@@ -53,7 +53,7 @@ export default function AgencyListContent() {
 
     const session = await getCachedSession();
     if (!session) {
-      router.push('/v2/login');
+      router.push('/ruang-sosmed/login');
       return;
     }
 
@@ -61,7 +61,7 @@ export default function AgencyListContent() {
     if (profile?.role === 'admin') {
       setIsAuthorized(true);
     } else {
-      router.push('/v2/login');
+      router.push('/ruang-sosmed/login');
     }
   };
 
@@ -94,7 +94,7 @@ export default function AgencyListContent() {
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"/>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
           Verifying Admin Access...
         </p>
@@ -111,7 +111,7 @@ export default function AgencyListContent() {
             B2B Collaborative Workspace
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-[#0F172A] tracking-tight flex items-center gap-4">
-            <Building2 className="text-emerald-500" size={44} /> Agency Management
+            <Building2 className="text-emerald-500" size={44}/> Agency Management
           </h1>
           <p className="text-slate-500 font-medium max-w-xl leading-relaxed">Kelola klien korporat dan tim agensi Anda dalam ruang kolaboratif yang terpusat.</p>
         </div>
@@ -120,28 +120,28 @@ export default function AgencyListContent() {
           onClick={() => setIsModalOpen(true)}
           className="h-16 px-10 rounded-2xl bg-emerald-600 text-white font-black text-sm shadow-xl shadow-emerald-500/20 hover:scale-105 transition-all flex items-center justify-center gap-3"
         >
-          <Plus size={20} /> New B2B Workspace
+          <Plus size={20}/> New B2B Workspace
         </Button>
       </div>
 
       {/* Grid of Agencies */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
         {workspaces.map((ws) => (
-          <Link key={ws.id} href={`/v2/agency/${ws.id}`}>
+          <Link key={ws.id} href={`/ruang-sosmed/agency/${ws.id}`}>
             <motion.div 
                whileHover={{ y: -6 }}
                className="p-10 bg-white border border-slate-100 shadow-xl shadow-slate-200/50 rounded-[44px] space-y-8 group transition-all cursor-pointer relative overflow-hidden"
             >
                {/* Accent Gradient */}
-               <div className="absolute -right-20 -top-20 w-52 h-52 bg-emerald-50 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+               <div className="absolute -right-20 -top-20 w-52 h-52 bg-emerald-50 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity"/>
 
                <div className="flex items-center justify-between relative z-10">
                   <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
-                    <Layers size={28} />
+                    <Layers size={28}/>
                   </div>
                   <div className="flex -space-x-3">
                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white" />
+                        <div key={i} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white"/>
                      ))}
                      <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-[10px] font-bold text-white border-2 border-white">+7</div>
                   </div>
@@ -155,14 +155,14 @@ export default function AgencyListContent() {
                <div className="pt-6 border-t border-slate-50 flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-4">
                      <div className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-400">
-                        <Users size={12} /> 10 Seats
+                        <Users size={12}/> 10 Seats
                      </div>
-                     <div className="w-px h-3 bg-slate-200" />
+                     <div className="w-px h-3 bg-slate-200"/>
                      <div className="flex items-center gap-2 text-[10px] font-black uppercase text-emerald-500">
-                        <TrendingUp size={12} /> Sync On
+                        <TrendingUp size={12}/> Sync On
                      </div>
                   </div>
-                  <ArrowUpRight size={18} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                  <ArrowUpRight size={18} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all"/>
                </div>
             </motion.div>
           </Link>
@@ -170,7 +170,7 @@ export default function AgencyListContent() {
 
         {workspaces.length === 0 && !isLoading && (
           <div className="md:col-span-full h-80 flex flex-col items-center justify-center p-20 text-center space-y-6 border-2 border-dashed border-slate-100 rounded-[44px]">
-             <Zap className="text-slate-100" size={80} />
+             <Zap className="text-slate-100" size={80}/>
              <p className="text-slate-400 font-bold max-w-xs text-xs uppercase tracking-widest">Belum ada workspace B2B. Buat workspace pertama Anda untuk mulai berkolaborasi.</p>
           </div>
         )}
@@ -188,18 +188,18 @@ export default function AgencyListContent() {
             >
               <div className="p-10 border-b border-slate-50 flex items-center justify-between">
                 <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Create Agency Workspace</h3>
-                <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all"><X size={24} /></button>
+                <button onClick={() => setIsModalOpen(false)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all"><X size={24}/></button>
               </div>
 
               <div className="p-10 space-y-8 overflow-y-auto no-scrollbar">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">AGENCY / COMPANY NAME</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">AGENCY/COMPANY NAME</label>
                   <input 
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="e.g. PT Maju Digital Branding"
                     className="w-full h-16 rounded-2xl bg-neutral-50 px-8 font-bold text-lg focus:outline-none focus:ring-4 ring-emerald-500/10 border border-slate-100"
-                  />
+                 />
                 </div>
 
                 <div className="space-y-2">
@@ -209,7 +209,7 @@ export default function AgencyListContent() {
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                     placeholder="Tuliskan tujuan kolaborasi ini..."
                     className="w-full h-32 rounded-2xl bg-neutral-50 p-8 font-bold text-sm focus:outline-none focus:ring-4 ring-emerald-500/10 border border-slate-100 resize-none"
-                  />
+                 />
                 </div>
               </div>
 

@@ -16,10 +16,10 @@ export async function registerStudentAction(data: { fullName: string, username: 
   }
 
   try {
-    // Generate synthetic email for Auth identity (hidden from user)
-    const syntheticEmail = `${data.username.toLowerCase().trim()}@mentorhipers.local`;
+   //Generate synthetic email for Auth identity (hidden from user)
+    const syntheticEmail = `${data.username.toLowerCase().trim()}@ruangsosmed.local`;
 
-    // 1. Create Auth User (Admin bypass)
+   //1. Create Auth User (Admin bypass)
     const { data: authUser, error: authError } = await supabaseAdminV2.auth.admin.createUser({
       email: syntheticEmail,
       password: data.password,
@@ -37,10 +37,10 @@ export async function registerStudentAction(data: { fullName: string, username: 
 
     if (!authUser.user) return { success: false, error: "Failed to create user auth identity." }
 
-    // 2. Create Profile in v2_profiles
-    // Note: We include username in the payload. 
-    // If the database column doesn't exist yet, this will error - 
-    // but it's the correct path for the feature.
+   //2. Create Profile in v2_profiles
+   //Note: We include username in the payload. 
+   //If the database column doesn't exist yet, this will error - 
+   //but it's the correct path for the feature.
     const { error: profileError } = await supabaseAdminV2
       .from('v2_profiles')
       .upsert({
@@ -52,11 +52,11 @@ export async function registerStudentAction(data: { fullName: string, username: 
 
     if (profileError) {
        console.error("Profile creation error:", profileError.message);
-       // We don't roll back Auth to keep it simple, but in prod we might delete authUser.
+      //We don't roll back Auth to keep it simple, but in prod we might delete authUser.
        return { success: false, error: `Database Error: ${profileError.message}` }
     }
 
-    // 3. Create Membership for the Batch
+   //3. Create Membership for the Batch
     const { error: memberError } = await supabaseAdminV2
       .from('v2_memberships')
       .insert({

@@ -1,9 +1,10 @@
-name: 🛰️ Mentorhipers Daily Backup
+name: 🛰️ Ruang Sosmed Daily Backup
 
 on:
   schedule:
-    - cron: '0 17 * * *' # Jam 00:00 WIB
-  workflow_dispatch:
+    # Berjalan setiap hari pada jam 17:00 UTC (jam 00:00 WIB)
+    - cron: '0 17 * * *'
+  workflow_dispatch: # Memungkinkan backup manual via tombol di GitHub UI
 
 permissions:
   contents: write

@@ -6,7 +6,7 @@ import React, { useState, useEffect, use, useRef, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
-// Dynamic Imports for size optimization
+//Dynamic Imports for size optimization
 const IdCardContent = dynamic(() => import("./IdCardContent"), {
   loading: () => <div className="h-64 flex items-center justify-center text-white/20">Loading Identity...</div>,
   ssr: false
@@ -42,7 +42,9 @@ import {
   ShieldCheck,
   Fingerprint,
   Camera,
-  Eye
+  Eye,
+  LogOut,
+  User
 } from "lucide-react";
 import { supabaseV2 as supabase } from "@/lib/supabase";
 import { getCachedSession } from "@/lib/authCache";
@@ -66,10 +68,10 @@ function Countdown({ targetDate }: { targetDate: string }) {
       }
 
       setTimeLeft({
-        d: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        h: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        m: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        s: Math.floor((distance % (1000 * 60)) / 1000)
+        d: Math.floor(distance/(1000 * 60 * 60 * 24)),
+        h: Math.floor((distance % (1000 * 60 * 60 * 24))/(1000 * 60 * 60)),
+        m: Math.floor((distance % (1000 * 60 * 60))/(1000 * 60)),
+        s: Math.floor((distance % (1000 * 60))/1000)
       });
     }, 1000);
 
@@ -100,9 +102,9 @@ export default function PortalContentDesktop({ id }: { id: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('learning');
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [students, setStudents] = useState<any[]>([]); // To find me in the membership
+  const [students, setStudents] = useState<any[]>([]);//To find me in the membership
 
-  // Quiz & Submission States
+ //Quiz & Submission States
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
   const [activeQuiz, setActiveQuiz] = useState<any>(null);
   const [quizAnswers, setQuizAnswers] = useState<any>({});
@@ -126,7 +128,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
      if (!idCardRef.current) return;
      setIsLoading(true);
      try {
-        // Dynamically import html2canvas only when needed
+       //Dynamically import html2canvas only when needed
         const html2canvas = (await import("html2canvas")).default;
         
         const canvas = await html2canvas(idCardRef.current, {
@@ -149,12 +151,12 @@ export default function PortalContentDesktop({ id }: { id: string }) {
 
   const handleShareActivity = async () => {
      const isRuangSosmed = batch?.name?.toLowerCase()?.includes('ruang sosmed');
-     const brand = isRuangSosmed ? "Ruang Sosmed" : "Mentorhipers";
-     const igTag = isRuangSosmed ? "@ruangsosmedid" : "@mentorhipers";
+     const brand = isRuangSosmed ? "Ruang Sosmed" : "Ruang Sosmed";
+     const igTag = isRuangSosmed ? "@ruangsosmedid" : "@ruangsosmed";
      
      const shareText = `Official Member of ${brand}! 🛸✨\n\nSenang sekali bisa menjadi bagian dari ${batch?.name || 'Batch ini'}.\nReady to level up with ${igTag}!\n\n#${brand.replace(/\s+/g, '')} #LearningJourney #CreativeCareer`;
 
-     // 1. Copy to Clipboard
+    //1. Copy to Clipboard
      try {
         await navigator.clipboard.writeText(shareText);
         alert("Caption keren sudah di-copy ke clipboard! ✨\n\nSekarang mengunduh kartu untuk kamu posting...");
@@ -162,10 +164,10 @@ export default function PortalContentDesktop({ id }: { id: string }) {
         console.error("Paste failed");
      }
 
-     // 2. Download Card
+    //2. Download Card
      await handleDownloadCard();
 
-     // 3. Web Share API if available
+    //3. Web Share API if available
      if (navigator.share) {
         try {
            await navigator.share({
@@ -186,27 +188,27 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     const savedTab = localStorage.getItem(`portal_tab_${resolvedParams.id}`);
     if (savedTab) setActiveTab(savedTab);
 
-    // ⚠️ REALTIME DISABLED to reduce connection load on Nano plan.
-    // Each portal page open = 1 realtime connection. With many students, this exhausts Nano limits.
-    // Re-enable after upgrading to Pro plan, or implement a polling fallback.
-    //
-    // const channel = supabase.channel('portal_sync')
-    //   .on('postgres_changes', { event: '*', schema: 'public', table: 'v2_workspaces', filter: `id=eq.${resolvedParams.id}` }, () => fetchBatchDetail())
-    //   .on('postgres_changes', { event: '*', schema: 'public', table: 'v2_memberships', filter: `workspace_id=eq.${resolvedParams.id}` }, () => fetchStudents())
-    //   .subscribe();
-    // return () => { supabase.removeChannel(channel); };
+   //⚠️ REALTIME DISABLED to reduce connection load on Nano plan.
+   //Each portal page open = 1 realtime connection. With many students, this exhausts Nano limits.
+   //Re-enable after upgrading to Pro plan, or implement a polling fallback.
+   //
+   //const channel = supabase.channel('portal_sync')
+   //  .on('postgres_changes', { event: '*', schema: 'public', table: 'v2_workspaces', filter: `id=eq.${resolvedParams.id}` }, () => fetchBatchDetail())
+   //  .on('postgres_changes', { event: '*', schema: 'public', table: 'v2_memberships', filter: `workspace_id=eq.${resolvedParams.id}` }, () => fetchStudents())
+   //  .subscribe();
+   //return () => { supabase.removeChannel(channel); };
   }, [resolvedParams.id]);
 
   const initPage = async () => {
     console.log("🚀 Initializing Student Portal...");
     setIsLoading(true);
     try {
-      // Use cached session — avoids network call on every mount/refresh
+     //Use cached session — avoids network call on every mount/refresh
       const session = await getCachedSession();
       const user = session?.user;
       
       if (!user) {
-         window.location.href = '/v2/login';
+         window.location.href = '/ruang-sosmed/login';
          return;
       }
       
@@ -229,7 +231,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
   const fetchMySubmissions = async (userId: string) => {
     if (!userId) return;
     
-    // 1. Quizzes
+   //1. Quizzes
     const { data: qData } = await supabase
       .from('v2_quiz_results')
       .select('curriculum_id, score, answers_json')
@@ -237,7 +239,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
       .eq('workspace_id', resolvedParams.id);
     if (qData) setMyQuizResults(qData);
 
-    // 2. Assignments
+   //2. Assignments
     const { data: aData } = await supabase
       .from('v2_submissions')
       .select('*, v2_curriculums(title)')
@@ -265,7 +267,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
           const chunk = uniqueIds.slice(i, i + CHUNK_SIZE);
           const { data } = await supabase
             .from('v2_profiles')
-            .select('id, full_name') // REMOVED avatar_url to save massive egress bandwidth
+            .select('id, full_name, avatar_url') 
             .in('id', chunk);
           if (data) allProfData = [...allProfData, ...data];
         }
@@ -291,7 +293,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     if (!profile) return;
 
     if (profile.role !== 'admin') {
-       // SECURITY BARRIER: Verify Batch Membership
+      //SECURITY BARRIER: Verify Batch Membership
         const { data: member } = await supabase
           .from('v2_memberships')
           .select('id')
@@ -300,15 +302,15 @@ export default function PortalContentDesktop({ id }: { id: string }) {
          .single();
          
        if (!member) {
-          // KICK OUT - They don't belong to this Portal
-          window.location.href = '/v2/login';
+         //KICK OUT - They don't belong to this Portal
+          window.location.href = '/ruang-sosmed/login';
           return;
        }
     }
     
     setCurrentUser(profile);
 
-    // AUTO PROFILE SETUP TRIGGER
+   //AUTO PROFILE SETUP TRIGGER
     if (profile.role === 'student' && !profile.avatar_url) {
        setIsPhotoSetupOpen(true);
     }
@@ -352,7 +354,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
      
      setIsLoading(true);
      try {
-        // Double check for existing submission to enforce 1x attempt
+       //Double check for existing submission to enforce 1x attempt
         const { data: existing } = await supabase
            .from('v2_quiz_results')
            .select('id')
@@ -372,9 +374,9 @@ export default function PortalContentDesktop({ id }: { id: string }) {
            if (quizAnswers[i] === q.correct) correctCount++;
         });
 
-        const score = Math.round((correctCount / questions.length) * 100);
+        const score = Math.round((correctCount/questions.length) * 100);
 
-        // 1. Save Result
+       //1. Save Result
         const { error: resError } = await supabase.from('v2_quiz_results').insert([
            {
               curriculum_id: activeQuiz.id,
@@ -386,7 +388,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
         ]);
         if (resError) throw resError;
 
-        // 2. Sync to Grading Matrix
+       //2. Sync to Grading Matrix
         const ptIndex = curriculum.filter(c => c.type === 'post_test').findIndex(c => c.id === activeQuiz.id);
         
         if (ptIndex !== -1) {
@@ -405,7 +407,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
         setLastQuizResult(score);
         setIsQuizModalOpen(false);
         setIsResultModalOpen(true);
-        if (currentUser?.id) fetchMySubmissions(currentUser.id); // Update submission status immediately
+        if (currentUser?.id) fetchMySubmissions(currentUser.id);//Update submission status immediately
      } catch (err: any) {
         alert("Failed to submit quiz: " + err.message);
      } finally {
@@ -463,7 +465,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
         .update({ is_feedback_read: true })
         .eq('id', subId);
       if (error) throw error;
-      if (currentUser?.id) fetchMySubmissions(currentUser.id); // Refresh local states
+      if (currentUser?.id) fetchMySubmissions(currentUser.id);//Refresh local states
     } catch (err) {
       console.error("Failed to mark as read:", err);
     }
@@ -473,7 +475,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     if (!currentUser) return;
     setIsLoading(true);
     try {
-      // Update Database with the URL
+     //Update Database with the URL
       const { error } = await supabase.from('v2_profiles').update({ avatar_url: avatarUrl }).eq('id', currentUser.id);
       if (error) throw error;
       
@@ -497,7 +499,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
       const { error } = await supabase.from('v2_memberships').update({ attendance: newAtt }).eq('id', me.id);
       if (error) throw error;
       
-      // Update local state to reflect change immediately
+     //Update local state to reflect change immediately
       setStudents(prev => prev.map(s => s.id === me.id ? { ...s, attendance: newAtt } : s));
     } catch (err: any) {
       console.error("Attendance Failed:", err.message);
@@ -510,7 +512,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
         <div className="text-center space-y-6">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto shadow-2xl shadow-blue-500/20" />
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto shadow-2xl shadow-blue-500/20"/>
           <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] animate-pulse">Establishing Secure Connection...</p>
         </div>
       </div>
@@ -521,7 +523,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"/>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Synchronizing Student Environment...</p>
         </div>
       </div>
@@ -529,11 +531,11 @@ export default function PortalContentDesktop({ id }: { id: string }) {
   }
 
   const TABS = [
-    { id: "learning", label: "Class Material (LMS)", icon: <PlayCircle size={16} /> },
-    { id: "assignments", label: "My Assignments", icon: <FileText size={16} /> },
-    ...(students && currentUser && students.find((s: any) => s.profile_id === currentUser?.id)?.group_name && students.find((s: any) => s.profile_id === currentUser?.id)?.group_name !== 'Unassigned' ? [{ id: "group", label: "Challenge Team", icon: <Users size={16} /> }] : []),
-    { id: "results", label: "Learning Analytics", icon: <BarChart3 size={16} /> },
-    { id: "attendance", label: "Attendance Log", icon: <CalendarCheck size={16} /> }
+    { id: "learning", label: "Class Material (LMS)", icon: <PlayCircle size={16}/> },
+    { id: "assignments", label: "My Assignments", icon: <FileText size={16}/> },
+    ...(students && currentUser && students.find((s: any) => s.profile_id === currentUser?.id)?.group_name && students.find((s: any) => s.profile_id === currentUser?.id)?.group_name !== 'Unassigned' ? [{ id: "group", label: "Challenge Team", icon: <Users size={16}/> }] : []),
+    { id: "results", label: "Learning Analytics", icon: <BarChart3 size={16}/> },
+    { id: "attendance", label: "Attendance Log", icon: <CalendarCheck size={16}/> }
   ];
 
   return (
@@ -542,8 +544,8 @@ export default function PortalContentDesktop({ id }: { id: string }) {
       <div className="max-w-[1600px] mx-auto p-6 md:p-10 lg:p-14 space-y-12">
         <div className="relative bg-gradient-to-r from-[#0ea5e9] to-[#1e3a8a] rounded-[44px] p-10 xl:p-14 overflow-hidden shadow-2xl shadow-blue-900/20">
           {/* Decorative Magic */}
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-sky-300/20 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2 pointer-events-none" />
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 blur-[100px] rounded-full translate-x-1/2 -translate-y-1/2 pointer-events-none"/>
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-sky-300/20 blur-[100px] rounded-full -translate-x-1/2 translate-y-1/2 pointer-events-none"/>
           
           <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-10">
             <div className="space-y-6">
@@ -555,35 +557,56 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                <div className="space-y-2">
                  <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight drop-shadow-sm">{batch?.name || "Loading Batch..."}</h1>
                  <div className="flex items-center gap-6 text-sky-100 font-bold text-xs opacity-90">
-                    <p className="flex items-center gap-2"><Sparkles size={14} className="text-sky-300" /> Authorized Member: {currentUser?.full_name?.split(' ')[0]}</p>
-                    <div className="h-1 w-1 rounded-full bg-white/40" />
-                    <p className="flex items-center gap-2"><GraduationCap size={14} className="text-sky-300" /> LMS Environment</p>
+                    <p className="flex items-center gap-2"><Sparkles size={14} className="text-sky-300"/> Authorized Member: {currentUser?.full_name?.split(' ')[0]}</p>
+                    <div className="h-1 w-1 rounded-full bg-white/40"/>
+                    <p className="flex items-center gap-2"><GraduationCap size={14} className="text-sky-300"/> LMS Environment</p>
                  </div>
                </div>
             </div>
 
             <div className="flex items-center gap-4">
                {/* Student Progress Badge */}
-               <div 
-                  onClick={() => setIsIdCardOpen(true)}
-                  className="flex items-center gap-4 bg-white/10 p-2 pr-6 rounded-full border border-white/20 backdrop-blur-md shadow-xl shadow-blue-900/10 hover:bg-white/20 transition-all cursor-pointer group active:scale-95"
-               >
-                  <div className="w-14 h-14 rounded-full bg-slate-100 overflow-hidden border-2 border-white/50 shrink-0 group-hover:scale-110 transition-transform">
-                     {currentUser?.avatar_url ? (
-                        <img src={currentUser.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-black">{currentUser?.full_name?.charAt(0) || '?'}</div>
-                     )}
+               <div className="flex items-center gap-6">
+                  {/* Avatar with Edit Trigger */}
+                  <div className="relative group/avatar">
+                     <div 
+                        onClick={() => setIsIdCardOpen(true)}
+                        className="w-16 h-16 rounded-full border-2 border-white/30 backdrop-blur-md overflow-hidden cursor-pointer active:scale-95 transition-all shadow-xl shadow-blue-900/10 flex items-center justify-center relative"
+                        style={{ backgroundColor: currentUser?.avatar_url?.includes('bg=') ? decodeURIComponent(currentUser.avatar_url.split('bg=')[1]) : 'rgba(255,255,255,0.1)' }}
+                     >
+                        {currentUser?.avatar_url ? (
+                           <img src={currentUser.avatar_url} alt="Profile" className="w-full h-full object-contain scale-[1.3] translate-y-1.5"/>
+                        ) : (
+                           <div className="w-full h-full flex items-center justify-center text-white font-black">{currentUser?.full_name?.charAt(0) || '?'}</div>
+                        )}
+                     </div>
+                     <button 
+                        onClick={() => setIsPhotoSetupOpen(true)}
+                        className="absolute -bottom-1 -right-1 w-7 h-7 bg-white text-blue-600 rounded-lg shadow-lg flex items-center justify-center border-2 border-blue-50 hover:scale-110 active:scale-90 transition-all z-20 group"
+                        title="Edit Avatar"
+                     >
+                        <Camera size={14} strokeWidth={3}/>
+                     </button>
                   </div>
-                  <div>
-                     <p className="text-white text-sm font-black tracking-tight leading-none mb-1.5">{currentUser?.full_name}</p>
+
+                  <div className="space-y-1">
+                     <p className="text-white text-lg font-black tracking-tight leading-none truncate max-w-[150px]">{currentUser?.full_name}</p>
                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <p className="text-sky-200 text-[10px] font-bold uppercase tracking-widest">
-                           {myAssignments.length > 0 ? `${myAssignments.length} Assignments Done` : 'Active Scholar'}
-                        </p>
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"/>
+                        <p className="text-sky-200 text-[9px] font-black uppercase tracking-[0.2em]">Active Scholar</p>
                      </div>
                   </div>
+
+                  <button 
+                     onClick={async () => {
+                        await supabase.auth.signOut();
+                        window.location.href = "/ruang-sosmed/login";
+                     }}
+                     className="ml-4 w-12 h-12 rounded-2xl bg-white/10 hover:bg-rose-500 text-white flex items-center justify-center transition-all border border-white/20 hover:border-transparent active:scale-90"
+                     title="Logout"
+                   >
+                     <LogOut size={20}/>
+                   </button>
                </div>
             </div>
           </div>
@@ -621,26 +644,26 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                src={getYouTubeEmbedUrl(selectedLesson.video_url)} 
                                className="w-full h-full" 
                                allowFullScreen 
-                             />
+                            />
                           ) : (
                               <div className="w-full h-full flex flex-col items-center justify-center text-white relative">
-                                 {/* Waiting Screen / Countdown */}
-                                 <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/60 to-slate-900 z-0 animate-pulse" />
+                                 {/* Waiting Screen/Countdown */}
+                                 <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/60 to-slate-900 z-0 animate-pulse"/>
                                  <div className="relative z-10 text-center space-y-6 md:space-y-10 p-12">
                                     <div className="w-20 h-20 bg-white/10 rounded-[32px] flex items-center justify-center mx-auto mb-6 border border-white/20 backdrop-blur-xl animate-bounce">
-                                       <Play size={32} fill="white" className="ml-1" />
+                                       <Play size={32} fill="white" className="ml-1"/>
                                     </div>
                                     <div className="space-y-4">
                                        <h3 className="text-3xl font-black tracking-tighter">Live kelas akan dimulai dalam</h3>
                                        {selectedLesson.due_date ? (
-                                          <Countdown targetDate={selectedLesson.due_date} />
+                                          <Countdown targetDate={selectedLesson.due_date}/>
                                        ) : (
                                           <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">Waktu tayang belum dijadwalkan oleh mentor.</p>
                                        )}
                                     </div>
                                     <div className="pt-6">
                                        <div className="px-6 py-3 bg-white/5 rounded-2xl border border-white/10 inline-flex items-center gap-3">
-                                          <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+                                          <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping"/>
                                           <p className="text-[10px] font-black uppercase tracking-widest text-white/50">Waiting for Stream Link...</p>
                                        </div>
                                     </div>
@@ -663,7 +686,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                            ) : (
                               <div className="flex flex-col items-center justify-center h-full py-20 text-center space-y-8">
                                  <div className="w-24 h-24 rounded-[36px] bg-slate-900 text-white flex items-center justify-center shadow-2xl">
-                                    {selectedLesson.type === 'post_test' ? <FileText size={48} /> : <Zap size={48} />}
+                                    {selectedLesson.type === 'post_test' ? <FileText size={48}/> : <Zap size={48}/>}
                                  </div>
                                  <div className="space-y-4">
                                     <h2 className="text-4xl font-black tracking-tighter text-[#0F172A]">{selectedLesson.title}</h2>
@@ -679,7 +702,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                     </motion.div>
                  ) : (
                     <div className="aspect-video bg-white rounded-[56px] border border-dashed border-slate-200 flex flex-col items-center justify-center text-center p-20 gap-6">
-                       <Sparkles size={60} className="text-blue-500 opacity-20" />
+                       <Sparkles size={60} className="text-blue-500 opacity-20"/>
                        <h3 className="text-2xl font-black text-slate-300 tracking-tighter">Pilih materi kelas.</h3>
                     </div>
                  )}
@@ -690,7 +713,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                  <Card className="p-10 border-none shadow-xl shadow-slate-200/50 bg-white rounded-[44px] space-y-10">
                     <div className="flex items-center justify-between">
                        <h3 className="text-xl font-black tracking-tight flex items-center gap-3">
-                         <PlayCircle className="text-blue-600" /> Course Journey
+                         <PlayCircle className="text-blue-600"/> Course Journey
                        </h3>
                        <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-4 py-2 rounded-full border border-slate-100">{curriculum.filter(c => c.type === 'material' && c.is_published !== false).length} Modules</span>
                     </div>
@@ -703,14 +726,14 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                            >
                               <div className="flex items-center gap-5">
                                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xs font-black shadow-sm ${selectedLesson?.id === lesson.id ? 'bg-white/20 text-white' : 'bg-white text-blue-600'}`}>
-                                    {lesson.type === 'material' ? <PlayCircle size={18} /> : lesson.type === 'post_test' ? <FileText size={18} /> : <Zap size={18} />}
+                                    {lesson.type === 'material' ? <PlayCircle size={18}/> : lesson.type === 'post_test' ? <FileText size={18}/> : <Zap size={18}/>}
                                  </div>
                                  <div className="space-y-1">
                                     <p className={`text-[9px] font-bold opacity-60`}>{lesson.module_name || `Resource ${idx + 1}`}</p>
                                     <p className={`text-[13px] font-black tracking-tight truncate max-w-[180px]`}>{lesson.title}</p>
                                  </div>
                               </div>
-                              <Play size={16} className={selectedLesson?.id === lesson.id ? 'text-white' : 'text-blue-600'} />
+                              <Play size={16} className={selectedLesson?.id === lesson.id ? 'text-white' : 'text-blue-600'}/>
                            </div>
                         ))}
                      </div>
@@ -719,7 +742,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                  {/* Premium Assets Deck */}
                  {selectedLesson?.assets_json?.length > 0 && (
                     <Card className="p-10 border-none shadow-2xl shadow-blue-900/10 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white rounded-[44px] space-y-8 relative overflow-hidden">
-                       <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[80px] rounded-full pointer-events-none" />
+                       <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[80px] rounded-full pointer-events-none"/>
                        <h3 className="text-xl font-black tracking-tight px-2">Classroom Assets</h3>
                        <div className="space-y-4">
                           {selectedLesson.assets_json.map((asset: any, i: number) => (
@@ -730,13 +753,13 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                className="flex items-center justify-between p-6 rounded-[32px] bg-white/10 border border-white/10 hover:bg-white/20 transition-all group backdrop-blur-md shadow-lg"
                              >
                                 <div className="flex items-center gap-5">
-                                   <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center font-black shadow-lg shadow-blue-500/20"><Download size={20} /></div>
+                                   <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center font-black shadow-lg shadow-blue-500/20"><Download size={20}/></div>
                                    <div className="space-y-1">
                                       <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest">Resource {i + 1}</p>
                                       <span className="text-sm font-bold tracking-tight">{asset.name}</span>
                                    </div>
                                  </div>
-                                <ChevronRight size={18} className="opacity-20 group-hover:opacity-100 transition-opacity" />
+                                <ChevronRight size={18} className="opacity-20 group-hover:opacity-100 transition-opacity"/>
                              </a>
                           ))}
                        </div>
@@ -762,26 +785,26 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                     
                     const now = new Date().getTime();
                     const deadline = task.due_date ? new Date(task.due_date).getTime() : null;
-                    const isExpired = deadline ? (now > (deadline + 86400000)) : false; // H+1 Grace period
+                    const isExpired = deadline ? (now > (deadline + 86400000)) : false;//H+1 Grace period
 
                     return (
                     <Card key={task.id} className={`p-10 border-none shadow-xl shadow-slate-200/30 hover:shadow-2xl transition-all bg-white rounded-[44px] group relative overflow-hidden ${isExpired && !isDone ? 'opacity-60 grayscale' : ''}`}>
                        {isExpired && !isDone && (
                           <div className="absolute top-0 right-0 px-6 py-2 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest rounded-bl-3xl shadow-lg z-10 animate-pulse">
-                             TIMEOUT / EXPIRED
+                             TIMEOUT/EXPIRED
                           </div>
                        )}
                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
                           <div className="flex items-center gap-8">
                              <div className={`w-16 h-16 rounded-[28px] flex items-center justify-center transition-all shadow-sm ${task.type === 'post_test' ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-600'}`}>
-                                {task.type === 'post_test' ? <FileText size={28} /> : <Zap size={28} />}
+                                {task.type === 'post_test' ? <FileText size={28}/> : <Zap size={28}/>}
                              </div>
                              <div className="space-y-1">
                                  <p className="text-[10px] font-bold text-slate-400">{task.type.replace('_', ' ')}</p>
                                  <h4 className="text-2xl font-black text-[#0F172A] tracking-tighter">{task.title}</h4>
                                  <div className="flex flex-col gap-3 mt-4">
                                     <p className={`text-[11px] font-bold flex items-center gap-2 ${isExpired ? 'text-rose-500' : 'text-slate-400'}`}>
-                                       <Clock size={12} /> Deadline: {task.due_date ? new Date(task.due_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : "Open schedule"}
+                                       <Clock size={12}/> Deadline: {task.due_date ? new Date(task.due_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : "Open schedule"}
                                     </p>
                                     {task.assets_json && task.assets_json.length > 0 && (
                                        <a 
@@ -790,7 +813,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                          rel="noreferrer"
                                          className="h-10 px-6 w-fit rounded-xl bg-blue-50 border border-blue-100 text-[11px] font-black text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm flex items-center gap-2"
                                        >
-                                          <Download size={14} /> View Instruction Brief
+                                          <Download size={14}/> View Instruction Brief
                                        </a>
                                     )}
                                  </div>
@@ -811,14 +834,14 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                                        setActiveTask(task); 
                                                        setSubmitForm(sub); 
                                                        setIsFeedbackModalOpen(true);
-                                                       // handleMarkFeedbackAsRead(sub.id);
+                                                      //handleMarkFeedbackAsRead(sub.id);
                                                     }}
                                                     className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm border border-blue-100 hover:scale-110 active:scale-95 transition-all"
                                                   >
-                                                    <FileText size={18} />
+                                                    <FileText size={18}/>
                                                   </button>
                                                   {!sub.is_feedback_read && (
-                                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 rounded-full border-2 border-white animate-pulse" />
+                                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 rounded-full border-2 border-white animate-pulse"/>
                                                   )}
                                                </div>
                                             )}
@@ -828,14 +851,14 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                                       onClick={() => handleReviewQuiz(task, quiz)}
                                                       className="h-16 px-8 rounded-[28px] bg-slate-50 border border-slate-100 text-slate-400 font-black text-xs hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all shadow-sm flex items-center gap-2"
                                                    >
-                                                      <Eye size={16} /> Review Hasil
+                                                      <Eye size={16}/> Review Hasil
                                                    </button>
                                                  )}
                                                  <div className={`h-16 px-8 rounded-[28px] ${status === 'completed' ? 'bg-emerald-50 text-emerald-600' : status === 'in_review' ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-400'} font-black text-xs flex items-center gap-3 border border-slate-100`}>
                                                    <div className="flex flex-col">
                                                       <p className="text-[8px] opacity-60 uppercase">{status.replace('_', ' ')}</p>
                                                       <div className="flex items-center gap-2">
-                                                         {status === 'completed' ? <Check size={14} /> : <Clock size={14} />}
+                                                         {status === 'completed' ? <Check size={14}/> : <Clock size={14}/>}
                                                          <span>{grade !== undefined ? `SCORE: ${grade}` : 'TASK DONE'}</span>
                                                       </div>
                                                    </div>
@@ -848,7 +871,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                    if (isExpired) {
                                       return (
                                          <div className="h-16 px-8 rounded-[28px] bg-rose-50 text-rose-500 font-black text-xs flex items-center gap-3 border border-rose-100 uppercase tracking-widest shadow-inner">
-                                            <XCircle size={18} /> Submission Closed
+                                            <XCircle size={18}/> Submission Closed
                                          </div>
                                       );
                                    }
@@ -910,11 +933,11 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                  rel="noreferrer"
                                  className="flex items-center gap-3 px-8 py-5 rounded-[24px] bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-xs uppercase tracking-[0.1em] shadow-xl shadow-[#25D366]/20 transition-all hover:scale-105 active:scale-95 w-full md:w-auto justify-center"
                               >
-                                 <MessageSquare size={18} fill="white" /> Team Discussion Group
+                                 <MessageSquare size={18} fill="white"/> Team Discussion Group
                               </a>
                            ) : (
                               <div className="flex items-center gap-3 px-8 py-5 rounded-[24px] bg-slate-50 border border-slate-100 text-slate-400 font-black text-xs uppercase tracking-[0.1em] w-full md:w-auto justify-center opacity-60">
-                                 <MessageSquare size={18} /> WA Group Link Pending
+                                 <MessageSquare size={18}/> WA Group Link Pending
                               </div>
                            )}
                         </div>
@@ -926,23 +949,26 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                            {teamMembers.map((m: any) => (
                               <div key={m.id} className={`flex items-center gap-5 p-6 rounded-[32px] border ${m.profile_id === currentUser?.id ? 'bg-indigo-50/50 border-indigo-100 shadow-sm' : 'bg-slate-50 border-slate-100'} transition-all`}>
                                  <div className="relative shrink-0">
-                                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black bg-white overflow-hidden shadow-inner ${m.is_leader ? 'border-4 border-amber-400 shadow-lg shadow-amber-500/20' : 'border-2 border-slate-100'}`}>
+                                   <div 
+                                      className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black overflow-hidden shadow-inner relative ${m.is_leader ? 'border-4 border-amber-400 shadow-lg shadow-amber-500/20' : 'border-2 border-slate-100'}`}
+                                      style={{ backgroundColor: m.v2_profiles?.avatar_url?.includes('bg=') ? decodeURIComponent(m.v2_profiles.avatar_url.split('bg=')[1]) : '#f1f5f9' }}
+                                   >
                                       {m.v2_profiles?.avatar_url ? (
-                                        <img src={m.v2_profiles.avatar_url} alt={m.v2_profiles?.full_name} className="w-full h-full object-cover" />
+                                        <img src={m.v2_profiles.avatar_url} alt={m.v2_profiles?.full_name} className="w-full h-full object-contain scale-[1.3] translate-y-1"/>
                                       ) : (
                                         <span className="text-slate-300">{m.v2_profiles?.full_name?.charAt(0) || '?'}</span>
                                       )}
                                    </div>
                                    {m.is_leader && (
                                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-6 h-6 bg-gradient-to-br from-amber-400 to-amber-500 rounded-lg shadow-md border-2 border-white flex items-center justify-center z-10">
-                                       <Star size={10} fill="white" className="text-white" />
+                                       <Star size={10} fill="white" className="text-white"/>
                                      </div>
                                    )}
                                  </div>
                                  <div className="flex-1 overflow-hidden">
                                     <p className="text-sm font-bold text-slate-800 truncate">{m.v2_profiles?.full_name} {m.profile_id === currentUser?.id && <span className="text-indigo-500 font-medium ml-1 bg-indigo-100 px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-widest">You</span>}</p>
                                     {m.is_leader ? (
-                                       <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mt-1.5 flex items-center gap-1.5"><Award size={12} className="shrink-0" /> Team Captain</p>
+                                       <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mt-1.5 flex items-center gap-1.5"><Award size={12} className="shrink-0"/> Team Captain</p>
                                     ) : (
                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">SQUAD MEMBER</p>
                                     )}
@@ -959,7 +985,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                   <Card className="p-8 md:p-10 border-none shadow-xl shadow-slate-200/50 bg-white rounded-[44px] space-y-8 h-full flex flex-col">
                      <div className="flex items-center gap-4 border-b border-slate-100 pb-6 shrink-0">
                         <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                           <CalendarCheck size={24} />
+                           <CalendarCheck size={24}/>
                         </div>
                         <div>
                            <h3 className="text-lg font-black text-[#0F172A] tracking-tighter">Live Sessions</h3>
@@ -970,7 +996,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                      <div className="space-y-4 overflow-y-auto flex-1 pr-2 pb-4 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
                         {(batch?.schedules || []).length === 0 ? (
                            <div className="text-center p-8 opacity-40 h-full flex flex-col items-center justify-center">
-                              <CalendarDays size={32} className="mx-auto mb-3 text-slate-400" />
+                              <CalendarDays size={32} className="mx-auto mb-3 text-slate-400"/>
                               <p className="text-xs font-black uppercase tracking-widest">Belum ada kelas.</p>
                            </div>
                         ) : (
@@ -983,10 +1009,10 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                  <div className="flex flex-col justify-center overflow-hidden pt-1 space-y-2">
                                     <h5 className="font-bold text-slate-800 text-sm leading-tight line-clamp-2">{sch.title}</h5>
                                     <div className="flex items-center gap-3">
-                                       <span className="text-[9px] font-black text-rose-500 bg-rose-50 px-2 py-1 rounded-md flex items-center gap-1 uppercase tracking-widest"><Clock size={10} /> {sch.time}</span>
+                                       <span className="text-[9px] font-black text-rose-500 bg-rose-50 px-2 py-1 rounded-md flex items-center gap-1 uppercase tracking-widest"><Clock size={10}/> {sch.time}</span>
                                        {sch.meet_link && (
                                           <a href={sch.meet_link} target="_blank" rel="noreferrer" className="text-[9px] font-black text-indigo-500 hover:underline flex items-center gap-1 uppercase tracking-widest group-hover:text-indigo-600">
-                                             <Video size={10} /> LINK
+                                             <Video size={10}/> LINK
                                           </a>
                                        )}
                                     </div>
@@ -1005,7 +1031,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
             const me = students.find(s => s.profile_id === currentUser?.id);
             if (!me) return <div className="p-20 text-center opacity-40">Loading your profile...</div>;
 
-            // DYNAMIC CALCULATION PER NEW SYSTEM
+           //DYNAMIC CALCULATION PER NEW SYSTEM
             const tasks = curriculum.filter(t => t.type !== 'material');
             
             let totalPT = 0, countPT = 0;
@@ -1025,16 +1051,16 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                }
             });
 
-            const avgPT = countPT > 0 ? totalPT / countPT : 0;
-            const avgAssign = countAssign > 0 ? totalAssign / countAssign : 0;
-            const avgGroup = countGC > 0 ? totalGC / countGC : 0;
+            const avgPT = countPT > 0 ? totalPT/countPT : 0;
+            const avgAssign = countAssign > 0 ? totalAssign/countAssign : 0;
+            const avgGroup = countGC > 0 ? totalGC/countGC : 0;
 
             const attendCount = Object.values(me.attendance || {}).filter(v => v === 'P').length;
             const totalSessions = batch?.schedules?.length || 0; 
-            const keaktifan = totalSessions > 0 ? (attendCount / totalSessions) * 100 : 0;
+            const keaktifan = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
 
-            // Formula: (PT + Assign + GC + Active) / 4
-            const finalScore = Math.round((avgPT + avgAssign + avgGroup + keaktifan) / 4);
+           //Formula: (PT + Assign + GC + Active)/4
+            const finalScore = Math.round((avgPT + avgAssign + avgGroup + keaktifan)/4);
             
             const getGrade = (s: number) => {
                if (s >= 90) return { label: 'A+', color: 'text-purple-600', bg: 'bg-purple-50', desc: 'Superstar (Outstanding)' };
@@ -1061,7 +1087,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                         <div className="space-y-4">
                            <div className="px-5 py-2 rounded-2xl bg-gradient-to-r from-[#0ea5e9] to-[#1e3a8a] text-white text-[10px] font-black w-fit uppercase tracking-widest shadow-inner">Official Learning Analytics</div>
                            <h2 className="text-5xl font-black text-[#0F172A] tracking-tighter">Academic Progress Report</h2>
-                           <p className="text-xl font-medium text-slate-400 max-w-xl line-clamp-2">Laporan evaluasi pilar fundamental Mentorhipers untuk batch {batch?.name || 'V2'}.</p>
+                           <p className="text-xl font-medium text-slate-400 max-w-xl line-clamp-2">Laporan evaluasi pilar fundamental Ruang Sosmed untuk batch {batch?.name || 'V2'}.</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-slate-100">
@@ -1069,7 +1095,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Final Grade Score</p>
                               <div className="flex items-baseline gap-2">
                                  <span className="text-6xl font-black text-slate-900">{finalScore}</span>
-                                 <span className="text-lg font-bold text-slate-300">/ 100</span>
+                                 <span className="text-lg font-bold text-slate-300">/100</span>
                               </div>
                            </div>
                            <div className="space-y-2 md:col-span-2">
@@ -1083,10 +1109,10 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                   {/* DETAILED PILLARS */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                      {[
-                        { label: 'Post Tests', score: Math.round(avgPT), icon: <FileText size={20} />, color: 'bg-amber-50 text-amber-500' },
-                        { label: 'Assignments', score: Math.round(avgAssign), icon: <Target size={20} />, color: 'bg-blue-50 text-blue-600' },
-                        { label: 'Group Challenges', score: Math.round(avgGroup), icon: <Users size={20} />, color: 'bg-indigo-50 text-indigo-600' },
-                        { label: 'Participation', score: Math.round(keaktifan), icon: <Sparkles size={20} />, color: 'bg-purple-50 text-purple-600' }
+                        { label: 'Post Tests', score: Math.round(avgPT), icon: <FileText size={20}/>, color: 'bg-amber-50 text-amber-500' },
+                        { label: 'Assignments', score: Math.round(avgAssign), icon: <Target size={20}/>, color: 'bg-blue-50 text-blue-600' },
+                        { label: 'Group Challenges', score: Math.round(avgGroup), icon: <Users size={20}/>, color: 'bg-indigo-50 text-indigo-600' },
+                        { label: 'Participation', score: Math.round(keaktifan), icon: <Sparkles size={20}/>, color: 'bg-purple-50 text-purple-600' }
                      ].map((p, i) => (
                         <Card key={i} className="p-8 border-none shadow-lg shadow-slate-200/40 bg-white rounded-[40px] space-y-6">
                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${p.color}`}>
@@ -1109,7 +1135,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                        </div>
                        <div className="text-right">
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Attendance</p>
-                          <p className="text-3xl font-black text-blue-600">{me.attendance ? Object.values(me.attendance).filter(v => v === 'P').length : 0} <span className="text-sm text-slate-200">/ {batch?.schedules?.length || 0}</span></p>
+                          <p className="text-3xl font-black text-blue-600">{me.attendance ? Object.values(me.attendance).filter(v => v === 'P').length : 0} <span className="text-sm text-slate-200">/{batch?.schedules?.length || 0}</span></p>
                        </div>
                     </div>
                     
@@ -1137,7 +1163,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                      {me.certificate_url ? (
                         <a href={me.certificate_url} target="_blank" rel="noreferrer">
                            <Button className="h-16 px-10 rounded-3xl bg-white text-amber-600 font-black text-sm hover:scale-105 transition-all shadow-lg flex items-center gap-3">
-                              <Download size={18} /> Download Sertifikat Kamu
+                              <Download size={18}/> Download Sertifikat Kamu
                            </Button>
                         </a>
                      ) : (
@@ -1238,7 +1264,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                   <div className="p-6 md:p-8 bg-gradient-to-r from-[#0ea5e9] to-[#1e3a8a] text-white flex items-center justify-between shrink-0">
                      <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 shadow-inner">
-                           <FileText size={24} className="text-white" />
+                           <FileText size={24} className="text-white"/>
                         </div>
                         <div>
                            <h2 className="text-xl md:text-2xl font-black tracking-tight">{activeQuiz.title}</h2>
@@ -1246,7 +1272,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                         </div>
                      </div>
                      <button onClick={() => setIsQuizModalOpen(false)} className="p-3 bg-white/10 rounded-xl hover:bg-white/20 transition-all border border-white/10 backdrop-blur-md">
-                        <X size={20} className="text-white" />
+                        <X size={20} className="text-white"/>
                      </button>
                   </div>
 
@@ -1268,7 +1294,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                                  >
                                     <span className="pr-3 leading-snug">{opt}</span>
                                     <div className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200 bg-white group-hover:border-blue-300'}`}>
-                                       {quizAnswers[qi] === oi && <Check size={10} strokeWidth={4} />}
+                                       {quizAnswers[qi] === oi && <Check size={10} strokeWidth={4}/>}
                                     </div>
                                  </button>
                               ))}
@@ -1280,11 +1306,11 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                      <div className="bg-white p-6 rounded-[24px] border border-amber-100 shadow-sm space-y-4">
                         <div className="flex items-center gap-4">
                            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center shrink-0 border border-amber-100">
-                              <MessageSquare size={18} fill="currentColor" />
+                              <MessageSquare size={18} fill="currentColor"/>
                            </div>
                            <div>
                               <h3 className="text-base font-black text-slate-800 tracking-tight">Class Feedback (Optional)</h3>
-                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Saran / Masukan Untuk Modul Ini</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Saran/Masukan Untuk Modul Ini</p>
                            </div>
                         </div>
                         <textarea
@@ -1292,13 +1318,13 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                            className="w-full h-24 p-5 rounded-xl bg-slate-50 border-2 border-slate-100 focus:border-amber-400 focus:bg-white transition-all text-sm font-medium resize-none outline-none block"
                            value={quizAnswers['feedback'] || ''}
                            onChange={(e) => setQuizAnswers({ ...quizAnswers, feedback: e.target.value })}
-                        />
+                       />
                      </div>
                   </div>
 
                   <div className="p-6 md:p-8 bg-white border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4 shrink-0 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)] relative z-10">
                      <p className="text-sm font-bold text-slate-400">
-                        Answered: <span className="text-blue-600 font-black text-base">{Object.keys(quizAnswers).filter(k => k !== 'feedback').length}</span> / {activeQuiz.quiz_data.questions.length}
+                        Answered: <span className="text-blue-600 font-black text-base">{Object.keys(quizAnswers).filter(k => k !== 'feedback').length}</span>/{activeQuiz.quiz_data.questions.length}
                      </p>
                      <div className="flex w-full md:w-auto gap-3">
                         <Button onClick={() => setIsQuizModalOpen(false)} variant="ghost" className="flex-1 md:flex-none h-12 px-6 rounded-[16px] text-slate-500 hover:bg-slate-100 hover:text-slate-800">Cancel</Button>
@@ -1341,12 +1367,12 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                  exit={{ opacity: 0, scale: 0.8, y: 100 }}
                  className="w-full max-w-xl bg-white rounded-[56px] shadow-3xl overflow-hidden relative flex flex-col max-h-[95vh]"
                >
-                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 z-20" />
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 z-20"/>
                   
                   <div className="overflow-y-auto p-12 space-y-8 flex-1 scrollbar-thin scrollbar-thumb-slate-200">
                      <div className="text-center space-y-4">
                         <div className={`w-24 h-24 rounded-[36px] mx-auto flex items-center justify-center shadow-2xl ${lastQuizResult >= 80 ? 'bg-emerald-500 text-white shadow-emerald-500/30' : lastQuizResult >= 60 ? 'bg-blue-600 text-white shadow-blue-600/30' : 'bg-rose-500 text-white shadow-rose-500/30'}`}>
-                           {lastQuizResult >= 80 ? <Award size={48} /> : lastQuizResult >= 60 ? <Check size={48} strokeWidth={3} /> : <Zap size={48} />}
+                           {lastQuizResult >= 80 ? <Award size={48}/> : lastQuizResult >= 60 ? <Check size={48} strokeWidth={3}/> : <Zap size={48}/>}
                         </div>
                         <div className="space-y-1">
                            <h3 className="text-3xl font-black text-[#0F172A] tracking-tighter">
@@ -1429,8 +1455,8 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                    className="w-full max-w-xl bg-white rounded-[56px] shadow-3xl overflow-hidden flex flex-col p-10 space-y-10"
                  >
                     <div className="flex items-center justify-between">
-                       <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center"><Target size={30} /></div>
-                       <button onClick={() => setIsSubmitModalOpen(false)} className="p-3 bg-slate-50 rounded-xl text-slate-300 hover:text-rose-500 transition-all"><X size={20} /></button>
+                       <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center"><Target size={30}/></div>
+                       <button onClick={() => setIsSubmitModalOpen(false)} className="p-3 bg-slate-50 rounded-xl text-slate-300 hover:text-rose-500 transition-all"><X size={20}/></button>
                     </div>
 
                     <div className="space-y-3">
@@ -1439,7 +1465,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                           <p className="text-sm font-medium text-slate-400">Pastikan link pekerjaan kamu (Gdrive/Canva) sudah bisa diakses oleh mentor.</p>
                           {activeTask?.due_date && (
                              <div className="px-3 py-1 bg-rose-50 rounded-lg text-[10px] font-black text-rose-500 flex items-center gap-1 border border-rose-100">
-                                <Clock size={10} /> DEADLINE: {new Date(activeTask.due_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                <Clock size={10}/> DEADLINE: {new Date(activeTask.due_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                              </div>
                           )}
                        </div>
@@ -1447,13 +1473,13 @@ export default function PortalContentDesktop({ id }: { id: string }) {
 
                     <div className="space-y-6">
                        <div className="space-y-2">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">DOCUMENT / PROJECT LINK</label>
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">DOCUMENT/PROJECT LINK</label>
                           <input 
                              value={submitForm.file_link}
                              onChange={(e) => setSubmitForm({ ...submitForm, file_link: e.target.value })}
                              placeholder="https://canva.com/..."
                              className="w-full h-16 rounded-[24px] bg-slate-50 border border-slate-100 px-8 text-sm font-bold focus:border-blue-500/50 focus:outline-none transition-all"
-                          />
+                         />
                        </div>
                     </div>
 
@@ -1480,8 +1506,8 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                    className="w-full max-w-xl bg-white rounded-[56px] shadow-3xl overflow-hidden flex flex-col p-10 space-y-10"
                  >
                     <div className="flex items-center justify-between">
-                       <div className="w-16 h-16 rounded-3xl bg-amber-50 text-amber-500 flex items-center justify-center"><MessageSquare size={30} /></div>
-                       <button onClick={() => setIsFeedbackModalOpen(false)} className="p-3 bg-slate-50 rounded-xl text-slate-300 hover:text-rose-500 transition-all"><X size={20} /></button>
+                       <div className="w-16 h-16 rounded-3xl bg-amber-50 text-amber-500 flex items-center justify-center"><MessageSquare size={30}/></div>
+                       <button onClick={() => setIsFeedbackModalOpen(false)} className="p-3 bg-slate-50 rounded-xl text-slate-300 hover:text-rose-500 transition-all"><X size={20}/></button>
                     </div>
 
                     <div className="space-y-3">
@@ -1511,9 +1537,9 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                      <div className="flex flex-col items-center text-center space-y-4">
                         <div className="px-5 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-black uppercase tracking-widest">Identity Setup</div>
                         <h2 className="text-5xl font-black text-white tracking-tight leading-none">Hello, <span className="text-blue-600">{currentUser?.full_name?.split(' ')[0]}</span>!</h2>
-                        <p className="text-slate-400 text-lg max-w-xl leading-relaxed">Pilih gayamu di ekosistem Mentorhipers.</p>
+                        <p className="text-slate-400 text-lg max-w-xl leading-relaxed">Pilih gayamu di ekosistem Ruang Sosmed.</p>
                      </div>
-                     <AvatarCreator initialName={currentUser?.full_name} onSave={handleSaveProfileAvatar} onCancel={() => setIsPhotoSetupOpen(false)} />
+                     <AvatarCreator initialName={currentUser?.full_name} onSave={handleSaveProfileAvatar} onCancel={() => setIsPhotoSetupOpen(false)}/>
                   </motion.div>
                </motion.div>
             )}
@@ -1524,16 +1550,20 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 bg-[#0F172A]/80 backdrop-blur-md">
                  <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="w-full max-w-md relative">
                    <button onClick={() => setIsIdCardOpen(false)} className="absolute -top-24 left-1/2 -translate-x-1/2 text-white/40 hover:text-white flex flex-col items-center gap-2">
-                     <X size={24} /> <span>Close</span>
+                     <X size={24}/> <span>Close</span>
                    </button>
-                   <div ref={idCardRef} className="rounded-[56px] overflow-hidden shadow-2xl border border-white/20">
-                     <Suspense fallback={<div>Loading Card...</div>}>
-                        <IdCardContent batch={batch} currentUser={currentUser} me={me} resolvedParams={resolvedParams} />
+                   <div ref={idCardRef} className="w-full h-auto">
+                     <Suspense fallback={<div className="h-[500px] flex items-center justify-center text-white/20">Loading Identity Card...</div>}>
+                        <IdCardContent batch={batch} currentUser={currentUser} me={me} resolvedParams={resolvedParams}/>
                      </Suspense>
-                   </div>
-                   <div className="grid grid-cols-2 gap-4 mt-8">
-                      <Button onClick={handleDownloadCard} className="h-16 rounded-3xl bg-white/10 text-white">Download</Button>
-                      <Button onClick={handleShareActivity} className="h-16 rounded-3xl bg-white text-indigo-600">Share</Button>
+                    <div className="mt-10">
+                       <Button 
+                        onClick={() => setIsIdCardOpen(false)} 
+                        className="w-full h-16 rounded-[28px] bg-white hover:bg-slate-100 text-slate-900 font-black text-xs uppercase tracking-[0.2em] shadow-2xl transition-all"
+                       >
+                         Paham, Lanjutkan Belajar
+                       </Button>
+                    </div>
                    </div>
                  </motion.div>
                </div>

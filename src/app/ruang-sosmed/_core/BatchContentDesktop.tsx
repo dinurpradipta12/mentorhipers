@@ -44,7 +44,8 @@ import {
   Medal,
   UserX,
   ShuffleIcon,
-  ArrowRight
+  ArrowRight,
+  User
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
@@ -53,7 +54,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { getYouTubeEmbedUrl } from "@/lib/utils";
-// Server Actions replaced with fetch calls to Edge-compatible API routes
+//Server Actions replaced with fetch calls to Edge-compatible API routes
 
 import dynamic from "next/dynamic";
 const IdCardContent = dynamic(() => import("./IdCardContent"), {
@@ -76,10 +77,10 @@ const IdCardContent = dynamic(() => import("./IdCardContent"), {
        }
 
        setTimeLeft({
-         d: Math.floor(distance / (1000 * 60 * 60 * 24)),
-         h: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-         m: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-         s: Math.floor((distance % (1000 * 60)) / 1000)
+         d: Math.floor(distance/(1000 * 60 * 60 * 24)),
+         h: Math.floor((distance % (1000 * 60 * 60 * 24))/(1000 * 60 * 60)),
+         m: Math.floor((distance % (1000 * 60 * 60))/(1000 * 60)),
+         s: Math.floor((distance % (1000 * 60))/1000)
        });
      }, 1000);
 
@@ -111,20 +112,20 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const [isCopied, setIsCopied] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   
-  // Auth Store
+ //Auth Store
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Data Store
+ //Data Store
   const [students, setStudents] = useState<any[]>([]);
   const [curriculum, setCurriculum] = useState<any[]>([]);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [attendance, setAttendance] = useState<any[]>([]);
   
-  // Registration Modal State
+ //Registration Modal State
   const [isRegModalOpen, setIsRegModalOpen] = useState(false);
   const [newStudent, setNewStudent] = useState({ fullName: '', username: '', password: '' });
 
-  // LMS Management State
+ //LMS Management State
   const [isLmsModalOpen, setIsLmsModalOpen] = useState(false);
   const [editingLmsItem, setEditingLmsItem] = useState<any>(null);
   const [lmsForm, setLmsForm] = useState<any>({
@@ -139,11 +140,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      quiz_data: { questions: [] }
   });
   
-  // Registration Success Interaction
+ //Registration Success Interaction
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [regSuccessData, setRegSuccessData] = useState<any>(null);
 
-  // Quiz & Submission Interaction
+ //Quiz & Submission Interaction
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
   const [activeQuiz, setActiveQuiz] = useState<any>(null);
   const [quizAnswers, setQuizAnswers] = useState<any>({});
@@ -168,13 +169,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const [isQuizReviewModalOpen, setIsQuizReviewModalOpen] = useState(false);
   const [viewingCurriculum, setViewingCurriculum] = useState<any>(null);
 
-  // Results Modal
+ //Results Modal
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [lastQuizResult, setLastQuizResult] = useState<number>(0);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedStudentDetail, setSelectedStudentDetail] = useState<any>(null);
 
-  // Student Management State
+ //Student Management State
   const [studentActionTarget, setStudentActionTarget] = useState<any>(null);
   const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
@@ -191,17 +192,17 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       setIsLoading(true);
       console.log("🚀 Starting V2 Batch Initialization (Sequential Mode)...");
       
-      // Safety Timeout: If Supabase takes > 40s, show UI anyway to prevent infinite hang
+     //Safety Timeout: If Supabase takes > 40s, show UI anyway to prevent infinite hang
       const timeout = setTimeout(() => {
         console.warn("⚠️ Initialization taking too long (40s limit). Forcing UI render.");
         setIsLoading(false);
       }, 40000);
 
       try {
-        // Load user first
+       //Load user first
         await fetchUserData();
         
-        // Sequential fetching
+       //Sequential fetching
         console.log("📡 Fetching Batch Details...");
         await fetchBatchDetail();
         
@@ -225,19 +226,19 @@ export default function BatchContentDesktop({ id }: { id: string }) {
     
     initPage();
 
-    // Restore last active tab from localStorage
+   //Restore last active tab from localStorage
     const savedTab = localStorage.getItem(`batch_tab_${resolvedParams.id}`);
     if (savedTab) setActiveTab(savedTab);
 
-    // ⚠️ REALTIME DISABLED on v2_profiles (global table, no row filter = full DB scan per update)
-    // This was the primary cause of resource exhaustion on Nano plan.
-    // Re-enable only after upgrading to Pro plan.
-    //
-    // Minimal realtime: only membership changes for THIS workspace
+   //⚠️ REALTIME DISABLED on v2_profiles (global table, no row filter = full DB scan per update)
+   //This was the primary cause of resource exhaustion on Nano plan.
+   //Re-enable only after upgrading to Pro plan.
+   //
+   //Minimal realtime: only membership changes for THIS workspace
     const channel = supabase
       .channel(`batch_${resolvedParams.id}_memberships`)
       .on('postgres_changes', { 
-        event: 'INSERT', // Only INSERT, not UPDATE/DELETE to reduce triggers
+        event: 'INSERT',//Only INSERT, not UPDATE/DELETE to reduce triggers
         schema: 'public', 
         table: 'v2_memberships',
         filter: `workspace_id=eq.${resolvedParams.id}`
@@ -251,11 +252,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   }, [resolvedParams.id]);
 
    const fetchUserData = async () => {
-    // Use cached session — avoids network call on every mount
+   //Use cached session — avoids network call on every mount
     const session = await getCachedSession();
     const user = session?.user;
     
-    // 2. CHECK LEGACY BYPASS (From localStorage)
+   //2. CHECK LEGACY BYPASS (From localStorage)
     const legacyAdmin = isLegacyAdmin();
     const isArunika = (user?.email?.toLowerCase().includes('arunika')) || legacyAdmin;
 
@@ -276,7 +277,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
            setCurrentUser(updatedUser);
            
            if (updatedUser.role === 'student' && !isArunika) {
-              router.push(`/v2/portal/${resolvedParams.id}`);
+              router.push(`/ruang-sosmed/${resolvedParams.id}`);
               return;
            }
 
@@ -293,7 +294,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   };
 
   const fetchAllSubmissions = async () => {
-     // Run both queries in PARALLEL to halve connection time
+    //Run both queries in PARALLEL to halve connection time
      const [subResult, qResult] = await Promise.all([
        supabase.from('v2_submissions').select('id, curriculum_id, profile_id, grade').eq('workspace_id', resolvedParams.id),
        supabase.from('v2_quiz_results').select('id, curriculum_id, profile_id, score').eq('workspace_id', resolvedParams.id)
@@ -304,8 +305,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   };
 
   const handleShare = () => {
-    // Masking '/v2/' from student portal link
-    const shareUrl = `${window.location.origin}/portal/${resolvedParams.id}`;
+    const shareUrl = `${window.location.origin}/ruang-sosmed/${resolvedParams.id}`;
     navigator.clipboard.writeText(shareUrl);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
@@ -317,8 +317,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      try {
         const shuffled = [...students].sort(() => Math.random() - 0.5);
         const updates = shuffled.map((s, i) => {
-           const grIdx = Math.floor(i / (Math.ceil(students.length / num)));
-           const gName = `Team ${String.fromCharCode(65 + grIdx)}`; // Team A, B, C...
+           const grIdx = Math.floor(i/(Math.ceil(students.length/num)));
+           const gName = `Team ${String.fromCharCode(65 + grIdx)}`;//Team A, B, C...
            return supabase.from('v2_memberships').update({ group_name: gName }).eq('id', s.id);
         });
         await Promise.all(updates);
@@ -369,7 +369,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      }
   };
 
-  // --- STUDENT MANAGEMENT HANDLERS ---
+ //--- STUDENT MANAGEMENT HANDLERS ---
   const handleUpdateStudentName = async () => {
     if (!studentActionTarget || !editStudentName.trim()) return;
     setIsLoading(true);
@@ -430,7 +430,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       const currentSchedules = batch?.schedules || [];
       const newSchedules = [...currentSchedules, newScheduleItem].sort((a,b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
 
-      const res = await fetch('/api/v2/update-schedules', {
+      const res = await fetch('/api/ruang-sosmed/update-schedules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspaceId: resolvedParams.id, schedules: newSchedules })
@@ -452,7 +452,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       const currentSchedules = batch?.schedules || [];
       const newSchedules = currentSchedules.filter((s:any) => s.id !== id);
 
-      const res = await fetch('/api/v2/update-schedules', {
+      const res = await fetch('/api/ruang-sosmed/update-schedules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspaceId: resolvedParams.id, schedules: newSchedules })
@@ -480,8 +480,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
     setIsLoading(true);
 
     try {
-      // Call Edge API Route (replacing Server Action - Cloudflare Pages compatible)
-      const response = await fetch('/api/v2/register-student', {
+     //Call Edge API Route (replacing Server Action - Cloudflare Pages compatible)
+      const response = await fetch('/api/ruang-sosmed/register-student', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -499,10 +499,10 @@ export default function BatchContentDesktop({ id }: { id: string }) {
          return;
       }
       
-      const loginUrl = `${window.location.origin}/v2/login`;
-      const waMessage = `Halo ${newStudent.fullName}! Selamat bergabung di ${batch?.name || "Mentorhipers"}.\n\nSilakan login di ${loginUrl} dengan detail berikut:\nUsername: ${newStudent.username}\nPassword: ${newStudent.password}\n\nSelamat belajar! 🚀`;
+      const loginUrl = `${window.location.origin}/ruang-sosmed/login`;
+      const waMessage = `Halo ${newStudent.fullName}! Selamat bergabung di ${batch?.name || "Ruang Sosmed"}.\n\nSilakan login di ${loginUrl} dengan detail berikut:\nUsername: ${newStudent.username}\nPassword: ${newStudent.password}\n\nSelamat belajar! 🚀`;
 
-      // Simpan data kreden untuk modal sukses
+     //Simpan data kreden untuk modal sukses
       setRegSuccessData({
         ...newStudent,
         waMessage,
@@ -513,7 +513,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       setIsSuccessModalOpen(true);
       setNewStudent({ fullName: '', username: '', password: '' });
       
-      // Refresh list
+     //Refresh list
       fetchStudents();
     } catch (err: any) {
       alert(`Critical Error: ${err.message}`);
@@ -592,7 +592,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      
      setIsLoading(true);
      try {
-        // Enforce 1x attempt
+       //Enforce 1x attempt
         const { data: existing } = await supabase
            .from('v2_quiz_results')
            .select('id')
@@ -612,9 +612,9 @@ export default function BatchContentDesktop({ id }: { id: string }) {
            if (quizAnswers[i] === q.correct) correctCount++;
         });
 
-        const score = Math.round((correctCount / questions.length) * 100);
+        const score = Math.round((correctCount/questions.length) * 100);
 
-        // 1. Save Result
+       //1. Save Result
         const { error: resError } = await supabase.from('v2_quiz_results').insert([
            {
               curriculum_id: activeQuiz.id,
@@ -626,8 +626,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         ]);
         if (resError) throw resError;
 
-        // 2. Sync to Grading Matrix (v2_memberships)
-        // Find which index this quiz belongs to (e.g. PT1, PT2, etc) based on module name or order
+       //2. Sync to Grading Matrix (v2_memberships)
+       //Find which index this quiz belongs to (e.g. PT1, PT2, etc) based on module name or order
         const ptIndex = curriculum.filter(c => c.type === 'post_test').findIndex(c => c.id === activeQuiz.id);
         
         if (ptIndex !== -1) {
@@ -638,7 +638,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
               newGrades.post_tests[ptIndex] = score;
               
               await supabase.from('v2_memberships').update({ grades: newGrades }).eq('id', myMembership.id);
-              fetchStudents(); // Refresh local students state
+              fetchStudents();//Refresh local students state
            }
         }
 
@@ -685,7 +685,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         if (error) throw error;
         
         setSubmissionsData(prev => prev.map(s => s.id === subId ? { ...s, mentor_feedback: feedback, status: 'completed' } : s));
-        fetchAllSubmissions(); // Update global state
+        fetchAllSubmissions();//Update global state
      } catch (err: any) {
         alert("Failed to save feedback: " + err.message);
      }
@@ -707,10 +707,10 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         if (error) throw error;
         
         setSubmissionsData(prev => prev.map(s => s.id === subId ? { ...s, grade: gradeNum, criteria_scores: criteria, status: 'completed' } : s));
-        fetchAllSubmissions(); // Update global state
+        fetchAllSubmissions();//Update global state
 
-        // CASCADING LOGIC FOR GROUP CHALLENGES
-        // ... (Keep existing logic)
+       //CASCADING LOGIC FOR GROUP CHALLENGES
+       //... (Keep existing logic)
         const currentSub = submissionsData.find(s => s.id === subId);
         const task = curriculum.find(t => t.id === currentSub?.curriculum_id);
         
@@ -780,7 +780,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
             grades: s.grades
          }));
 
-         // Bulk update grades via promise.all or a custom RPC
+        //Bulk update grades via promise.all or a custom RPC
          await Promise.all(updates.map(u => 
             supabase.from('v2_memberships').update({ grades: u.grades }).eq('id', u.id)
          ));
@@ -887,7 +887,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
     if (data) {
       setCurriculum(data);
       if (data.length > 0 && !selectedLesson) {
-         // Auto-select first material
+        //Auto-select first material
          const firstMaterial = data.find((c: any) => c.type === 'material') || data[0];
          setSelectedLesson(firstMaterial);
       }
@@ -897,13 +897,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   if (!isLoading && !batch) return (
     <div className="h-screen w-full flex flex-col items-center justify-center p-20 text-center space-y-6">
        <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center shadow-inner">
-          <EyeOff size={32} />
+          <EyeOff size={32}/>
        </div>
        <div>
           <h2 className="text-2xl font-black text-[#0F172A]">Akses Terbatas</h2>
           <p className="text-slate-400 font-medium max-w-sm mx-auto mt-2">Anda tidak memiliki izin untuk mengakses Batch ini. Silakan hubungi mentor jika ini adalah kesalahan.</p>
        </div>
-       <Button onClick={() => window.location.href = '/v2/login'} className="bg-slate-900 text-white rounded-2xl h-14 px-8 font-bold">Back to Login</Button>
+       <Button onClick={() => window.location.href = '/ruang-sosmed/login'} className="bg-slate-900 text-white rounded-2xl h-14 px-8 font-bold">Back to Login</Button>
     </div>
   );
 
@@ -911,11 +911,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const isAdminView = isAdmin && !isPreviewMode;
 
   const TABS = [
-    ...(isAdminView ? [{ id: "students", label: "Student List & Groups", icon: <Users size={16} /> }] : []),
-    { id: "learning", label: isAdminView ? "Class Material (LMS)" : "Learning Journey", icon: <PlayCircle size={16} /> },
-    { id: "assignments", label: isAdminView ? "Manage Tasks" : "My Assignments", icon: <ClipboardList size={16} /> },
-    { id: "grades", label: isAdminView ? "Grading Matrix" : "My Results", icon: <BarChart4 size={16} /> },
-    { id: "attendance", label: isAdminView ? "Attendance History" : "My Attendance", icon: <CheckCircle2 size={16} /> }
+    ...(isAdminView ? [{ id: "students", label: "Student List & Groups", icon: <Users size={16}/> }] : []),
+    { id: "learning", label: isAdminView ? "Class Material (LMS)" : "Learning Journey", icon: <PlayCircle size={16}/> },
+    { id: "assignments", label: isAdminView ? "Manage Tasks" : "My Assignments", icon: <ClipboardList size={16}/> },
+    { id: "grades", label: isAdminView ? "Grading Matrix" : "My Results", icon: <BarChart4 size={16}/> },
+    { id: "attendance", label: isAdminView ? "Attendance History" : "My Attendance", icon: <CheckCircle2 size={16}/> }
   ];
 
   return (
@@ -929,7 +929,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
             exit={{ height: 0, opacity: 0 }}
             className="bg-emerald-500 text-white p-4 rounded-3xl flex items-center justify-center gap-3 font-bold text-xs shadow-lg shadow-emerald-500/20"
           >
-            <Eye size={16} /> Simulasi tampilan murid (Preview mode)
+            <Eye size={16}/> Simulasi tampilan murid (Preview mode)
           </motion.div>
         )}
       </AnimatePresence>
@@ -937,14 +937,14 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       {/* Header Info */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 py-10 px-10 bg-gradient-to-r from-[#0ea5e9] to-[#1e3a8a] rounded-[44px] text-white overflow-hidden relative shadow-2xl shadow-blue-900/20">
         {/* Glow */}
-        <div className="absolute -top-32 -left-32 w-80 h-80 bg-white/10 blur-[100px] rounded-full" />
-        <div className="absolute -bottom-32 -right-32 w-80 h-80 bg-sky-300/20 blur-[100px] rounded-full" />
+        <div className="absolute -top-32 -left-32 w-80 h-80 bg-white/10 blur-[100px] rounded-full"/>
+        <div className="absolute -bottom-32 -right-32 w-80 h-80 bg-sky-300/20 blur-[100px] rounded-full"/>
 
         <div className="relative z-10 space-y-6">
           <div className="flex items-center gap-4">
             {isAdminView && (
-              <Link href="/v2/batch" className="p-3 bg-white/10 rounded-2xl hover:bg-white/20 transition-all border border-white/10 group">
-                <ChevronRight size={20} className="rotate-180 group-hover:-translate-x-1 transition-transform" />
+              <Link href="/ruang-sosmed/batch" className="p-3 bg-white/10 rounded-2xl hover:bg-white/20 transition-all border border-white/10 group">
+                <ChevronRight size={20} className="rotate-180 group-hover:-translate-x-1 transition-transform"/>
               </Link>
             )}
             <div className={`px-4 py-1.5 rounded-full text-white text-[9px] font-black ${isAdminView ? 'bg-blue-600' : 'bg-emerald-500'}`}>
@@ -955,11 +955,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
             <h1 className="text-4xl md:text-5xl font-black tracking-tight">{batch?.name || "Loading Batch..."}</h1>
             {!isAdminView && <p className="text-emerald-400 font-bold text-xs">Simulated view as {currentUser?.full_name}!</p>}
             <div className="flex flex-wrap gap-6 items-center opacity-60">
-              <p className="flex items-center gap-2 text-sm font-bold"><Zap size={14} className="text-blue-400" /> {batch?.status === 'active' ? 'Ongoing Batch' : 'Batch Completed'}</p>
-              <div className="h-1 w-1 rounded-full bg-white/30" />
-              <p className="flex items-center gap-2 text-sm font-bold"><Users size={14} className="text-blue-400" /> {students.length} / {batch?.max_members} Students</p>
-              <div className="h-1 w-1 rounded-full bg-white/30" />
-              <p className="flex items-center gap-2 text-sm font-bold"><Clock size={14} className="text-blue-400" /> {batch?.description || "No description provided."}</p>
+              <p className="flex items-center gap-2 text-sm font-bold"><Zap size={14} className="text-blue-400"/> {batch?.status === 'active' ? 'Ongoing Batch' : 'Batch Completed'}</p>
+              <div className="h-1 w-1 rounded-full bg-white/30"/>
+              <p className="flex items-center gap-2 text-sm font-bold"><Users size={14} className="text-blue-400"/> {students.length}/{batch?.max_members} Students</p>
+              <div className="h-1 w-1 rounded-full bg-white/30"/>
+              <p className="flex items-center gap-2 text-sm font-bold"><Clock size={14} className="text-blue-400"/> {batch?.description || "No description provided."}</p>
             </div>
           </div>
         </div>
@@ -972,14 +972,14 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                    onClick={() => setIsRegModalOpen(true)}
                    className="h-14 px-8 rounded-2xl bg-white text-slate-900 font-bold text-sm shadow-xl hover:scale-105 transition-all flex items-center justify-center gap-3"
                  >
-                   <UserPlus size={18} /> Add Student
+                   <UserPlus size={18}/> Add Student
                  </Button>
                )}
                <Button 
                 onClick={() => setIsPreviewMode(!isPreviewMode)}
                 className={`h-14 px-8 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 ${isPreviewMode ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
                >
-                 {isPreviewMode ? <EyeOff size={18} /> : <Eye size={18} />}
+                 {isPreviewMode ? <EyeOff size={18}/> : <Eye size={18}/>}
                  {isPreviewMode ? 'Exit Preview' : 'Student Preview'}
                </Button>
                {isAdminView && (
@@ -987,14 +987,14 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                     onClick={handleShare}
                     className={`h-14 px-8 rounded-2xl font-bold text-sm shadow-xl transition-all flex items-center justify-center gap-3 ${isCopied ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
                   >
-                    {isCopied ? <Check size={18} /> : <Share2 size={18} />}
+                    {isCopied ? <Check size={18}/> : <Share2 size={18}/>}
                     {isCopied ? 'Link Copied' : 'Share Batch'}
                   </Button>
                )}
              </>
            ) : (
              <Button className="h-14 px-8 rounded-2xl bg-white/10 text-white font-bold text-sm border border-white/10 hover:bg-white/20 transition-all flex items-center justify-center gap-3">
-               <MessageSquare size={18} /> Contact Mentor
+               <MessageSquare size={18}/> Contact Mentor
              </Button>
            )}
         </div>
@@ -1035,8 +1035,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                   <div className="p-10 border-b border-slate-50 flex items-center justify-between">
                     <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Active Students</h3>
                     <div className="flex items-center gap-4 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100">
-                      <Search size={16} className="text-slate-400" />
-                      <input placeholder="Cari nama murid..." className="bg-transparent border-none focus:outline-none text-sm font-bold w-48" />
+                      <Search size={16} className="text-slate-400"/>
+                      <input placeholder="Cari nama murid..." className="bg-transparent border-none focus:outline-none text-sm font-bold w-48"/>
                     </div>
                   </div>
                   
@@ -1045,7 +1045,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       <thead>
                         <tr className="bg-slate-50/50">
                           <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">FullName</th>
-                          <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Team / Group</th>
+                          <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Team/Group</th>
                           <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
                           <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Action</th>
                         </tr>
@@ -1059,9 +1059,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            >
                              <td className="px-10 py-6">
                                <div className="flex items-center gap-4">
-                                 <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border-2 border-transparent group-hover/row:border-blue-200 transition-all">
-                                   {mem.v2_profiles?.avatar_url && <img src={mem.v2_profiles.avatar_url} className="w-full h-full object-cover" />}
-                                 </div>
+                                 <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border-2 border-transparent group-hover/row:border-blue-200 transition-all flex items-center justify-center">
+                                    {mem.v2_profiles?.avatar_url ? (
+                                       <img src={mem.v2_profiles.avatar_url} className="w-full h-full object-contain scale-[1.3] translate-y-1"/>
+                                    ) : (
+                                       <User size={16} className="text-slate-300"/>
+                                    )}
+                                  </div>
                                  <div className="group-hover/row:translate-x-1 transition-transform">
                                    <p className="text-sm font-black text-[#0F172A] group-hover/row:text-blue-600 transition-colors">{mem.v2_profiles?.full_name}</p>
                                    <p className="text-[10px] font-bold text-slate-400">Student ID: {mem.id.slice(0, 8)}</p>
@@ -1075,7 +1079,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                              </td>
                              <td className="px-10 py-6">
                                 <span className="flex items-center gap-2 text-xs font-bold text-emerald-600">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Authorized
+                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"/> Authorized
                                 </span>
                              </td>
                              <td className="px-10 py-6">
@@ -1093,7 +1097,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                      }}
                                      className="w-9 h-9 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all"
                                    >
-                                     <MoreVertical size={18} />
+                                     <MoreVertical size={18}/>
                                    </button>
                                  </div>
                                </td>
@@ -1101,7 +1105,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                         ))}
                       </tbody>
                     </table>
-                    {students.length === 0 && <div className="p-20 text-center opacity-40"><Users size={44} className="mx-auto mb-4" /><p className="font-bold text-xs">Belum ada murid di batch ini.</p></div>}
+                    {students.length === 0 && <div className="p-20 text-center opacity-40"><Users size={44} className="mx-auto mb-4"/><p className="font-bold text-xs">Belum ada murid di batch ini.</p></div>}
                   </div>
                 </Card>
 
@@ -1114,12 +1118,12 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                 <h3 className="text-xl font-black text-[#0F172A]">Batch Ecosystem</h3>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Real-time Class Insights</p>
                              </div>
-                             <Award className="text-amber-500" size={24} />
+                             <Award className="text-amber-500" size={24}/>
                           </div>
 
                           {/* 1. STAR STUDENT OF THE WEEK */}
                           {(() => {
-                             // Logic: Highest average score + attendance this week
+                            //Logic: Highest average score + attendance this week
                              const analytics = students.map(mem => {
                                 const sub = allSubmissions.filter(s => s.profile_id === mem.v2_profiles?.id);
                                 let total = 0, count = 0;
@@ -1127,7 +1131,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                    const res = sub.find(s => s.curriculum_id === t.id);
                                    if (res) { total += (res.score || res.grade || 0); count++; }
                                 });
-                                const avg = count > 0 ? total / count : 0;
+                                const avg = count > 0 ? total/count : 0;
                                 const attendanceCount = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
                                 return { mem, avg, attendance: attendanceCount };
                              }).sort((a, b) => b.avg - a.avg || b.attendance - a.attendance);
@@ -1138,12 +1142,12 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                              return (
                                 <div className="p-6 rounded-[32px] bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 relative overflow-hidden group">
                                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform">
-                                      <Star size={60} fill="currentColor" className="text-amber-500" />
+                                      <Star size={60} fill="currentColor" className="text-amber-500"/>
                                    </div>
                                    <div className="relative z-10 flex items-center gap-4">
                                       <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-200 flex items-center justify-center font-black text-amber-600 shadow-sm overflow-hidden">
                                          {star.mem.v2_profiles?.avatar_url ? (
-                                            <img src={star.mem.v2_profiles.avatar_url} className="w-full h-full object-cover" />
+                                            <img src={star.mem.v2_profiles.avatar_url} className="w-full h-full object-cover"/>
                                          ) : star.mem.v2_profiles?.full_name?.charAt(0)}
                                       </div>
                                       <div>
@@ -1165,13 +1169,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                    return groups.slice(0, 3).map(gName => {
                                       const members = students.filter(s => s.group_name === gName);
                                       const leader = members.find(m => m.is_leader);
-                                      const avgAttendance = members.reduce((acc, m) => acc + Object.values(m.attendance || {}).filter(v => v === 'P').length, 0) / members.length;
+                                      const avgAttendance = members.reduce((acc, m) => acc + Object.values(m.attendance || {}).filter(v => v === 'P').length, 0)/members.length;
                                       
                                       return (
                                          <div key={gName} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between group hover:border-blue-200 transition-all">
                                             <div className="flex items-center gap-3">
                                                <div className="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-blue-600 shadow-sm">
-                                                  <Users size={14} />
+                                                  <Users size={14}/>
                                                </div>
                                                <div>
                                                   <p className="text-xs font-black text-slate-800">{gName}</p>
@@ -1204,7 +1208,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
                                    if (risky.length === 0) return (
                                       <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-3">
-                                         <CheckCircle2 size={14} className="text-emerald-500" />
+                                         <CheckCircle2 size={14} className="text-emerald-500"/>
                                          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">No critical risks found</p>
                                       </div>
                                    );
@@ -1221,7 +1225,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                             </div>
                                          </div>
                                          <button className="p-2 rounded-lg bg-rose-100 text-rose-600 hover:bg-rose-600 hover:text-white transition-all shadow-sm">
-                                            <MessageSquare size={14} />
+                                            <MessageSquare size={14}/>
                                          </button>
                                       </div>
                                    ));
@@ -1230,13 +1234,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                           </div>
 
                           <Button className="w-full h-14 rounded-2xl bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-slate-900/10 hover:scale-105 transition-all flex items-center justify-center gap-3 mt-4">
-                             <Share2 size={16} /> Broadcast Batch Insight
+                             <Share2 size={16}/> Broadcast Batch Insight
                           </Button>
                        </div>
                     </Card>
 
                    <Card className="p-10 border-none shadow-xl shadow-slate-200/50 bg-gradient-to-br from-indigo-600 to-blue-700 text-white rounded-[44px] relative overflow-hidden">
-                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 blur-3xl rounded-full" />
+                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 blur-3xl rounded-full"/>
                       <div className="relative z-10 space-y-6">
                          <h3 className="text-xl font-black">Group Challenge</h3>
                          <p className="text-white/60 text-sm font-medium leading-relaxed">
@@ -1249,7 +1253,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                    </Card>
 
                    <Card className="p-10 border-none shadow-xl shadow-slate-200/50 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-[44px] relative overflow-hidden mt-8">
-                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 blur-3xl rounded-full" />
+                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 blur-3xl rounded-full"/>
                       <div className="relative z-10 space-y-6">
                          <h3 className="text-xl font-black">Live Sessions</h3>
                          <p className="text-white/60 text-sm font-medium leading-relaxed">
@@ -1278,26 +1282,26 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                     className="w-full h-full"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
-                                  />
+                                 />
                                ) : (
                                    <div className="w-full h-full flex flex-col items-center justify-center text-white relative">
-                                      {/* Waiting Screen / Countdown */}
-                                      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/40 to-slate-900 z-0 animate-pulse" />
+                                      {/* Waiting Screen/Countdown */}
+                                      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900/40 to-slate-900 z-0 animate-pulse"/>
                                       <div className="relative z-10 text-center space-y-8 p-12">
                                          <div className="w-24 h-24 bg-white/10 rounded-[32px] flex items-center justify-center mx-auto mb-10 border border-white/20 backdrop-blur-xl animate-bounce">
-                                            <Play size={40} fill="white" className="ml-2" />
+                                            <Play size={40} fill="white" className="ml-2"/>
                                          </div>
                                          <div className="space-y-4">
                                             <h3 className="text-4xl font-black tracking-tighter">Live kelas akan dimulai dalam</h3>
                                             {selectedLesson.due_date ? (
-                                               <Countdown targetDate={selectedLesson.due_date} />
+                                               <Countdown targetDate={selectedLesson.due_date}/>
                                             ) : (
                                                <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">Waktu tayang belum dijadwalkan oleh mentor.</p>
                                             )}
                                          </div>
                                          <div className="pt-10">
                                             <div className="px-8 py-4 bg-white/5 rounded-2xl border border-white/10 inline-flex items-center gap-3">
-                                               <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping" />
+                                               <div className="w-2 h-2 bg-rose-500 rounded-full animate-ping"/>
                                                <p className="text-[10px] font-black uppercase tracking-widest text-white/60">Waiting for Stream Link...</p>
                                             </div>
                                          </div>
@@ -1308,7 +1312,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                          ) : (
                             <div className="p-20 rounded-[48px] bg-slate-900 text-white text-center space-y-6">
                                <div className="w-20 h-20 bg-white/10 rounded-3xl flex items-center justify-center mx-auto">
-                                  {selectedLesson.type === 'post_test' ? <FileText size={40} /> : <Target size={40} />}
+                                  {selectedLesson.type === 'post_test' ? <FileText size={40}/> : <Target size={40}/>}
                                </div>
                                <div>
                                   <h3 className="text-2xl font-black">Interactive {selectedLesson.type === 'post_test' ? 'Post Test' : 'Task'}</h3>
@@ -1331,7 +1335,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                    ) : (
                       <div className="h-[600px] flex items-center justify-center text-slate-300">
                          <div className="text-center space-y-4">
-                            <BookOpen size={64} className="mx-auto" />
+                            <BookOpen size={64} className="mx-auto"/>
                             <p className="font-bold">Select a lesson to start learning</p>
                          </div>
                       </div>
@@ -1346,10 +1350,10 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                          <h3 className="text-lg font-black text-[#0F172A] tracking-tight">Course Journey</h3>
                          {isAdminView ? (
                             <button onClick={() => openLmsModal()} className="p-3 bg-blue-50 text-blue-600 rounded-2xl hover:scale-105 transition-all">
-                               <Plus size={20} />
+                               <Plus size={20}/>
                             </button>
                          ) : (
-                            <Sparkles className="text-blue-500" size={20} />
+                            <Sparkles className="text-blue-500" size={20}/>
                          )}
                       </div>
                       <div className="space-y-3">
@@ -1361,11 +1365,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                >
                                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedLesson?.id === item.id ? 'bg-white/20' : 'bg-white shadow-sm text-blue-600'}`}>
                                      {item.type === 'material' ? (
-                                        selectedLesson?.id === item.id ? <Play size={16} fill="white" /> : <PlayCircle size={18} />
+                                        selectedLesson?.id === item.id ? <Play size={16} fill="white"/> : <PlayCircle size={18}/>
                                      ) : item.type === 'post_test' ? (
-                                        <FileText size={18} />
+                                        <FileText size={18}/>
                                      ) : (
-                                        <Target size={18} />
+                                        <Target size={18}/>
                                      )}
                                   </div>
                                   <div className="text-left overflow-hidden">
@@ -1377,8 +1381,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                </button>
                                {isAdminView && (
                                   <div className="absolute top-1/2 -translate-y-1/2 right-4 opacity-0 group-hover/item:opacity-100 transition-all flex items-center gap-2">
-                                     <button onClick={(e) => { e.stopPropagation(); openLmsModal(item); }} className="p-2 bg-white shadow-lg rounded-lg text-slate-400 hover:text-blue-600 transition-all"><Edit size={14} /></button>
-                                     <button onClick={(e) => { e.stopPropagation(); handleDeleteLms(item.id); }} className="p-2 bg-white shadow-lg rounded-lg text-slate-400 hover:text-rose-500 transition-all"><Trash2 size={14} /></button>
+                                     <button onClick={(e) => { e.stopPropagation(); openLmsModal(item); }} className="p-2 bg-white shadow-lg rounded-lg text-slate-400 hover:text-blue-600 transition-all"><Edit size={14}/></button>
+                                     <button onClick={(e) => { e.stopPropagation(); handleDeleteLms(item.id); }} className="p-2 bg-white shadow-lg rounded-lg text-slate-400 hover:text-rose-500 transition-all"><Trash2 size={14}/></button>
                                   </div>
                                )}
                             </div>
@@ -1389,7 +1393,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                     {/* Class Assets */}
                     {selectedLesson && selectedLesson.assets_json && selectedLesson.assets_json.length > 0 && (
                        <Card className="p-10 border-none shadow-2xl shadow-blue-900/10 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white rounded-[44px] space-y-8 relative overflow-hidden">
-                          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full pointer-events-none" />
+                          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full pointer-events-none"/>
                           <h3 className="text-xl font-black tracking-tight px-2">Classroom Assets</h3>
                           <div className="space-y-4">
                              {selectedLesson.assets_json.map((asset: any, i: number) => (
@@ -1400,13 +1404,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                   className="flex items-center justify-between p-6 rounded-[32px] bg-white/10 border border-white/10 hover:bg-white/20 transition-all group backdrop-blur-md shadow-lg"
                                 >
                                    <div className="flex items-center gap-5">
-                                      <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center font-black shadow-lg shadow-blue-500/20"><Download size={20} /></div>
+                                      <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center font-black shadow-lg shadow-blue-500/20"><Download size={20}/></div>
                                       <div className="space-y-1">
                                          <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest">Resource {i + 1}</p>
                                          <span className="text-sm font-bold tracking-tight">{asset.name}</span>
                                       </div>
                                    </div>
-                                   <ChevronRight size={18} className="opacity-20 group-hover:opacity-100 transition-opacity" />
+                                   <ChevronRight size={18} className="opacity-20 group-hover:opacity-100 transition-opacity"/>
                                 </a>
                              ))}
                           </div>
@@ -1422,7 +1426,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                    <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Active Assignments</h3>
                    {isAdminView && (
                       <Button onClick={() => openLmsModal({ type: 'post_test' })} className="bg-blue-600 text-white h-12 px-6 rounded-xl font-bold flex items-center gap-2">
-                        <Plus size={18} /> New Task
+                        <Plus size={18}/> New Task
                       </Button>
                    )}
                 </div>
@@ -1439,13 +1443,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                <div className="flex items-center gap-5 md:gap-6">
                                   <div className={`w-14 h-14 rounded-[24px] flex items-center justify-center shrink-0 transition-all ${c.type === 'post_test' ? 'bg-amber-50 text-amber-500' : 'bg-blue-50 text-blue-600'}`}>
-                                     {c.type === 'post_test' ? <FileText size={24} /> : <Target size={24} />}
+                                     {c.type === 'post_test' ? <FileText size={24}/> : <Target size={24}/>}
                                   </div>
                                   <div>
                                      <h4 className="text-base md:text-lg font-black text-[#0F172A] group-hover:text-blue-600 transition-colors uppercase tracking-tight">{c.title}</h4>
                                      <div className="flex items-center gap-3 mt-1.5 opacity-60">
                                         <p className="text-[10px] font-black uppercase tracking-widest">{c.type.replace('_', ' ')}</p>
-                                        <div className="w-1 h-1 rounded-full bg-slate-400" />
+                                        <div className="w-1 h-1 rounded-full bg-slate-400"/>
                                         <p className="text-[10px] font-bold">Due: {c.due_date ? new Date(c.due_date).toLocaleDateString() : 'No Deadline'}</p>
                                      </div>
                                   </div>
@@ -1456,7 +1460,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Submissions</p>
                                      <div className="flex items-end gap-1">
                                         <span className={`text-xl font-black leading-none ${isFullySubmitted ? 'text-emerald-500' : 'text-blue-600'}`}>{submittedCount}</span>
-                                        <span className="text-sm font-bold text-slate-400 leading-none mb-0.5">/ {totalStudents}</span>
+                                        <span className="text-sm font-bold text-slate-400 leading-none mb-0.5">/{totalStudents}</span>
                                      </div>
                                   </div>
 
@@ -1471,11 +1475,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                           className={`p-3 rounded-xl transition-all flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${c.is_published ? 'bg-blue-50 text-blue-600 hover:bg-rose-50 hover:text-rose-600' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white ring-2 ring-emerald-100 shadow-lg shadow-emerald-500/10'}`}
                                           title={c.is_published ? "Hide from Students" : "Show to Students"}
                                         >
-                                          {c.is_published ? <Eye size={16} /> : <EyeOff size={16} />}
+                                          {c.is_published ? <Eye size={16}/> : <EyeOff size={16}/>}
                                           <span>{c.is_published ? 'LIVE' : 'DRAFT'}</span>
                                         </button>
-                                        <button onClick={() => openLmsModal(c)} className="p-3 bg-slate-50 text-slate-400 hover:text-blue-600 rounded-xl transition-all"><Edit size={16} /></button>
-                                        <button onClick={() => handleDeleteLms(c.id)} className="p-3 bg-slate-50 text-slate-400 hover:text-rose-600 rounded-xl transition-all"><Trash2 size={16} /></button>
+                                        <button onClick={() => openLmsModal(c)} className="p-3 bg-slate-50 text-slate-400 hover:text-blue-600 rounded-xl transition-all"><Edit size={16}/></button>
+                                        <button onClick={() => handleDeleteLms(c.id)} className="p-3 bg-slate-50 text-slate-400 hover:text-rose-600 rounded-xl transition-all"><Trash2 size={16}/></button>
                                      </div>
                                   )}
                                      <Button 
@@ -1483,7 +1487,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                        className={`h-12 px-6 rounded-[16px] font-black text-xs transition-all flex items-center gap-2 group/btn ${isFullySubmitted ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white' : 'bg-slate-50 text-slate-500 hover:bg-blue-600 hover:text-white'}`}
                                      >
                                         {isAdminView ? 'View Submissions' : 'Submit Task'}
-                                        <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                                        <ChevronRight size={16} className="group-hover/btn:translate-x-1 transition-transform"/>
                                      </Button>
                                   </div>
                                </div>
@@ -1493,7 +1497,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       })
                    ) : (
                       <div className="p-20 text-center opacity-40">
-                         <ClipboardList size={44} className="mx-auto mb-4" />
+                         <ClipboardList size={44} className="mx-auto mb-4"/>
                          <p className="font-bold text-xs uppercase tracking-widest">Belum ada tugas yang aktif.</p>
                       </div>
                    )}
@@ -1532,10 +1536,10 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                              <tbody>
                                 {students.map((mem) => {
                                    const studentSubmissions = allSubmissions.filter(s => s.profile_id === mem.v2_profiles?.id);
-                                   // For quizzes, we need to fetch quiz results globally too. For now, we'll use a placeholder or assume they are part of allSubmissions if the schema allows.
-                                   // Assuming quiz results are also in `allSubmissions` for simplicity, or a separate `allQuizResults` state would be needed.
-                                   // For this implementation, I'll assume `allSubmissions` can contain both types if `grade` is present for non-quiz and `score` for quiz.
-                                   // A more robust solution would fetch `v2_quiz_results` separately.
+                                  //For quizzes, we need to fetch quiz results globally too. For now, we'll use a placeholder or assume they are part of allSubmissions if the schema allows.
+                                  //Assuming quiz results are also in `allSubmissions` for simplicity, or a separate `allQuizResults` state would be needed.
+                                  //For this implementation, I'll assume `allSubmissions` can contain both types if `grade` is present for non-quiz and `score` for quiz.
+                                  //A more robust solution would fetch `v2_quiz_results` separately.
                                    
                                    let totalPT = 0, countPT = 0;
                                    let totalAssign = 0, countAssign = 0;
@@ -1546,8 +1550,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                    const scores = tasks.map(t => {
                                       let score: number | null = null;
                                        
-                                       // LETS WORK WITH AUTO-0 LOGIC
-                                       // Threshold: Due Date + 24 Hours
+                                      //LETS WORK WITH AUTO-0 LOGIC
+                                      //Threshold: Due Date + 24 Hours
                                        const now = new Date().getTime();
                                        const hasDueDate = !!t.due_date;
                                        const deadlineElapsed = hasDueDate ? (new Date(t.due_date).getTime() + 86400000) < now : false;
@@ -1560,7 +1564,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                           score = sub ? (sub.grade || 0) : (deadlineElapsed ? 0 : null);
                                        }
                                        
-                                       // Aggregate for Summary (If Null, it means still waiting / grace period)
+                                      //Aggregate for Summary (If Null, it means still waiting/grace period)
                                        const actualScore = score === null ? 0 : score;
                                        if (t.type === 'post_test') { totalPT += actualScore; countPT++; }
                                        else if (t.type === 'challenge') { totalGC += actualScore; countGC++; }
@@ -1569,12 +1573,12 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                        return { val: score, isAutoZero: (score === 0 && !studentSubmissions.find(s => s.curriculum_id === t.id)) };
                                     });
 
-                                   const avgPT = countPT > 0 ? totalPT / countPT : 0;
-                                   const avgAssign = countAssign > 0 ? totalAssign / countAssign : 0;
-                                   const avgGC = countGC > 0 ? totalGC / countGC : 0;
+                                   const avgPT = countPT > 0 ? totalPT/countPT : 0;
+                                   const avgAssign = countAssign > 0 ? totalAssign/countAssign : 0;
+                                   const avgGC = countGC > 0 ? totalGC/countGC : 0;
                                    const attendCount = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
                                     const totalSessions = batch?.schedules?.length || 0; 
-                                   const attendScore = totalSessions > 0 ? (attendCount / totalSessions) * 100 : 0;
+                                   const attendScore = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
                                    
                                    const plusPointsTotal = Object.values(mem.plus_points || {}).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
                                    const finalKeaktifan = Math.min(100, attendScore + plusPointsTotal);
@@ -1584,7 +1588,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                       (avgAssign * gradingConfig.assignment_weight) +
                                       (avgGC * gradingConfig.challenge_weight) +
                                       (finalKeaktifan * gradingConfig.attendance_weight)
-                                   ) / (gradingConfig.post_test_weight + gradingConfig.assignment_weight + gradingConfig.challenge_weight + gradingConfig.attendance_weight);
+                                   )/(gradingConfig.post_test_weight + gradingConfig.assignment_weight + gradingConfig.challenge_weight + gradingConfig.attendance_weight);
                                    
                                    const getGrading = (avg: number) => {
                                       if (avg >= 90) return { label: 'A+ (Superstar)', color: 'text-purple-600 bg-purple-50' };
@@ -1664,7 +1668,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                           </table>
                        ) : (
                           <div className="p-40 text-center">
-                             <BarChart4 size={44} className="mx-auto mb-4 opacity-10" />
+                             <BarChart4 size={44} className="mx-auto mb-4 opacity-10"/>
                              <p className="text-xs font-bold text-slate-300">Invite students first to enable grading matrix.</p>
                           </div>
                        )}
@@ -1709,7 +1713,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                                   defaultValue={plus[cat] || 0}
                                                   onBlur={(e) => handleSavePlusPoints(mem.id, cat, e.target.value)}
                                                   className="w-16 h-10 border-none bg-transparent text-center font-black text-blue-600 focus:bg-white focus:ring-2 ring-blue-500/10 rounded-xl"
-                                               />
+                                              />
                                             </td>
                                          ))}
                                          <td className="px-8 py-4 text-center bg-emerald-50 text-emerald-600 font-black text-sm">+{sumPlus as any}</td>
@@ -1732,7 +1736,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       <p className="text-xs text-slate-400 font-bold">Track attendance across 20 dynamic sessions for all students.</p>
                    </div>
                    <Button onClick={saveAttendance} className="bg-slate-900 text-white h-12 px-8 rounded-xl font-bold flex items-center gap-2 shadow-lg active:scale-95 transition-all">
-                      <Check size={18} /> Sync Attendance
+                      <Check size={18}/> Sync Attendance
                    </Button>
                 </div>
 
@@ -1768,7 +1772,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                           const sessionId = s.id;
                                           const status = att[sessionId] || att[`s${i+1}`] || '-';
                                           const getBadge = (st: string) => {
-                                             if (st === 'P') return <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20"><Check size={14} strokeWidth={4} /></div>;
+                                             if (st === 'P') return <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20"><Check size={14} strokeWidth={4}/></div>;
                                              if (st === 'S') return <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-[10px]">S</div>;
                                              if (st === 'I') return <div className="w-8 h-8 rounded-xl bg-blue-500 text-white flex items-center justify-center font-black text-[10px]">I</div>;
                                              if (st === 'A') return <div className="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center font-black text-[10px]">A</div>;
@@ -1782,7 +1786,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                                      onClick={() => {
                                                         const newAtt = { ...mem.attendance || {} };
                                                         const current = newAtt[sessionId];
-                                                        // Cycle: P -> S -> I -> A -> -
+                                                       //Cycle: P -> S -> I -> A -> -
                                                         const nextStatus = current === 'P' ? 'S' : current === 'S' ? 'I' : current === 'I' ? 'A' : current === 'A' ? '-' : 'P';
                                                         newAtt[sessionId] = nextStatus;
                                                         setStudents(students.map(stud => stud.id === mem.id ? { ...stud, attendance: newAtt } : stud));
@@ -1798,7 +1802,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                        });
                                     })()}
                                     <td className="px-8 py-5 text-center font-black text-emerald-600 bg-emerald-50/30">
-                                       {Math.round((presentCount / (batch?.schedules?.length || 1)) * 100)}%
+                                       {Math.round((presentCount/(batch?.schedules?.length || 1)) * 100)}%
                                     </td>
                                  </tr>
                               );
@@ -1807,7 +1811,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       </table>
                       {students.length === 0 && (
                          <div className="p-20 text-center">
-                            <CheckCircle2 size={44} className="mx-auto mb-4 opacity-10" />
+                            <CheckCircle2 size={44} className="mx-auto mb-4 opacity-10"/>
                             <p className="text-xs font-bold text-slate-300">No students found in this batch.</p>
                          </div>
                       )}
@@ -1830,7 +1834,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
             >
               <div className="p-10 border-b border-slate-50 flex items-center justify-between">
                 <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Add New Student</h3>
-                <button onClick={() => setIsRegModalOpen(false)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all"><X size={24} /></button>
+                <button onClick={() => setIsRegModalOpen(false)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all"><X size={24}/></button>
               </div>
 
               <div className="p-10 space-y-6">
@@ -1841,7 +1845,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                     onChange={(e) => setNewStudent({ ...newStudent, fullName: e.target.value })}
                     placeholder="e.g. Budi Santoso"
                     className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
-                  />
+                 />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">UNIQUE USERNAME</label>
@@ -1850,16 +1854,16 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                     onChange={(e) => setNewStudent({ ...newStudent, username: e.target.value.toLowerCase().trim() })}
                     placeholder="e.g. budisantoso"
                     className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
-                  />
+                 />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">TEMP PASSWORD</label>
                   <input 
                     value={newStudent.password || ''}
                     onChange={(e) => setNewStudent({ ...newStudent, password: e.target.value })}
-                    placeholder="e.g. Mentorhipers2024!"
+                    placeholder="e.g. Ruang Sosmed2024!"
                     className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
-                  />
+                 />
                 </div>
               </div>
 
@@ -1887,12 +1891,12 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                className="bg-white rounded-[56px] shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col border border-white/20 relative"
             >
                {/* Background Sparkles */}
-               <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] rounded-full" />
-               <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full" />
+               <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] rounded-full"/>
+               <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full"/>
 
                <div className="p-14 relative z-10 space-y-10 text-center">
                   <div className="w-24 h-24 bg-emerald-50 text-emerald-600 rounded-[36px] flex items-center justify-center mx-auto shadow-inner">
-                     <CheckCircle2 size={44} />
+                     <CheckCircle2 size={44}/>
                   </div>
 
                   <div className="space-y-4">
@@ -1925,7 +1929,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                         onClick={handleCopyMessage}
                         className="flex-1 h-20 rounded-[32px] bg-blue-600 text-white font-black text-lg shadow-2xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-4"
                      >
-                        <Share2 size={24} /> Copy WA Message
+                        <Share2 size={24}/> Copy WA Message
                      </Button>
                      <Button 
                         onClick={() => setIsSuccessModalOpen(false)}
@@ -1951,10 +1955,10 @@ export default function BatchContentDesktop({ id }: { id: string }) {
             >
                <div className="p-10 border-b border-slate-50 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-4">
-                     <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center"><Settings size={24} /></div>
+                     <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center"><Settings size={24}/></div>
                      <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">{editingLmsItem ? 'Edit Curriculum' : 'Add New Curriculum'}</h3>
                   </div>
-                  <button onClick={() => setIsLmsModalOpen(false)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all"><X size={24} /></button>
+                  <button onClick={() => setIsLmsModalOpen(false)} className="p-3 hover:bg-slate-50 rounded-2xl transition-all"><X size={24}/></button>
                </div>
 
                <div className="p-10 overflow-y-auto space-y-8">
@@ -1979,7 +1983,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            onChange={(e) => setLmsForm({ ...lmsForm, module_name: e.target.value })}
                            placeholder="e.g. Modul 01: Fundamental"
                            className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
-                        />
+                       />
                      </div>
                   </div>
 
@@ -1991,7 +1995,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            onChange={(e) => setLmsForm({ ...lmsForm, title: e.target.value })}
                            placeholder="Judul Materi atau Tugas"
                            className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
-                        />
+                       />
                      </div>
                       <div className="space-y-2">
                          <label className={`text-[10px] font-black uppercase tracking-widest ml-2 ${lmsForm.type === 'material' ? 'text-blue-500' : 'text-rose-500'}`}>
@@ -2013,7 +2017,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                }
                             }}
                             className={`w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border-2 border-slate-100 focus:outline-none transition-all ${lmsForm.type === 'material' ? 'focus:border-blue-500 text-blue-600' : 'focus:border-rose-500 text-rose-600'}`}
-                         />
+                        />
                       </div>
                   </div>
 
@@ -2025,19 +2029,19 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            onChange={(e) => setLmsForm({ ...lmsForm, video_url: e.target.value })}
                            placeholder="https://www.youtube.com/embed/..."
                            className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
-                        />
+                       />
                      </div>
                   )}
 
                   <div className="space-y-4">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">CONTENT / DESCRIPTION</label>
+                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">CONTENT/DESCRIPTION</label>
                      <textarea 
                         value={lmsForm.content_rich || ''}
                         onChange={(e) => setLmsForm({ ...lmsForm, content_rich: e.target.value })}
                         placeholder="Tulis instruksi atau deskripsi materi di sini..."
                         rows={4}
                         className="w-full p-6 rounded-3xl bg-neutral-50 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
-                     />
+                    />
                   </div>
 
                   <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center gap-6">
@@ -2047,7 +2051,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            onClick={() => setLmsForm({ ...lmsForm, is_published: !lmsForm.is_published })}
                            className={`w-full h-14 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-3 border-2 ${lmsForm.is_published ? 'bg-blue-600 border-blue-600 text-white shadow-xl shadow-blue-500/20' : 'bg-white border-slate-100 text-slate-400 hover:border-emerald-400 hover:text-emerald-500'}`}
                         >
-                           {lmsForm.is_published ? <Eye size={20} /> : <EyeOff size={20} />}
+                           {lmsForm.is_published ? <Eye size={20}/> : <EyeOff size={20}/>}
                            {lmsForm.is_published ? 'READY TO PUBLISH (LIVE)' : 'SAVE AS DRAFT (HIDDEN)'}
                         </button>
                      </div>
@@ -2058,7 +2062,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                      <div className="p-10 rounded-[44px] bg-slate-900 space-y-8">
                         <div className="flex items-center justify-between">
                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20"><Sparkles size={20} /></div>
+                              <div className="w-10 h-10 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20"><Sparkles size={20}/></div>
                               <h4 className="text-xl font-black text-white px-2">Quiz Builder Engine</h4>
                            </div>
                            <button 
@@ -2081,7 +2085,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                       setLmsForm({ ...lmsForm, quiz_data: newQuiz });
                                    }}
                                    className="absolute top-6 right-6 p-2 text-white/20 hover:text-rose-400 transition-colors"
-                                 ><Trash2 size={16} /></button>
+                                 ><Trash2 size={16}/></button>
 
                                   <div className="space-y-3">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-2">Question {qi + 1}</label>
@@ -2094,7 +2098,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                        }}
                                        placeholder="What is the color of the sky?"
                                        className="w-full h-14 rounded-2xl bg-white/5 border border-white/5 px-6 text-white font-bold text-sm focus:border-blue-500/40 focus:outline-none transition-all"
-                                    />
+                                   />
                                  </div>
 
                                  <div className="grid grid-cols-2 gap-4">
@@ -2109,7 +2113,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                              }}
                                              placeholder={`Option ${oi + 1}`}
                                              className={`w-full h-14 rounded-2xl bg-white/5 border px-6 pr-14 text-white font-bold text-sm focus:outline-none transition-all ${q.correct === oi ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-white/5'}`}
-                                          />
+                                         />
                                           <button 
                                              onClick={() => {
                                                 const newQuiz = { ...lmsForm.quiz_data };
@@ -2118,7 +2122,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                              }}
                                              className={`absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-all ${q.correct === oi ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/20 hover:text-white'}`}
                                           >
-                                             <Check size={14} />
+                                             <Check size={14}/>
                                           </button>
                                        </div>
                                     ))}
@@ -2158,7 +2162,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                  }}
                                  placeholder="Asset Name (PDF, Canva, ...)"
                                  className="flex-1 h-12 rounded-xl bg-slate-50 px-6 text-sm font-bold border border-slate-100"
-                              />
+                             />
                                <input 
                                  value={asset.url || ''}
                                  onChange={(e) => {
@@ -2168,8 +2172,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                  }}
                                  placeholder="URL"
                                  className="flex-[2] h-12 rounded-xl bg-slate-50 px-6 text-sm font-bold border border-slate-100"
-                              />
-                              <button onClick={() => setLmsForm({ ...lmsForm, assets_json: (lmsForm.assets_json || []).filter((_: any, idx: number) => idx !== i) })} className="p-3 text-rose-500"><Trash2 size={16} /></button>
+                             />
+                              <button onClick={() => setLmsForm({ ...lmsForm, assets_json: (lmsForm.assets_json || []).filter((_: any, idx: number) => idx !== i) })} className="p-3 text-rose-500"><Trash2 size={16}/></button>
                            </div>
                         ))}
                      </div>
@@ -2206,7 +2210,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                 <div className="p-10 border-b border-slate-100 flex items-center justify-between shrink-0">
                    <div className="flex items-center gap-6">
                       <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                         <FileText size={32} />
+                         <FileText size={32}/>
                       </div>
                       <div>
                          <h2 className="text-2xl font-black text-[#0F172A] tracking-tighter">{activeQuiz.title}</h2>
@@ -2214,7 +2218,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       </div>
                    </div>
                    <button onClick={() => setIsQuizModalOpen(false)} className="p-4 bg-slate-50 rounded-2xl text-slate-300 hover:text-rose-500 transition-all">
-                      <X size={24} />
+                      <X size={24}/>
                    </button>
                 </div>
 
@@ -2234,7 +2238,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                >
                                   <span>{opt}</span>
                                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${quizAnswers[qi] === oi ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white'}`}>
-                                     {quizAnswers[qi] === oi && <Check size={12} strokeWidth={4} />}
+                                     {quizAnswers[qi] === oi && <Check size={12} strokeWidth={4}/>}
                                   </div>
                                </button>
                             ))}
@@ -2245,7 +2249,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
                 <div className="p-10 bg-slate-50 border-t border-slate-100 flex items-center justify-between shrink-0">
                    <p className="text-sm font-bold text-slate-400">
-                      Answered: <span className="text-blue-600">{Object.keys(quizAnswers).length}</span> / {activeQuiz.quiz_data.questions.length}
+                      Answered: <span className="text-blue-600">{Object.keys(quizAnswers).length}</span>/{activeQuiz.quiz_data.questions.length}
                    </p>
                    <Button 
                      onClick={handleSubmitQuiz}
@@ -2273,7 +2277,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                 <div className="p-10 border-b border-slate-100 flex items-center justify-between shrink-0">
                    <div className="flex items-center gap-6">
                       <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                         <Users size={32} />
+                         <Users size={32}/>
                       </div>
                       <div>
                          <h2 className="text-2xl font-black text-[#0F172A] tracking-tighter">Student Submissions</h2>
@@ -2281,7 +2285,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       </div>
                    </div>
                    <button onClick={() => setIsSubmissionsModalOpen(false)} className="p-4 bg-slate-50 rounded-2xl text-slate-300 hover:text-rose-500 transition-all">
-                      <X size={24} />
+                      <X size={24}/>
                    </button>
                 </div>
 
@@ -2303,7 +2307,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                     <div className="flex items-center gap-4">
                                        <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-inner flex items-center justify-center font-black text-xs text-slate-400 uppercase overflow-hidden shrink-0">
                                           {sub.v2_profiles?.avatar_url ? (
-                                             <img src={sub.v2_profiles.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                             <img src={sub.v2_profiles.avatar_url} alt="Profile" className="w-full h-full object-cover"/>
                                           ) : (
                                              <span className="text-slate-300">{sub.v2_profiles?.full_name?.charAt(0) || 'S'}</span>
                                           )}
@@ -2322,7 +2326,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                         onClick={() => handlePreviewSub(sub)}
                                         className="h-12 px-6 rounded-2xl bg-blue-600 text-white font-black text-[10px] uppercase flex items-center gap-2 hover:bg-slate-900 transition-all"
                                       >
-                                         Preview Link <Download size={14} />
+                                         Preview Link <Download size={14}/>
                                       </button>
                                    )}
                                 </div>
@@ -2334,14 +2338,14 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                        <div className="text-4xl font-black text-emerald-500 tracking-tighter group-hover:text-amber-500 transition-colors leading-none">{sub.score}</div>
                                     </div>
                                     <div className="px-5 py-2.5 rounded-xl bg-blue-50 text-blue-600 text-[10px] font-black uppercase flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0 shadow-sm border border-blue-100">
-                                       Inspect Quiz <ArrowRight size={12} />
+                                       Inspect Quiz <ArrowRight size={12}/>
                                     </div>
                                  </div>
                               ) : (
                                 <div className="space-y-8">
                                    {viewingCurriculum?.type === 'challenge' && (
                                       <div className="p-8 rounded-[36px] bg-blue-50/50 border border-blue-100 space-y-6">
-                                         <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2"><Sparkles size={14} /> Group Criterion Breakdown</p>
+                                         <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2"><Sparkles size={14}/> Group Criterion Breakdown</p>
                                          <div className="grid grid-cols-2 gap-6">
                                             {['Isi Konten', 'Struktur Strategi', 'Visual Design', 'Eksekusi'].map(criterion => {
                                                const currentScores = (sub.criteria_scores || {}) as any;
@@ -2353,11 +2357,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                                         defaultValue={currentScores[criterion] || 0}
                                                         onChange={(e) => {
                                                            const newScores = { ...((sub.criteria_scores as any) || {}), [criterion]: parseInt(e.target.value) || 0 };
-                                                            const avg = Math.round(Object.values(newScores).reduce((a: number, b: unknown) => a + (b as number), 0) / 4);
+                                                            const avg = Math.round(Object.values(newScores).reduce((a: number, b: unknown) => a + (b as number), 0)/4);
                                                            setSubmissionsData(prev => prev.map(s => s.id === sub.id ? { ...s, grade: avg, criteria_scores: newScores } : s));
                                                         }}
                                                         className="w-full h-12 rounded-2xl bg-white border border-slate-100 px-6 font-black text-sm text-blue-600"
-                                                     />
+                                                    />
                                                   </div>
                                                )
                                             })}
@@ -2391,7 +2395,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                                }}
                                                placeholder="85"
                                                className="w-full h-16 rounded-3xl bg-white border border-slate-200 px-8 text-2xl font-black text-blue-600 focus:border-blue-500 focus:outline-none transition-all placeholder:text-slate-200"
-                                            />
+                                           />
                                          </div>
                                       )}
                                       <div className={`${viewingCurriculum?.type === 'challenge' ? 'col-span-2' : ''} space-y-2`}>
@@ -2410,7 +2414,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                          }}
                                          placeholder="Tambahkan catatan untuk siswa di sini..."
                                          className="w-full h-32 rounded-3xl bg-white border border-slate-200 p-6 text-sm font-bold focus:border-blue-500 focus:outline-none transition-all placeholder:text-slate-200"
-                                      />
+                                     />
                                    </div>
                                    
                                    {viewingCurriculum?.type !== 'challenge' && (
@@ -2433,7 +2437,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                    ) : (
                       <div className="p-40 text-center space-y-6">
                          <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto text-slate-200">
-                            <Clock size={40} />
+                            <Clock size={40}/>
                          </div>
                          <div>
                             <p className="text-lg font-black text-slate-300">No submissions yet.</p>
@@ -2457,11 +2461,11 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                exit={{ opacity: 0, scale: 0.8, y: 100 }}
                className="w-full max-w-md bg-white rounded-[56px] shadow-3xl overflow-hidden text-center relative p-12 space-y-8"
              >
-                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600" />
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600"/>
                 
                 <div className="space-y-4">
                    <div className={`w-24 h-24 rounded-[36px] mx-auto flex items-center justify-center shadow-2xl ${lastQuizResult >= 80 ? 'bg-emerald-500 text-white shadow-emerald-500/30' : lastQuizResult >= 60 ? 'bg-blue-600 text-white shadow-blue-600/30' : 'bg-rose-500 text-white shadow-rose-500/30'}`}>
-                      {lastQuizResult >= 80 ? <Award size={48} /> : lastQuizResult >= 60 ? <Check size={48} strokeWidth={3} /> : <Zap size={48} />}
+                      {lastQuizResult >= 80 ? <Award size={48}/> : lastQuizResult >= 60 ? <Check size={48} strokeWidth={3}/> : <Zap size={48}/>}
                    </div>
                    <div className="space-y-1">
                       <h3 className="text-3xl font-black text-[#0F172A] tracking-tighter">
@@ -2508,7 +2512,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                 <div className="p-10 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
                    <div className="flex items-center gap-6">
                       <div className="w-16 h-16 rounded-3xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/20">
-                         <Users size={32} />
+                         <Users size={32}/>
                       </div>
                       <div>
                          <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Challenge Grouping</h3>
@@ -2520,13 +2524,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                         onClick={() => handleShuffleGroups(5)}
                         className="px-8 py-3 bg-blue-50 text-blue-600 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-blue-100 hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2"
                       >
-                         <Zap size={14} /> Magic Shuffle (5 Teams)
+                         <Zap size={14}/> Magic Shuffle (5 Teams)
                       </button>
                       <button 
                         onClick={() => setIsGroupModalOpen(false)}
                         className="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all shadow-sm"
                       >
-                         <X size={20} />
+                         <X size={20}/>
                       </button>
                    </div>
                 </div>
@@ -2548,14 +2552,14 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                              placeholder="Group Name"
                                              className="w-full text-xs font-black uppercase tracking-widest text-[#0F172A] border-b-2 border-indigo-200 bg-indigo-50/30 px-3 py-1.5 outline-none rounded-t-xl focus:bg-indigo-50 transition-all"
                                              autoFocus
-                                           />
+                                          />
                                            <input 
                                              type="text" 
                                              value={editGroupLink} 
                                              onChange={(e) => setEditGroupLink(e.target.value)} 
                                              placeholder="WhatsApp Group Link (https://chat.whatsapp.com/...)"
                                              className="w-full text-[10px] font-medium text-blue-600 border-b-2 border-slate-200 bg-slate-50/50 px-3 py-1.5 outline-none rounded-t-xl focus:bg-slate-50 transition-all"
-                                           />
+                                          />
                                            <div className="flex gap-2 pt-2">
                                               <button onClick={() => handleSaveGroupConfig(gn)} className="flex-1 py-2 bg-indigo-600 text-white text-[10px] font-black tracking-widest uppercase rounded-xl shadow-lg shadow-indigo-600/20 hover:scale-105 active:scale-95 transition-all">SAVE</button>
                                               <button onClick={() => setEditingGroup(null)} className="flex-1 py-2 bg-slate-100 text-slate-500 text-[10px] font-black tracking-widest uppercase rounded-xl hover:bg-slate-200 transition-all">CANCEL</button>
@@ -2568,7 +2572,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                               onClick={() => gn !== 'Unassigned' && (setEditingGroup(gn), setEditGroupName(gn), setEditGroupLink(students.find(s => s.group_name === gn)?.group_wa_link || ''))}
                                            >
                                               {gn}
-                                              {gn !== 'Unassigned' && <Edit size={14} className="opacity-0 group-hover:opacity-100 transition-all hover:text-indigo-600 text-slate-300" />}
+                                              {gn !== 'Unassigned' && <Edit size={14} className="opacity-0 group-hover:opacity-100 transition-all hover:text-indigo-600 text-slate-300"/>}
                                            </h4>
                                            <div className="flex flex-wrap gap-2 items-center mt-1">
                                                {students.find(s => s.group_name === gn)?.group_wa_link ? (
@@ -2591,7 +2595,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                      <div key={s.id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm group">
                                         <div className="flex items-center gap-3">
                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-[10px] ${s.is_leader ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20 animate-pulse' : 'bg-slate-50 text-slate-400'}`}>
-                                              {s.is_leader ? <Star size={12} fill="white" /> : s.v2_profiles?.full_name?.charAt(0)}
+                                              {s.is_leader ? <Star size={12} fill="white"/> : s.v2_profiles?.full_name?.charAt(0)}
                                            </div>
                                            <span className="text-xs font-bold text-slate-700">{s.v2_profiles?.full_name}</span>
                                         </div>
@@ -2599,7 +2603,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                           onClick={() => handleToggleLeader(s.id, !!s.is_leader)}
                                           className={`p-2 rounded-lg transition-all ${s.is_leader ? 'text-amber-500 bg-amber-50' : 'text-slate-200 hover:text-amber-500 hover:bg-amber-50'}`}
                                         >
-                                           <Award size={14} />
+                                           <Award size={14}/>
                                         </button>
                                      </div>
                                   ))}
@@ -2627,7 +2631,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                 <div className="p-10 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/50">
                    <div className="flex items-center gap-6">
                       <div className="w-16 h-16 rounded-3xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                         <CalendarCheck size={32} />
+                         <CalendarCheck size={32}/>
                       </div>
                       <div>
                          <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Live Sessions</h3>
@@ -2638,7 +2642,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                      onClick={() => setIsScheduleModalOpen(false)}
                      className="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition-all shadow-sm"
                    >
-                      <X size={20} />
+                      <X size={20}/>
                    </button>
                 </div>
 
@@ -2652,27 +2656,27 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                             value={scheduleForm.title}
                             onChange={e => setScheduleForm({...scheduleForm, title: e.target.value})}
                             className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus:border-emerald-500 outline-none"
-                         />
+                        />
                          <div className="grid grid-cols-2 gap-4">
                             <input 
                                type="date"
                                value={scheduleForm.date}
                                onChange={e => setScheduleForm({...scheduleForm, date: e.target.value})}
                                className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-xs font-bold focus:border-emerald-500 outline-none text-slate-500"
-                            />
+                           />
                             <input 
                                type="time" 
                                value={scheduleForm.time}
                                onChange={e => setScheduleForm({...scheduleForm, time: e.target.value})}
                                className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-xs font-bold focus:border-emerald-500 outline-none text-slate-500 cursor-text"
-                            />
+                           />
                          </div>
                          <input 
-                            placeholder="Meeting Link (Zoom / GMeet)" 
+                            placeholder="Meeting Link (Zoom/GMeet)" 
                             value={scheduleForm.meet_link}
                             onChange={e => setScheduleForm({...scheduleForm, meet_link: e.target.value})}
                             className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-sm font-bold focus:border-emerald-500 outline-none"
-                         />
+                        />
                          <Button 
                             onClick={handleSaveSchedule}
                             disabled={isLoading}
@@ -2689,7 +2693,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       <div className="space-y-4">
                          {(batch?.schedules || []).length === 0 ? (
                             <div className="text-center p-10 opacity-30">
-                               <CalendarDays size={48} className="mx-auto mb-4" />
+                               <CalendarDays size={48} className="mx-auto mb-4"/>
                                <p className="font-black">No sessions scheduled.</p>
                             </div>
                          ) : (
@@ -2703,7 +2707,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                      <div>
                                         <h5 className="font-black text-slate-800 text-sm">{sch.title}</h5>
                                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2 mt-1">
-                                           <Clock size={10} /> {sch.time}
+                                           <Clock size={10}/> {sch.time}
                                            {sch.meet_link && <span className="text-emerald-500 bg-emerald-50 px-2 rounded ml-2">Has Link</span>}
                                         </p>
                                      </div>
@@ -2712,7 +2716,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                      onClick={() => handleDeleteSchedule(sch.id)}
                                      className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
                                   >
-                                     <Trash2 size={14} />
+                                     <Trash2 size={14}/>
                                   </button>
                                </div>
                             ))
@@ -2731,23 +2735,23 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         if (!mem) return null;
         return (
           <>
-            <div className="fixed inset-0 z-[150]" onClick={() => setOpenActionMenuId(null)} />
+            <div className="fixed inset-0 z-[150]" onClick={() => setOpenActionMenuId(null)}/>
             <div
               className="fixed z-[151] w-56 bg-white border border-slate-100 rounded-3xl shadow-2xl shadow-slate-300/40 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
               style={{ top: menuPos.top, right: menuPos.right }}
             >
               <button onClick={() => { setStudentActionTarget({ ...mem, mode: 'cert' }); setCertUrl(mem.certificate_url || ''); setOpenActionMenuId(null); }} className="w-full flex items-center gap-3 px-5 py-4 text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-600 transition-all text-left">
-                <Medal size={15} /> Upload Sertifikat
+                <Medal size={15}/> Upload Sertifikat
               </button>
               <button onClick={() => { setStudentActionTarget({ ...mem, mode: 'name' }); setEditStudentName(mem.v2_profiles?.full_name || ''); setOpenActionMenuId(null); }} className="w-full flex items-center gap-3 px-5 py-4 text-xs font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-600 transition-all text-left">
-                <Edit size={15} /> Edit Nama
+                <Edit size={15}/> Edit Nama
               </button>
               <button onClick={() => { setStudentActionTarget({ ...mem, mode: 'group' }); setMoveGroupTarget(mem.group_name || ''); setOpenActionMenuId(null); }} className="w-full flex items-center gap-3 px-5 py-4 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all text-left">
-                <ShuffleIcon size={15} /> Pindah / Hapus Grup
+                <ShuffleIcon size={15}/> Pindah/Hapus Grup
               </button>
-              <div className="border-t border-slate-100" />
+              <div className="border-t border-slate-100"/>
               <button onClick={() => { handleRemoveStudent(mem); }} className="w-full flex items-center gap-3 px-5 py-4 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all text-left">
-                <UserX size={15} /> Hapus dari Batch
+                <UserX size={15}/> Hapus dari Batch
               </button>
             </div>
           </>
@@ -2768,7 +2772,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
               {studentActionTarget.mode === 'cert' && (
                 <div className="p-10 space-y-8">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-3xl bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0"><Medal size={28} /></div>
+                    <div className="w-14 h-14 rounded-3xl bg-amber-50 text-amber-500 flex items-center justify-center flex-shrink-0"><Medal size={28}/></div>
                     <div>
                       <h3 className="text-xl font-black text-[#0F172A]">Upload Sertifikat</h3>
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{studentActionTarget.v2_profiles?.full_name}</p>
@@ -2776,7 +2780,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                   </div>
                   <div className="space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">URL Sertifikat (Google Drive, PDF, dll)</label>
-                    <input value={certUrl} onChange={e => setCertUrl(e.target.value)} placeholder="https://drive.google.com/file/..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-amber-400 outline-none" />
+                    <input value={certUrl} onChange={e => setCertUrl(e.target.value)} placeholder="https://drive.google.com/file/..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-amber-400 outline-none"/>
                     {certUrl && <p className="text-[10px] text-emerald-600 font-bold">✓ URL terdeteksi</p>}
                     {studentActionTarget.certificate_url && !certUrl && <p className="text-[10px] text-rose-500 font-bold">Kosongkan dan simpan untuk menghapus sertifikat.</p>}
                   </div>
@@ -2790,7 +2794,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
               {studentActionTarget.mode === 'name' && (
                 <div className="p-10 space-y-8">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0"><Edit size={28} /></div>
+                    <div className="w-14 h-14 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0"><Edit size={28}/></div>
                     <div>
                       <h3 className="text-xl font-black text-[#0F172A]">Edit Nama Student</h3>
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">ID: {studentActionTarget.id?.slice(0,8)}</p>
@@ -2798,7 +2802,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                   </div>
                   <div className="space-y-3">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Nama Lengkap</label>
-                    <input value={editStudentName} onChange={e => setEditStudentName(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-blue-400 outline-none" />
+                    <input value={editStudentName} onChange={e => setEditStudentName(e.target.value)} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-blue-400 outline-none"/>
                   </div>
                   <div className="flex gap-3">
                     <Button onClick={handleUpdateStudentName} disabled={isLoading} className="flex-1 h-14 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-500/20 hover:bg-blue-700">{isLoading ? 'Menyimpan...' : 'Simpan Nama'}</Button>
@@ -2812,7 +2816,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                 return (
                   <div className="p-10 space-y-8">
                     <div className="flex items-center gap-5">
-                      <div className="w-14 h-14 rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0"><ShuffleIcon size={28} /></div>
+                      <div className="w-14 h-14 rounded-3xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0"><ShuffleIcon size={28}/></div>
                       <div>
                         <h3 className="text-xl font-black text-[#0F172A]">Pindah Grup</h3>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{studentActionTarget.v2_profiles?.full_name}</p>
@@ -2844,7 +2848,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         {isDetailModalOpen && selectedStudentDetail && (() => {
            const mem = selectedStudentDetail;
            
-           // Analytics Component Reuse
+          //Analytics Component Reuse
            const tasks = curriculum.filter((c: any) => c.type !== 'material' && c.is_published !== false);
            const studentSubmissions = allSubmissions.filter((s: any) => s.profile_id === mem.profile_id);
            
@@ -2867,13 +2871,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
               else if (t.type === 'individual_assignment') { totalAssign += actualScore; countAssign++; }
            });
 
-           const avgPT = countPT > 0 ? totalPT / countPT : 0;
-           const avgAssign = countAssign > 0 ? totalAssign / countAssign : 0;
-           const avgGC = countGC > 0 ? totalGC / countGC : 0;
+           const avgPT = countPT > 0 ? totalPT/countPT : 0;
+           const avgAssign = countAssign > 0 ? totalAssign/countAssign : 0;
+           const avgGC = countGC > 0 ? totalGC/countGC : 0;
            const attendCount = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
            const modulesCount = curriculum.filter((c: any) => c.type === 'material').length;
            const totalSessions = modulesCount + 2; 
-           const attendScore = totalSessions > 0 ? (attendCount / totalSessions) * 100 : 0;
+           const attendScore = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
            const plusPointsTotal = Object.values(mem.plus_points || {}).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
            const finalKeaktifan = Math.min(100, attendScore + plusPointsTotal);
 
@@ -2882,7 +2886,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
               (avgAssign * gradingConfig.assignment_weight) +
               (avgGC * gradingConfig.challenge_weight) +
               (finalKeaktifan * gradingConfig.attendance_weight)
-           ) / (gradingConfig.post_test_weight + gradingConfig.assignment_weight + gradingConfig.challenge_weight + gradingConfig.attendance_weight);
+           )/(gradingConfig.post_test_weight + gradingConfig.assignment_weight + gradingConfig.challenge_weight + gradingConfig.attendance_weight);
 
            const getGrading = (avg: number) => {
               if (avg >= 90) return { label: 'A+ (Superstar)', color: 'text-purple-600 bg-purple-50' };
@@ -2907,18 +2911,18 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                   onClick={() => setIsDetailModalOpen(false)}
                   className="absolute top-6 right-6 w-12 h-12 rounded-2xl bg-slate-100/50 hover:bg-slate-200 text-slate-400 hover:text-slate-900 transition-all flex items-center justify-center z-[310]"
                 >
-                  <X size={20} />
+                  <X size={20}/>
                 </button>
 
                 <div className="grid grid-cols-1 md:grid-cols-2">
                   <div className={`p-10 relative overflow-hidden bg-gradient-to-br ${batch?.name?.toLowerCase()?.includes('ruang sosmed') ? 'from-sky-600 to-blue-800' : 'from-indigo-600 to-blue-800'}`}>
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[60px] rounded-full translate-x-1/2 -translate-y-1/2" />
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[60px] rounded-full translate-x-1/2 -translate-y-1/2"/>
                     <IdCardContent 
                        batch={batch}
                        currentUser={mem.v2_profiles}
                        me={mem}
                        resolvedParams={resolvedParams}
-                    />
+                   />
                   </div>
 
                   <div className="p-10 space-y-10 bg-white">
@@ -2939,7 +2943,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                     </div>
 
                     <div className={`p-8 rounded-[36px] ${grade.color} border border-current flex flex-col items-center justify-center text-center gap-2`}>
-                      <Award size={32} />
+                      <Award size={32}/>
                       <div>
                         <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Achievement Grade</p>
                         <h4 className="text-xl font-black">{grade.label}</h4>
@@ -2948,7 +2952,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
                     <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm" />
+                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"/>
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Authorized Student</span>
                       </div>
                       <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full uppercase tracking-tighter">Cohort {resolvedParams.id.substring(0,4)}</span>
@@ -2995,10 +2999,10 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                          <h2 className="text-2xl font-black text-[#0F172A] tracking-tighter pt-2">
                            {activeQuizReview.v2_profiles?.full_name || 'Student'}
                          </h2>
-                         <p className="text-xs font-bold text-slate-400">Score Achieved: <span className={activeQuizReview.score >= 80 ? "text-emerald-500" : activeQuizReview.score >= 60 ? "text-amber-500" : "text-rose-500"}>{activeQuizReview.score}</span> / 100</p>
+                         <p className="text-xs font-bold text-slate-400">Score Achieved: <span className={activeQuizReview.score >= 80 ? "text-emerald-500" : activeQuizReview.score >= 60 ? "text-amber-500" : "text-rose-500"}>{activeQuizReview.score}</span>/100</p>
                       </div>
                       <button onClick={() => setIsQuizReviewModalOpen(false)} className="p-3 bg-white border border-slate-100 rounded-full hover:bg-rose-50 hover:text-rose-500 transition-all shadow-sm">
-                         <X size={20} />
+                         <X size={20}/>
                       </button>
                    </div>
 
@@ -3040,7 +3044,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       ) : (
                          <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-[24px] flex items-center gap-4">
                             <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-                               <Award fill="currentColor" size={24} />
+                               <Award fill="currentColor" size={24}/>
                             </div>
                             <div>
                                <h4 className="text-base font-black text-emerald-700">Perfect Score!</h4>
@@ -3053,7 +3057,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       <div className="space-y-4">
                          <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 text-amber-500 flex items-center justify-center shrink-0 border border-amber-100 shadow-sm">
-                               <MessageSquare size={16} fill="currentColor" />
+                               <MessageSquare size={16} fill="currentColor"/>
                             </div>
                             <div>
                                <h3 className="text-lg font-black text-slate-800 tracking-tight">Class Feedback</h3>
