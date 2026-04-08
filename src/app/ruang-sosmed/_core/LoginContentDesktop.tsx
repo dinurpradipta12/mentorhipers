@@ -42,13 +42,14 @@ export default function LoginContentDesktop() {
       setError("");
 
       try {
-        //INTERCEPT FOR USERNAME/ADMIN LOGIN
+        // ENSURE CLEAN STATE: Clear any existing session before trying to sign in
+        await supabase.auth.signOut();
+        
+         //INTERCEPT FOR USERNAME/ADMIN LOGIN
          let loginIdentifier = email;
          
-        //1. ARUNIKA ADMIN MAPPING (Mapping to Synthetic Local Email)
         //1. ARUNIKA ADMIN BYPASS (LOCAL ONLY)
          if (email === "arunika" && password === "ar4925") {
-            await supabase.auth.signOut();
             localStorage.setItem("v2_legacy_admin", "true");
             router.push('/ruang-sosmed');
             return;

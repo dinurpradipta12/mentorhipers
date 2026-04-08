@@ -97,3 +97,34 @@ export async function updateWorkspaceSchedulesAction(workspaceId: string, schedu
       return { success: false, error: error.message };
    }
 }
+
+export async function createNotificationAction(data: { 
+  profileId: string, 
+  workspaceId?: string, 
+  title: string, 
+  message: string, 
+  type: 'material' | 'assignment' | 'grade' | 'feedback' | 'announcement',
+  link?: string 
+}) {
+  if (!supabaseAdminV2) {
+    return { success: false, error: 'SUPABASE_V2_SERVICE_ROLE_KEY is missing.' };
+  }
+
+  try {
+    const { error } = await supabaseAdminV2
+      .from('v2_notifications')
+      .insert({
+        profile_id: data.profileId,
+        workspace_id: data.workspaceId,
+        title: data.title,
+        message: data.message,
+        type: data.type,
+        link: data.link
+      });
+
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
+}

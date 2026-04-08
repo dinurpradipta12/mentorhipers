@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase, supabaseV2 } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import AvatarCreator from "./_core/AvatarCreator";
+import NotificationBell from "./_core/NotificationBell";
 
 export default function RuangSosmedLayoutContent({
   children,
@@ -134,13 +135,16 @@ export default function RuangSosmedLayoutContent({
                   <p className="text-[11px] font-black leading-none text-slate-800">{mentorProfile?.name || "Premium Mentor"}</p>
                   <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mt-1">Online</p>
                </div>
-               <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden shadow-inner flex items-center justify-center text-slate-300">
-                  {mentorProfile?.avatar ? (
-                    <img src={mentorProfile.avatar} className="w-full h-full object-cover" alt="Avatar"/>
-                  ) : (
-                    <User size={20}/>
-                  )}
-               </div>
+                <div className="flex items-center gap-4">
+                  {userProfile && <NotificationBell profileId={userProfile.id} />}
+                  <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 p-1 shadow-sm">
+                    <img
+                      src={userProfile?.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"}
+                      className="w-full h-full rounded-xl object-contain"
+                      alt="Avatar"
+                    />
+                  </div>
+                </div>
             </div>
           </div>
         </nav>

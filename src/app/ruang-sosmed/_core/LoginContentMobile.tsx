@@ -33,15 +33,19 @@ export default function LoginContentMobile() {
       setLoading(true);
       setError("");
 
-      if (email === "arunika" && password === "ar4925") {
-         await supabase.auth.signOut();
-         localStorage.setItem("v2_legacy_admin", "true");
-         router.push('/ruang-sosmed');
-         return;
-      }
+       //1. ARUNIKA ADMIN BYPASS
+       if (email === "arunika" && password === "ar4925") {
+          await supabase.auth.signOut();
+          localStorage.setItem("v2_legacy_admin", "true");
+          router.push('/ruang-sosmed');
+          return;
+       }
 
-      try {
-         let loginIdentifier = email;
+       try {
+          // ENSURE CLEAN STATE
+          await supabase.auth.signOut();
+          
+          let loginIdentifier = email;
          if (email && !email.includes('@')) {
             loginIdentifier = `${email.toLowerCase().trim()}@ruangsosmed.local`;
          }
