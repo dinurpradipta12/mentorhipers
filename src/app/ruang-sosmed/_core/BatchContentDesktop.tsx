@@ -700,10 +700,15 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      setViewingCurriculum(c);
      setIsLoading(true);
      try {
-        const table = c.type === 'post_test' ? 'v2_quiz_results' : 'v2_submissions';
+        const isQuiz = c.type === 'post_test';
+        const table = isQuiz ? 'v2_quiz_results' : 'v2_submissions';
+        const selectQuery = isQuiz
+           ? '*, v2_profiles(full_name, avatar_url)'
+           : '*, v2_profiles!profile_id(full_name, avatar_url)';
+           
         const { data, error } = await supabase
            .from(table)
-           .select('*, v2_profiles(full_name, avatar_url)')
+           .select(selectQuery)
            .eq('curriculum_id', c.id)
            .order('created_at', { ascending: false });
         
