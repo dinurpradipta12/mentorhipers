@@ -443,7 +443,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
 
      setIsLoading(true);
      try {
-        const { error } = await supabase.from('v2_submissions').insert([
+        const { data: mainSubmission, error } = await supabase.from('v2_submissions').insert([
            {
               curriculum_id: activeTask.id,
               profile_id: currentUser.id,
@@ -451,8 +451,40 @@ export default function PortalContentDesktop({ id }: { id: string }) {
               file_link: submitForm.file_link,
               status: 'pending'
            }
-        ]);
+        ]).select().single();
         if (error) throw error;
+        
+        // ==========================================
+        // AUTO-CLONING LOGIC FOR GROUP TASKS
+        // ==========================================
+        if (activeTask.type === 'group_assignment' || activeTask.assignment_group_id) {
+           const myMembership = students.find((s: any) => s.profile_id === currentUser.id);
+           if (myMembership) {
+              let membersToClone = [];
+              if (activeTask.assignment_group_id) {
+                  // Custom Assignment Group (New Feature)
+                  const { data } = await supabase.from('v2_assignment_group_members').select('profile_id').eq('group_id', activeTask.assignment_group_id);
+                  if (data) membersToClone = data.map(d => d.profile_id).filter(id => id !== currentUser.id);
+              } else if (myMembership.group_name) {
+                  // Main Batch Group (Existing Feature)
+                  membersToClone = students.filter((s:any) => s.group_name === myMembership.group_name && s.profile_id !== currentUser.id).map((s:any) => s.profile_id);
+              }
+              
+              if (membersToClone.length > 0) {
+                 const clonePayload = membersToClone.map((id) => ({
+                    curriculum_id: activeTask.id,
+                    profile_id: id,
+                    workspace_id: resolvedParams.id,
+                    file_link: submitForm.file_link,
+                    status: 'pending',
+                    is_cloned: true,
+                    cloned_from_submission_id: mainSubmission.id,
+                    submitted_by_profile_id: currentUser.id
+                 }));
+                 await supabase.from('v2_submissions').insert(clonePayload);
+              }
+           }
+        }
         
         setIsSubmitModalOpen(false);
         if (currentUser?.id) fetchMySubmissions(currentUser.id);

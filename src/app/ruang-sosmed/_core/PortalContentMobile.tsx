@@ -400,17 +400,47 @@ export default function PortalContentMobile({ id }: { id: string }) {
      if (!submitForm.file_link) { alert("Sediakan link tugas!"); return; }
      setIsLoading(true);
      try {
-        const { error } = await supabase.from('v2_submissions').insert([{
+        const { data: mainSubmission, error } = await supabase.from('v2_submissions').insert([{
            curriculum_id: activeTask.id,
            profile_id: currentUser.id,
            workspace_id: id,
            file_link: submitForm.file_link,
            status: 'pending'
-        }]);
+        }]).select().single();
         if (error) throw error;
+        
+        // ==========================================
+        // AUTO-CLONING LOGIC FOR GROUP TASKS
+        // ==========================================
+        if (activeTask.type === 'group_assignment' || activeTask.assignment_group_id) {
+           if (membership) {
+              let membersToClone = [];
+              if (activeTask.assignment_group_id) {
+                  const { data } = await supabase.from('v2_assignment_group_members').select('profile_id').eq('group_id', activeTask.assignment_group_id);
+                  if (data) membersToClone = data.map((d:any) => d.profile_id).filter((pid:any) => pid !== currentUser.id);
+              } else if (membership.group_name || membership.group) {
+                  membersToClone = groupMembers.filter((m:any) => m.profile_id !== currentUser.id).map((m:any) => m.profile_id);
+              }
+              
+              if (membersToClone.length > 0) {
+                 const clonePayload = membersToClone.map((pid:any) => ({
+                    curriculum_id: activeTask.id,
+                    profile_id: pid,
+                    workspace_id: id,
+                    file_link: submitForm.file_link,
+                    status: 'pending',
+                    is_cloned: true,
+                    cloned_from_submission_id: mainSubmission.id,
+                    submitted_by_profile_id: currentUser.id
+                 }));
+                 await supabase.from('v2_submissions').insert(clonePayload);
+              }
+           }
+        }
+        
         setIsSubmitModalOpen(false);
         initMobile();
-        alert("Berhasil dikirim! 🛸✨");
+        alert("Berhasil dikirim! Tugas grup telah otomatis dibagikan ke anggota tim. 🛸✨");
      } catch (err: any) { alert(err.message); }
      finally { setIsLoading(false); }
   };

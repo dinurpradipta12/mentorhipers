@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { RefreshCw, Zap } from "lucide-react";
+import { Leaf } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 
 export const AppUpdateNotifier = () => {
   const [hasUpdate, setHasUpdate] = useState(false);
+  const [newVersion, setNewVersion] = useState("1.0.0");
 
   useEffect(() => {
     let currentVersion = "";
@@ -26,6 +27,7 @@ export const AppUpdateNotifier = () => {
         { event: 'UPDATE', schema: 'public', table: 'app_settings' },
         (payload: { new: { app_version?: string } }) => {
           if (currentVersion && payload.new.app_version && payload.new.app_version !== currentVersion) {
+            setNewVersion(payload.new.app_version);
             setHasUpdate(true);
           }
         }
@@ -41,40 +43,34 @@ export const AppUpdateNotifier = () => {
     <AnimatePresence>
       {hasUpdate && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 50 }}
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 50 }}
-          className="fixed bottom-12 right-12 z-[10000] max-w-[340px] w-full"
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ type: "spring", bounce: 0.4, duration: 0.6 }}
+          className="fixed bottom-6 right-6 z-[10000] w-[320px]"
         >
-          <div className="bg-[#4880FF]/90 backdrop-blur-2xl border border-white/20 shadow-[0_32px_128px_-16px_rgba(72,128,255,0.4)] rounded-[2.5rem] p-8 overflow-hidden group relative">
-            {/* Background Accent */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 blur-[40px] rounded-full -mr-16 -mt-16 group-hover:bg-white/30 transition-all duration-700" />
+          {/* Dark Mode Minimalist UI */}
+          <div className="bg-[#2A2A2A] border border-[#3A3A3A] shadow-2xl rounded-[20px] p-8 flex flex-col items-center text-center">
             
-            <div className="relative z-10 text-left">
-              <div className="flex items-center gap-5 mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-white shadow-lg">
-                  <Zap size={24} className="fill-white animate-pulse" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-black text-white leading-tight uppercase tracking-widest">Aplikasi <span className="text-white/80 italic">Update</span></h4>
-                  <p className="text-[10px] font-bold text-white/60 mt-1 uppercase tracking-widest">Versi Baru Tersedia</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <p className="text-[11px] leading-relaxed text-white font-medium">
-                  Ada perbaikan sistem oleh Mas Ar untuk performa yang lebih stabil. Silakan segarkan aplikasi sekarang.
-                </p>
-                
-                <button 
-                  onClick={() => window.location.reload()} 
-                  className="w-full h-12 rounded-2xl bg-white text-[#4880FF] font-black text-[10px] hover:bg-slate-50 transition-all uppercase tracking-[0.2em] flex items-center justify-center gap-2 active:scale-95 shadow-xl shadow-[#4880FF]/20"
-                >
-                  <RefreshCw size={14} />
-                  Segarkan Sekarang
-                </button>
-              </div>
+            <div className="mb-4 text-white/90">
+               <Leaf strokeWidth={1.5} size={48} className="rotate-0 text-white" />
             </div>
+
+            <h3 className="text-white text-[18px] font-semibold mb-1">
+              Updated to {newVersion}
+            </h3>
+            
+            <p className="text-[#9A9A9A] text-[15px] mb-6">
+              Relaunch to apply
+            </p>
+
+            <button 
+              onClick={() => window.location.reload()} 
+              className="w-full py-3 px-4 rounded-xl border border-[#444444] text-white bg-transparent hover:bg-[#333333] transition-colors font-medium text-[15px]"
+            >
+              Relaunch
+            </button>
+            
           </div>
         </motion.div>
       )}

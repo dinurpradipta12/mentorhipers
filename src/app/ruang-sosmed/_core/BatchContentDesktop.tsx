@@ -163,6 +163,12 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const [editGroupLink, setEditGroupLink] = useState("");
   const [submissionsData, setSubmissionsData] = useState<any[]>([]); 
   const [allSubmissions, setAllSubmissions] = useState<any[]>([]); 
+  
+  // Custom Assignment Groups State
+  const [customGroups, setCustomGroups] = useState<any[]>([]);
+  const [isCustomGroupModalOpen, setIsCustomGroupModalOpen] = useState(false);
+  const [customGroupForm, setCustomGroupForm] = useState({ name: '', description: '', members: [] as string[] });
+
   const [gradingConfig, setGradingConfig] = useState<any>({
      post_test_weight: 40,
      assignment_weight: 40,
@@ -207,6 +213,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         await fetchCurriculum();
         await fetchStudents();
         await fetchAllSubmissions();
+        await fetchCustomGroups();
         console.log("✅ Initialization Complete.");
       } catch (err: any) {
         console.error("❌ Overall Page Initialization Failed:", err.message);
@@ -746,28 +753,56 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         setSubmissionsData(prev => prev.map(s => s.id === subId ? { ...s, grade: gradeNum, criteria_scores: criteria, status: 'completed' } : s));
         fetchAllSubmissions();//Update global state
 
-       //CASCADING LOGIC FOR GROUP CHALLENGES
-       //... (Keep existing logic)
+        // ==========================================
+        // AUTO-GRADING FOR CLONED ALL GROUP MEMBERS
+        // ==========================================
         const currentSub = submissionsData.find(s => s.id === subId);
         const task = curriculum.find(t => t.id === currentSub?.curriculum_id);
         
-        if (task?.type === 'challenge') {
-           const studentMembership = students.find(s => s.profile_id === currentSub?.profile_id);
-           if (studentMembership?.is_leader && studentMembership.group_name) {
-              const members = students.filter(s => s.group_name === studentMembership.group_name && !s.is_leader);
-              for (const m of members) {
-                 const attendanceCount = Object.values(m.attendance || {}).filter(v => v === 'P').length;
-                 if (attendanceCount >= 10) { 
-                    await supabase.from('v2_submissions').upsert({
-                       curriculum_id: task.id,
-                       profile_id: m.profile_id,
-                       workspace_id: resolvedParams.id,
-                       grade: gradeNum,
-                       status: 'completed',
-                       mentor_feedback: `Auto-graded from Group Leader (${studentMembership.group_name})`
-                    }, { onConflict: 'curriculum_id,profile_id' });
-                 }
+        if (task?.grading_mode !== 'manual' && (task?.type === 'challenge' || task?.type === 'group_assignment' || task?.assignment_group_id)) {
+           // Cari semua submission hasil clone yang mereferensikan submission ketua
+           const clonedSubs = submissionsData.filter(s => s.cloned_from_submission_id === subId || (s.is_cloned && s.submitted_by_profile_id === currentSub?.profile_id && s.curriculum_id === task.id));
+           
+           if (clonedSubs.length > 0) {
+              const updates = clonedSubs.map(cSub => ({
+                  id: cSub.id,
+                  grade: gradeNum,
+                  criteria_scores: criteria,
+                  status: 'completed',
+                  mentor_feedback: `[AUTO-SYNC] Nilai kelompok disinkronkan otomatis berkat ${currentSub?.v2_profiles?.full_name || 'Ketua Tim'}!`
+              }));
+              
+              for (const u of updates) {
+                 await supabase.from('v2_submissions').update({
+                    grade: u.grade,
+                    criteria_scores: u.criteria_scores,
+                    status: u.status,
+                    mentor_feedback: u.mentor_feedback
+                 }).eq('id', u.id);
               }
+              
+              // Refresh state
+              setSubmissionsData(prev => prev.map(s => {
+                 const match = updates.find(u => u.id === s.id);
+                 if (match) return { ...s, grade: match.grade, criteria_scores: match.criteria_scores, status: match.status, mentor_feedback: match.mentor_feedback };
+                 return s;
+              }));
+           } else {
+               // Fallback: Kombinasi logikal lama jika data clone tidak ditemukan tapi dia adalah leader
+               const studentMembership = students.find(s => s.profile_id === currentSub?.profile_id);
+               if (studentMembership?.is_leader && studentMembership.group_name) {
+                  const members = students.filter(s => s.group_name === studentMembership.group_name && !s.is_leader);
+                  for (const m of members) {
+                     await supabase.from('v2_submissions').upsert({
+                           curriculum_id: task.id,
+                           profile_id: m.profile_id,
+                           workspace_id: resolvedParams.id,
+                           grade: gradeNum,
+                           status: 'completed',
+                           mentor_feedback: `Auto-graded from Group Leader (${studentMembership.group_name})`
+                     }, { onConflict: 'curriculum_id,profile_id' });
+                  }
+               }
            }
         }
      } catch (err: any) {
@@ -865,6 +900,48 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const fetchBatchDetail = async () => {
     const { data } = await supabase.from('v2_workspaces').select('id, name, description, type, start_date, end_date, max_members, status, settings, schedules, created_at').eq('id', resolvedParams.id).single();
     if (data) setBatch(data);
+  };
+
+  const fetchCustomGroups = async () => {
+      try {
+          const { data, error } = await supabase.from('v2_assignment_groups').select('*, v2_assignment_group_members(profile_id)').eq('workspace_id', resolvedParams.id);
+          if (!error && data) setCustomGroups(data);
+      } catch (err) {
+          console.error("fetchCustomGroups failed", err);
+      }
+  };
+
+  const handleSaveCustomGroup = async () => {
+      if (!customGroupForm.name) { alert("Nama grup wajib diisi!"); return; }
+      setIsLoading(true);
+      try {
+          // 1. Save Group Header
+          const { data: grpData, error: grpErr } = await supabase.from('v2_assignment_groups').insert([{
+              workspace_id: resolvedParams.id,
+              name: customGroupForm.name,
+              description: customGroupForm.description
+          }]).select().single();
+          if (grpErr) throw grpErr;
+
+          // 2. Save Members
+          if (customGroupForm.members.length > 0) {
+              const membersPayload = customGroupForm.members.map(profile_id => ({
+                  group_id: grpData.id,
+                  profile_id: profile_id
+              }));
+              const { error: memErr } = await supabase.from('v2_assignment_group_members').insert(membersPayload);
+              if (memErr) throw memErr;
+          }
+
+          alert("Custom Group Assigned Successfully! 🎉");
+          setIsCustomGroupModalOpen(false);
+          setCustomGroupForm({ name: '', description: '', members: [] });
+          await fetchCustomGroups();
+      } catch (err: any) {
+          alert("Failed saving custom group: " + err.message);
+      } finally {
+          setIsLoading(false);
+      }
   };
 
   const fetchStudents = async () => {
@@ -2038,7 +2115,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            <option value="material">Video Material</option>
                            <option value="post_test">Post Test</option>
                            <option value="individual_assignment">Individual Task</option>
-                           <option value="challenge">Group Challenge</option>
+                           <option value="challenge">Group Challenge (Main Group)</option>
+                           <option value="group_assignment">Custom Group Assignment / Sub-group</option>
                         </select>
                      </div>
                      <div className="space-y-2">
@@ -2120,7 +2198,38 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            {lmsForm.is_published ? 'READY TO PUBLISH (LIVE)' : 'SAVE AS DRAFT (HIDDEN)'}
                         </button>
                      </div>
+                     {(lmsForm.type === 'challenge' || lmsForm.type === 'group_assignment') && (
+                        <div className="flex-1 space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">GRADING MATRIX</label>
+                           <button 
+                              onClick={() => setLmsForm({ ...lmsForm, grading_mode: lmsForm.grading_mode === 'manual' ? 'auto' : 'manual' })}
+                              className={`w-full h-14 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-3 border-2 ${lmsForm.grading_mode !== 'manual' ? 'bg-emerald-600 border-emerald-600 text-white shadow-xl shadow-emerald-500/20' : 'bg-slate-800 border-slate-800 text-white'}`}
+                           >
+                              {lmsForm.grading_mode !== 'manual' ? <CheckCircle2 size={20}/> : <Settings size={20}/>}
+                              {lmsForm.grading_mode !== 'manual' ? 'AUTO SYNC TO MEMBERS' : 'MANUAL GRADING'}
+                           </button>
+                        </div>
+                     )}
                   </div>
+
+                  {lmsForm.type === 'group_assignment' && (
+                     <div className="p-6 bg-blue-50/50 border border-blue-100 rounded-[32px] space-y-4">
+                        <div className="flex items-center justify-between ml-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-blue-800">ASSIGNMENT GROUP / CUSTOM SUB-GROUP</label>
+                            <button onClick={() => setIsCustomGroupModalOpen(true)} className="text-[9px] font-black uppercase tracking-widest text-blue-600 bg-white shadow-sm border border-blue-100 px-3 py-1.5 rounded-full hover:bg-blue-600 hover:text-white transition-all">+ CREATE NEW GROUP</button>
+                        </div>
+                        <select 
+                           value={lmsForm.assignment_group_id || ''}
+                           onChange={(e) => setLmsForm({ ...lmsForm, assignment_group_id: e.target.value })}
+                           className="w-full h-14 rounded-2xl bg-white px-6 font-bold text-sm border border-slate-200 focus:outline-none focus:ring-2 ring-blue-500/20"
+                        >
+                           <option value="">-- (All / Global Setup) --</option>
+                           {customGroups.map(g => (
+                               <option key={g.id} value={g.id}>{g.name}</option>
+                           ))}
+                        </select>
+                     </div>
+                  )}
 
                   {/* QUIZ BUILDER (If Post Test) */}
                   {lmsForm.type === 'post_test' && (
@@ -3250,6 +3359,80 @@ export default function BatchContentDesktop({ id }: { id: string }) {
              </div>
            );
         })()}
+      </AnimatePresence>
+
+      {/* CUSTOM GROUP BUILDER MODAL */}
+      <AnimatePresence>
+        {isCustomGroupModalOpen && (
+          <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl">
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.9, y: 20 }}
+               animate={{ opacity: 1, scale: 1, y: 0 }}
+               exit={{ opacity: 0, scale: 0.9, y: 20 }}
+               className="w-full max-w-2xl max-h-[85vh] bg-white rounded-[40px] shadow-3xl overflow-hidden flex flex-col border border-white/20"
+             >
+                <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-blue-50/50 shrink-0">
+                   <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/20">
+                         <Users size={24}/>
+                      </div>
+                      <div>
+                         <h3 className="text-xl font-black text-slate-900 tracking-tight">Custom Group Builder</h3>
+                         <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Assign Specific Students</p>
+                      </div>
+                   </div>
+                   <button onClick={() => setIsCustomGroupModalOpen(false)} className="p-3 text-slate-400 hover:text-rose-500 transition-all rounded-xl hover:bg-white"><X size={20}/></button>
+                </div>
+
+                <div className="p-8 overflow-y-auto space-y-6">
+                   <div className="space-y-2">
+                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-2">GROUP NAME</label>
+                       <input 
+                           value={customGroupForm.name}
+                           onChange={e => setCustomGroupForm({...customGroupForm, name: e.target.value})}
+                           placeholder="e.g. Frontend Team Alpha"
+                           className="w-full h-14 rounded-2xl bg-neutral-50 px-6 font-bold text-sm border border-slate-100 focus:outline-none focus:ring-2 ring-blue-500/20"
+                       />
+                   </div>
+                   
+                   <div className="space-y-4">
+                       <div className="flex items-center justify-between ml-2">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">SELECT MEMBERS</label>
+                          <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">{customGroupForm.members.length} / {students.length}</span>
+                       </div>
+                       <div className="bg-slate-50 border border-slate-100 rounded-[24px] p-2 max-h-64 overflow-y-auto space-y-1">
+                           {students.map(s => (
+                               <button 
+                                  key={s.id}
+                                  onClick={() => {
+                                      const newMembers = customGroupForm.members.includes(s.profile_id) 
+                                          ? customGroupForm.members.filter(id => id !== s.profile_id)
+                                          : [...customGroupForm.members, s.profile_id];
+                                      setCustomGroupForm({...customGroupForm, members: newMembers});
+                                  }}
+                                  className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all ${customGroupForm.members.includes(s.profile_id) ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'bg-transparent text-slate-600 hover:bg-white'}`}
+                               >
+                                   <div className="flex items-center gap-3">
+                                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${customGroupForm.members.includes(s.profile_id) ? 'bg-white/20' : 'bg-slate-200'}`}>{s.v2_profiles?.full_name?.charAt(0) || '?'}</div>
+                                       <span className="font-bold text-sm">{s.v2_profiles?.full_name || 'Anonymous'}</span>
+                                   </div>
+                                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${customGroupForm.members.includes(s.profile_id) ? 'border-white bg-white text-blue-600' : 'border-slate-300'}`}>
+                                       {customGroupForm.members.includes(s.profile_id) && <Check size={12} strokeWidth={4}/>}
+                                   </div>
+                               </button>
+                           ))}
+                       </div>
+                   </div>
+                </div>
+
+                <div className="p-8 border-t border-slate-100 bg-slate-50 flex gap-4 shrink-0">
+                   <Button onClick={handleSaveCustomGroup} className="flex-1 h-16 rounded-[24px] bg-blue-600 hover:bg-blue-700 text-white font-black shadow-xl shadow-blue-500/20 transition-all">
+                      Save Database
+                   </Button>
+                </div>
+             </motion.div>
+          </div>
+        )}
       </AnimatePresence>
 
       {/* 🛸 REAL-TIME ONLINE NOTIFICATIONS (TOASTS) */}
