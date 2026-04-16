@@ -1,0 +1,4070 @@
+{
+  "v2_profiles": [
+    {
+      "id": "70f406c8-985c-4b16-af6d-68481e60bf32",
+      "full_name": "Dinur Pradipta",
+      "username": "dinurpradipta",
+      "avatar_url": "/avatars/avatar1.svg",
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "full_name": "Mei Indraningrum",
+      "username": "mei01",
+      "avatar_url": "/avatars/avatar3.svg?bg=%23FFCC80",
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "full_name": "Aimam Abdul Hamid",
+      "username": "abdulhamiid",
+      "avatar_url": "/avatars/avatar11.svg?bg=%2390CAF9",
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+      "full_name": "Nurul Fajriani",
+      "username": "meetnurul",
+      "avatar_url": "/avatars/avatar9.svg?bg=%2390CAF9",
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "full_name": "Jeffrey Budi Rahardjo",
+      "username": "jeffreyrahardjo",
+      "avatar_url": "/avatars/avatar11.svg?bg=%2390CAF9",
+      "role": "student",
+      "updated_at": "2026-04-08T15:07:45.220626+00:00",
+      "email": null
+    },
+    {
+      "id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+      "full_name": "Mia Jabeen",
+      "username": "miajabeen",
+      "avatar_url": "/avatars/avatar2.svg?bg=%23F4A7B9",
+      "role": "student",
+      "updated_at": "2026-04-08T15:26:54.316849+00:00",
+      "email": null
+    },
+    {
+      "id": "49f749b7-6973-463f-a122-22748aa7da8f",
+      "full_name": "Radi Jalaludin Akbar",
+      "username": "radiakbarr",
+      "avatar_url": "/avatars/avatar1.svg?bg=%2337474F",
+      "role": "student",
+      "updated_at": "2026-04-09T02:10:26.124689+00:00",
+      "email": null
+    },
+    {
+      "id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "full_name": "Muhammad Ihsan Aura Jiwa",
+      "username": "ihsanaura",
+      "avatar_url": "/avatars/avatar11.svg?bg=%2390CAF9",
+      "role": "student",
+      "updated_at": "2026-04-09T02:42:14.555138+00:00",
+      "email": null
+    },
+    {
+      "id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "full_name": "Pricillia Astrid Dwi Saputri ",
+      "username": "astridds19",
+      "avatar_url": "/avatars/avatar9.svg?bg=%235BC8AF",
+      "role": "student",
+      "updated_at": "2026-04-09T03:03:06.475252+00:00",
+      "email": null
+    },
+    {
+      "id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+      "full_name": "Aksamala Herianto",
+      "username": "askadibalik",
+      "avatar_url": "/avatars/avatar11.svg?bg=%23B39DDB",
+      "role": "student",
+      "updated_at": "2026-04-09T05:04:02.148501+00:00",
+      "email": null
+    },
+    {
+      "id": "7f569eac-1fb2-4c5a-9074-ca5fa50d3724",
+      "full_name": "Muhammad Iksan",
+      "username": "iksangopal03",
+      "avatar_url": "/avatars/avatar7.svg?bg=%2337474F",
+      "role": "student",
+      "updated_at": "2026-04-09T07:13:41.510451+00:00",
+      "email": null
+    },
+    {
+      "id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+      "full_name": "Nadhira Lina",
+      "username": "nadhira",
+      "avatar_url": "/avatars/avatar6.svg?bg=%23F4A7B9",
+      "role": "student",
+      "updated_at": "2026-04-09T07:24:31.289088+00:00",
+      "email": null
+    },
+    {
+      "id": "e6cc8572-9783-42bc-94bd-bdc32ccfbac8",
+      "full_name": "Millaty Ismail",
+      "username": "millaty",
+      "avatar_url": "/avatars/avatar2.svg?bg=%235BC8AF",
+      "role": "student",
+      "updated_at": "2026-04-09T15:17:10.362447+00:00",
+      "email": null
+    },
+    {
+      "id": "12089ea2-7925-4209-ba3a-d6b0976079b9",
+      "full_name": "Chintia hermana",
+      "username": "chintia.hermana",
+      "avatar_url": "/avatars/avatar2.svg?bg=%2337474F",
+      "role": "student",
+      "updated_at": "2026-04-10T00:07:53.125835+00:00",
+      "email": null
+    },
+    {
+      "id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+      "full_name": "Alfin Firmansyah",
+      "username": "alfinz4712",
+      "avatar_url": "/avatars/avatar1.svg?bg=%2390CAF9",
+      "role": "student",
+      "updated_at": "2026-04-10T00:21:05.66278+00:00",
+      "email": null
+    },
+    {
+      "id": "dcdd1ff2-fc86-4a07-9d88-74e8c21c8be2",
+      "full_name": "Shinta Nastiti",
+      "username": "shintanastiti",
+      "avatar_url": "/avatars/avatar2.svg?bg=%23F4A7B9",
+      "role": "student",
+      "updated_at": "2026-04-12T13:16:31.947277+00:00",
+      "email": null
+    },
+    {
+      "id": "03ab5ebc-36bf-4cf6-948c-4f86ffdbbde3",
+      "full_name": "Belanida Aldinisalma",
+      "username": "aldinisalma",
+      "avatar_url": "/avatars/avatar2.svg?bg=%2337474F",
+      "role": "student",
+      "updated_at": "2026-04-12T13:40:20.145327+00:00",
+      "email": null
+    },
+    {
+      "id": "6ad9103e-4a03-48aa-9e78-3d3d20a21c00",
+      "full_name": "allisha@mentorhipers.local",
+      "username": null,
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "161c689a-0a78-4be2-8c77-157d18276954",
+      "full_name": "fathyaa@mentorhipers.local",
+      "username": null,
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "2643c4ad-992b-4ad0-a325-df9ccc7f91f6",
+      "full_name": "shinyinterior@mentorhipers.local",
+      "username": null,
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "415bf887-40f4-464e-b7bd-20de942bedda",
+      "full_name": "admin@mentorhipers.local",
+      "username": null,
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "b96b7653-26a3-4cb4-a17a-4eebbad1342d",
+      "full_name": "fthyaa@mentorhipers.local",
+      "username": null,
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "dcbce075-1474-4774-8d5f-a954af2d525a",
+      "full_name": "Dinur",
+      "username": null,
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "afc33010-fcb8-4cf4-a75b-23bbb096f014",
+      "full_name": "Laras Hakim",
+      "username": "larsfhns",
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "165933d3-e8c0-45d5-818a-f348a4041bd3",
+      "full_name": "Nurul Ainun",
+      "username": "ainun01",
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "7d6ae7c5-e990-4f6d-839f-73495d65ca55",
+      "full_name": "Sarah Hasna Salsabila",
+      "username": "sarbil_bila",
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "ca5b9250-5867-4adf-a23b-120eec075fd0",
+      "full_name": "Frins Gunawan",
+      "username": "baitulquran",
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "03c2a3c3-197e-45a0-a67d-95fc4288d21b",
+      "full_name": "Admin Arunika",
+      "username": "arunika",
+      "avatar_url": null,
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+      "full_name": "Dewi Suryani",
+      "username": "dewisuryani",
+      "avatar_url": "/avatars/avatar2.svg?bg=%235BC8AF",
+      "role": "student",
+      "updated_at": "2026-04-08T00:30:03.343568+00:00",
+      "email": null
+    },
+    {
+      "id": "8bc0bda5-b788-476e-9966-31206b9fb38d",
+      "full_name": "Habibbah Nur Esa",
+      "username": "habibbah",
+      "avatar_url": "/avatars/avatar9.svg?bg=%23FFCC80",
+      "role": "student",
+      "updated_at": "2026-04-10T07:58:48.994802+00:00",
+      "email": null
+    }
+  ],
+  "v2_memberships": [
+    {
+      "id": "55b0dbbc-b747-454d-97c7-b0590066f3bb",
+      "profile_id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 1 - Elegi",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          90,
+          100,
+          90,
+          100,
+          100,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "-",
+        "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "d7643d13-37c4-4b90-ba44-3caf97b63397",
+      "profile_id": "70f406c8-985c-4b16-af6d-68481e60bf32",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 2 - Khandra",
+      "role": "student",
+      "grades": {},
+      "attendance": {
+        "s1": "-",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "a37ca0cd-f627-4682-8063-cac1fa7b33c6",
+      "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 2 - Khandra",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          70,
+          90,
+          90,
+          90,
+          100,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "3317a8a6-bb2b-4f00-b634-ad4c8ed0f516",
+      "profile_id": "03ab5ebc-36bf-4cf6-948c-4f86ffdbbde3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 4 - Yuwana",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          90,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "c3ce2e5a-c6a1-4169-8f0a-fb4132e64ffd",
+      "profile_id": "8bc0bda5-b788-476e-9966-31206b9fb38d",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 2 - Khandra",
+      "role": "student",
+      "grades": {},
+      "attendance": {},
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": null,
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-04-02T08:24:52.431329+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "bf1c5f1f-ec8a-41da-b0dd-a3bea52253ad",
+      "profile_id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 2 - Khandra",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          80,
+          90,
+          60,
+          90,
+          80,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "S",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "7fd8f84c-0913-4726-98f0-b5439e752453",
+      "profile_id": "165933d3-e8c0-45d5-818a-f348a4041bd3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 3 - Mega",
+      "role": "student",
+      "grades": {},
+      "attendance": {},
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "cb93ab13-6829-4fa3-90db-f784d2e48c22",
+      "profile_id": "dcdd1ff2-fc86-4a07-9d88-74e8c21c8be2",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 1 - Elegi",
+      "role": "student",
+      "grades": {},
+      "attendance": {
+        "s1": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "I",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "I",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "I"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "1553ed3a-2067-43ea-9c23-dbca46bf8924",
+      "profile_id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 3 - Mega",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          100,
+          80,
+          90,
+          0,
+          0,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "dc695145-f760-4785-9b42-fc1f14a945d3",
+      "profile_id": "7f569eac-1fb2-4c5a-9074-ca5fa50d3724",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 2 - Khandra",
+      "role": "student",
+      "grades": {},
+      "attendance": {
+        "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "-",
+        "62876293-e7be-43a6-8754-4728e53953d1": "-",
+        "c6fdb072-bed5-489d-a689-9960241c3023": "-",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "05b35998-3deb-4fac-8d45-c1d14d98e422",
+      "profile_id": "49f749b7-6973-463f-a122-22748aa7da8f",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 4 - Yuwana",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          90,
+          80,
+          70,
+          0,
+          0,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "I",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+      "is_leader": true,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "df45b043-4ef0-4e3c-9611-a9e0dd8280c6",
+      "profile_id": "7d6ae7c5-e990-4f6d-839f-73495d65ca55",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 4 - Yuwana",
+      "role": "student",
+      "grades": {},
+      "attendance": {},
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "148ae3b0-3bfd-4a2f-95de-014ae128f5ea",
+      "profile_id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 2 - Khandra",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          90,
+          80,
+          70,
+          90,
+          60,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "7638274b-7e4e-4245-88d0-6ce4c645bd86",
+      "profile_id": "e6cc8572-9783-42bc-94bd-bdc32ccfbac8",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 1 - Elegi",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          0,
+          0,
+          0,
+          100,
+          90,
+          0
+        ]
+      },
+      "attendance": {
+        "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "fbddf674-5591-4ea3-9e4f-c84c0d3e630c",
+      "profile_id": "ca5b9250-5867-4adf-a23b-120eec075fd0",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 4 - Yuwana",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          80,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "attendance": {},
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "e014513b-f2f4-4bea-bff4-f7377cea9674",
+      "profile_id": "afc33010-fcb8-4cf4-a75b-23bbb096f014",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 4 - Yuwana",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          80,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "c902085e-7db4-4e2e-93ed-afc974a4d129",
+      "profile_id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 3 - Mega",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          80,
+          90,
+          60,
+          0,
+          60,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "bae7712d-27c7-4b1e-bda1-aeba67a28d4d",
+      "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 1 - Elegi",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          90,
+          90,
+          80,
+          0,
+          0,
+          0
+        ]
+      },
+      "attendance": {
+        "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+      "is_leader": true,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "6514f7e1-d27f-4d77-815b-76639a530e6c",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 1 - Elegi",
+      "role": "student",
+      "grades": {},
+      "attendance": {
+        "s1": "I",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "d15d251c-a0cd-46e8-93ae-0ef5c23a988a",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 3 - Mega",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          90,
+          90,
+          80,
+          100,
+          70,
+          0
+        ]
+      },
+      "attendance": {
+        "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+      "is_leader": true,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "7e3e7062-2e3e-4416-89c7-482c22987c41",
+      "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 2 - Khandra",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          100,
+          80,
+          60,
+          90,
+          80,
+          0
+        ]
+      },
+      "attendance": {
+        "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "I",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+      "is_leader": true,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "8a175c68-ace5-42d4-99e6-6d972ed94ed7",
+      "profile_id": "12089ea2-7925-4209-ba3a-d6b0976079b9",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 1 - Elegi",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          90,
+          80,
+          50,
+          0,
+          0,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "I",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    },
+    {
+      "id": "e0c14ad0-4aad-4a93-8753-ea4b7442eef4",
+      "profile_id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "group_name": "Group 3 - Mega",
+      "role": "student",
+      "grades": {
+        "post_tests": [
+          100,
+          80,
+          90,
+          100,
+          100,
+          0
+        ]
+      },
+      "attendance": {
+        "s1": "P",
+        "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+        "62876293-e7be-43a6-8754-4728e53953d1": "P",
+        "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+        "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+        "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+        "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+      },
+      "created_at": "2026-04-08T00:36:49.776034+00:00",
+      "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+      "is_leader": false,
+      "plus_points": {},
+      "joined_at": "2026-03-29T05:24:40.013525+00:00",
+      "certificate_url": null
+    }
+  ],
+  "v2_workspaces": [
+    {
+      "id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "name": "Social Media Specialist Batch 16",
+      "description": null,
+      "type": "batch",
+      "status": "active",
+      "logo_url": null,
+      "max_members": null,
+      "start_date": null,
+      "end_date": null,
+      "settings": {},
+      "schedules": [
+        {
+          "id": "2841e96c-f417-419e-bcf7-f75f8c68df43",
+          "date": "2026-03-28",
+          "time": "21:00",
+          "title": "Batch 16 - Onboarding Class",
+          "meet_link": ""
+        },
+        {
+          "id": "cb48e22a-652f-43d6-8cad-351e55b556e7",
+          "date": "2026-03-29",
+          "time": "20:30",
+          "title": "Fundamental & Landscaping Socmed Specialist",
+          "meet_link": ""
+        },
+        {
+          "id": "e5ad3354-803c-4031-ade1-3dc05851acd2",
+          "date": "2026-04-02",
+          "time": "20:30",
+          "title": "Social Media Behavioral",
+          "meet_link": ""
+        },
+        {
+          "id": "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98",
+          "date": "2026-04-05",
+          "time": "20:30",
+          "title": "Content Ideation & Strategy",
+          "meet_link": ""
+        },
+        {
+          "id": "62876293-e7be-43a6-8754-4728e53953d1",
+          "date": "2026-04-09",
+          "time": "20:30",
+          "title": "Content Scriptwriting",
+          "meet_link": ""
+        },
+        {
+          "id": "5a7e54ae-01dc-458b-9be6-bb6ab37c5871",
+          "date": "2026-04-12",
+          "time": "20:30",
+          "title": "Social Media Analytic",
+          "meet_link": ""
+        },
+        {
+          "id": "c6fdb072-bed5-489d-a689-9960241c3023",
+          "date": "2026-04-16",
+          "time": "20:30",
+          "title": "Social Media Reporting",
+          "meet_link": ""
+        }
+      ],
+      "created_at": "2026-03-27T18:57:43.766723+00:00",
+      "updated_at": "2026-03-29T07:11:00.672535+00:00"
+    }
+  ],
+  "v2_curriculums": [
+    {
+      "id": "eb7fb7a2-cfb5-43ee-b7a1-e40fc0e23b09",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Random Group Challenge",
+      "description": null,
+      "content_rich": "pastikan hanya perwakilan group yang mengirimkan hasil tugasnya.",
+      "type": "individual_assignment",
+      "module_name": "Group Challenge",
+      "due_date": "2026-04-14T15:59:00+00:00",
+      "video_url": "",
+      "quiz_data": {
+        "questions": []
+      },
+      "assets_json": [],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-12T17:19:21.520908+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "cfddbf06-ca37-444e-9ae6-89f9d0e52d31",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Social media Channel Behavioral",
+      "description": null,
+      "content_rich": "",
+      "type": "material",
+      "module_name": "Materi 2 - Batch 16",
+      "due_date": "2026-04-02T12:30:00+00:00",
+      "video_url": "https://youtu.be/ObcXq5ohm3g",
+      "quiz_data": {
+        "questions": []
+      },
+      "assets_json": [
+        {
+          "url": "https://canva.link/jtrhovx6romhtj3",
+          "name": "Present Deck"
+        }
+      ],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-08T07:31:37.328091+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "3a161448-c9b7-447d-9ba5-9e52e7350e49",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Onboarding - Mini Bootcamp Social Media Specialist Batch 16",
+      "description": null,
+      "content_rich": "",
+      "type": "material",
+      "module_name": "Batch 16",
+      "due_date": "2026-03-28T13:00:00+00:00",
+      "video_url": "https://youtu.be/lDZuo-KQrsw",
+      "quiz_data": {
+        "questions": []
+      },
+      "assets_json": [
+        {
+          "url": "https://www.canva.com/design/DAGVF99r16g/FSQ1OnI13KvjJam1-faYnQ/view?utm_content=DAGVF99r16g&utm_campaign=designshare&utm_medium=link&utm_source=publishsharelink&mode=preview",
+          "name": "Link Bonus 1 - Content Strategy Master Template"
+        },
+        {
+          "url": "https://www.canva.com/design/DAG10w8nwGY/2vjLJR1g1pWBV5ndCn-nPQ/view?utm_content=DAG10w8nwGY&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h2acddae9bc",
+          "name": "Link Bonus 2 - Arunika Social Media Assistant"
+        }
+      ],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-08T07:25:02.470603+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "de72a040-738d-4dfa-87cf-986255449ae0",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Fundamental & Landscaping Socmed Specialist",
+      "description": null,
+      "content_rich": "",
+      "type": "material",
+      "module_name": "Materi 1 - Batch 16",
+      "due_date": "2026-03-29T12:30:00+00:00",
+      "video_url": "https://youtu.be/eU-pONGAgDk",
+      "quiz_data": {
+        "questions": []
+      },
+      "assets_json": [
+        {
+          "url": "https://canva.link/3o08l4top1bf81c",
+          "name": "Prsentation Deck"
+        }
+      ],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-08T07:28:42.569743+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "70ac2889-cf7d-4860-8864-31f5232bd032",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Content Ideation & Strategy",
+      "description": null,
+      "content_rich": "",
+      "type": "material",
+      "module_name": "Materi 3 - Batch 16",
+      "due_date": "2026-04-05T12:30:00+00:00",
+      "video_url": "https://youtu.be/skZI8z7xTEM",
+      "quiz_data": {
+        "questions": []
+      },
+      "assets_json": [
+        {
+          "url": "https://canva.link/8i0yrvl3jih38cm",
+          "name": "Present Deck"
+        },
+        {
+          "url": "https://canva.link/ryael7nx6khtuc1",
+          "name": "Contoh Ideation"
+        }
+      ],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-08T07:35:34.27392+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Post Test Social Media Fundamental",
+      "description": null,
+      "content_rich": "",
+      "type": "post_test",
+      "module_name": "Materi 1",
+      "due_date": "2026-04-10T15:59:00+00:00",
+      "video_url": "",
+      "quiz_data": {
+        "questions": [
+          {
+            "id": 1775642406643,
+            "text": "1. Seorang Social Media Specialist harus memperhatikan beberapa hal berikut ini, kecuali ..",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Tidak hanya Fokus sama konten",
+              "Socmed yang efektif berawal dari strategi yang baik",
+              "Bukan cuma asal posting",
+              "Harus fokus target FYP"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644447051,
+            "text": "2. Social Media Specialist punya banyak roles, Salah satunya adalah ..",
+            "type": "mc",
+            "correct": 2,
+            "options": [
+              "UI Designer",
+              "Content Writter",
+              "Content Creator",
+              "Scriptwriter"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644447566,
+            "text": "3. Jumlah Unique Person yang melihat konten kamu adalah istilah dari ..",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Impression",
+              "Engagement",
+              "Persona",
+              "Reach"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644447905,
+            "text": "4. Funnel yang bertujuan untuk menyebarkan konten dan membuat audeince aware terhadap produk kita adalah tahapan funnel ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Consideration",
+              "Interest",
+              "Retention",
+              "Awareness"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644448206,
+            "text": "5. Cara menentukan content goals dan KPI dari sebuah social media biasanya menggunakan metode ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "SWOT Analysis",
+              "Umbrella Marketing",
+              "TOWS Analysis",
+              "SMART Analysis"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644448435,
+            "text": "6. Di dalam proses ideation, terdapat hal yang  harus dibangun untuk membuat merek/produk berbeda yang ditunjukkan di situs web atau pengetahuan produk, hal ini disebut dengan..",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Unique Selling Point",
+              "Unique Story Point",
+              "Content Calender",
+              "SWOT Analysis"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644448642,
+            "text": "7. Yang bukan termasuk alur dalam pembuatan konten yaitu..",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Ideation",
+              "Review",
+              "Content Calendar",
+              "Advertising"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644448916,
+            "text": "8. Dalam membuat content pillar terdapat beberapa proses yang harus dilakukan. Yang tidak termasuk ke dalam proses pembuatan content pillar yaitu...",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Cari kesalahan kompetitor",
+              "Riset Keyword",
+              "Identifikasi kebutuhan Audience",
+              "Pahami Produknya"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644449216,
+            "text": "9. Berikut hal-hal yang membuat content pillar penting dilakukan untuk mengembangkan sosial media, kecuali..",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Membantu mengembangkan produk kompetitor",
+              "Memudahkan untuk membuat konten selama 1 bulan",
+              "Membantu menonjolkan USP",
+              "Membantu merek menonjolkan Value"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644449543,
+            "text": "10. Urutkan Fase pembuatan konten dibawah ini, manakah urutan yang tepat?",
+            "type": "mc",
+            "correct": 1,
+            "options": [
+              "Content Plan - Phasing - Timeline - Breakdown - Scheduling",
+              "Content Breakdown - Phasing - Timeline - Planning - Scheduling",
+              "Content Timeline - Planing - Breakdown - Phasing - Scheduling",
+              "Content Phasing - Timeline - Planing - Breakdown - Scheduling"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775644456465,
+            "text": "Kritik dan saran untuk Materi Class malam ini",
+            "type": "long_text",
+            "correct": 0,
+            "options": [
+              "",
+              "",
+              "",
+              ""
+            ],
+            "required": true
+          }
+        ]
+      },
+      "assets_json": [],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-08T14:23:20.95947+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Individual Assignment #1 - Social Media Analytics",
+      "description": null,
+      "content_rich": "",
+      "type": "assignment",
+      "module_name": null,
+      "due_date": "2026-04-07T14:25:00+00:00",
+      "video_url": "",
+      "quiz_data": {},
+      "assets_json": [],
+      "is_published": "t",
+      "points_weight": "10",
+      "created_at": "2026-04-08T00:46:30.284836+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Post Test Social Media Behavioral Class",
+      "description": null,
+      "content_rich": "",
+      "type": "post_test",
+      "module_name": "Materi 2",
+      "due_date": "2026-04-10T15:59:00+00:00",
+      "video_url": "",
+      "quiz_data": {
+        "questions": [
+          {
+            "id": 1775645015581,
+            "text": "1. Social Media adalah sebuah channel dalam istilah digital marketing, artinya ...",
+            "type": "mc",
+            "correct": 1,
+            "options": [
+              "Sebagai tempat jualan karena ada keranjang kuning",
+              "digunakan untuk berinteraksi, mempromosikan atau membangun Kredibilitas",
+              "Sebagai tempat untuk memposting kegiatan sehari-hari",
+              "Social media sebagai tempat promosi"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645267816,
+            "text": "2. Social Media punya suatu alat promosi yang sierbut sebagai ..",
+            "type": "mc",
+            "correct": 1,
+            "options": [
+              "Desain",
+              "Konten",
+              "Visual",
+              "Strategi"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268175,
+            "text": "3. Berikut ini adalah yang termasuk kedalam social media, Kecuali ..",
+            "type": "mc",
+            "correct": 2,
+            "options": [
+              "Instagram",
+              "Youtube",
+              "Tiktok",
+              "Linkedin"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268375,
+            "text": "4. Instagram adalah jenis social media ... ",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Visual-based Social Network",
+              "Relatable Platform",
+              "Photo platform",
+              "Story considerate"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268525,
+            "text": "5. Pada instagram konten reels dapat dijadikan untuk mencapai objective ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Consideration",
+              "Interaction",
+              "Conversion",
+              "Awareness"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268681,
+            "text": "6. Social Media yang digunakan untuk mencari trend, menemukan sound lagi rame sampai pemabahasan topik berulang adalah kelebihan dari platform ...",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Tiktok",
+              "Instagram",
+              "Snack Video",
+              "Youtube"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268831,
+            "text": "7. Platform chanel yang diperuntukan untuk meningkatkan kredibilitas personal branding adalah kelebihan dari channel ...",
+            "type": "mc",
+            "correct": 2,
+            "options": [
+              "Instagram",
+              "Youtube",
+              "Linkedin",
+              "Tiktok"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268973,
+            "text": "8. Social media yang dominan audiencenya diisi dengan lintas usia adalah salah jenis channel ..",
+            "type": "mc",
+            "correct": 2,
+            "options": [
+              "Instagram",
+              "Linkedin",
+              "Facebook",
+              "Tiktok"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645269358,
+            "text": "9. Social Media yang digunakan untuk riset opini dan bnersifat text base platform adalah salah satu kelebihan dari channel ..",
+            "type": "mc",
+            "correct": 2,
+            "options": [
+              "Tiktok",
+              "Instagram",
+              "X / Twitter",
+              "Threads"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645269501,
+            "text": "10. Sebuah fitur yang biasa digunakan brand untuk mendapatkan sebuah conversion pada suatu channel platform yang dimiliki tiktok adalah fitur ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Affiliate",
+              "FYP",
+              "Influencer",
+              "Live Streaming"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645269924,
+            "text": "Kritik dan saran untuk Materi Class malam ini",
+            "type": "long_text",
+            "correct": 0,
+            "options": [
+              "",
+              "",
+              "",
+              ""
+            ],
+            "required": true
+          }
+        ]
+      },
+      "assets_json": [],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-08T14:24:14.810317+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "5b68acef-b646-442b-8182-3860c146af49",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Post Test Content Ideation & Strategy",
+      "description": null,
+      "content_rich": "",
+      "type": "post_test",
+      "module_name": "Materi 3",
+      "due_date": "2026-04-10T15:59:00+00:00",
+      "video_url": "",
+      "quiz_data": {
+        "questions": [
+          {
+            "id": 1775645015581,
+            "text": "1. Sebelum membuat content strategy pada social media kita harus monitoring social medianya dahulu, apa saja yang termasuk monitoring? Kecuali ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Social Media Performance",
+              "Social Media Presence",
+              "Social Media Trend",
+              "Social Media Audience"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645267816,
+            "text": "2. Cara ideation konten yang tepat adalah dengan menganalisa beberapa hal beirkut ini, kecuali....",
+            "type": "mc",
+            "correct": 2,
+            "options": [
+              "Audience",
+              "Niche spesifik",
+              "Konten",
+              "Pain poin Audience"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268175,
+            "text": "3. Tindakan untuk menganalisis apa yang akan dilakukan dalam jangka waktu tertentu pada sebuah social media disebut dengan ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Content Strategy",
+              "Competitor View",
+              "Competitor Strategy",
+              "Social Media Strategy"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268375,
+            "text": "4. Kompetitor yang menawarkan produk atau layanan yang berbeda dari brand kamu namun produknya bisa memenuhi kebutuhan Audience brand kamu disebut dengan ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Direct Competitor",
+              "Competitor Landscape",
+              "Competitor Analysis",
+              "Indirect Competitor"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268525,
+            "text": "5. Ada 3 tahapan memecah ide, kecuali ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Breakdown",
+              "Eksekusi",
+              "Conclusion",
+              "Review"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268681,
+            "text": "6. Yang bukan termasuk alur dalam pembuatan konten yaitu..",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Review",
+              "Content Calendar",
+              "Advertising",
+              "Ideation"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268831,
+            "text": "7. Dalam membuat content pillar terdapat beberapa proses yang harus dilakukan. Yang tidak termasuk ke dalam proses pembuatan content pillar yaitu...",
+            "type": "mc",
+            "correct": 1,
+            "options": [
+              "Pahami Produknya",
+              "Cari kesalahan kompetitor",
+              "Riset Keyword",
+              "Identifikasi kebutuhan Audience"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268973,
+            "text": "8. Berikut hal-hal yang membuat content pillar penting dilakukan untuk mengembangkan sosial media, kecuali..",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Membantu mengembangkan produk kompetitor",
+              "Membantu merek menonjolkan Value",
+              "Membantu menonjolkan USP",
+              "Memudahkan untuk membuat konten selama 1 bulan"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645269358,
+            "text": "9. Prespektif konten untuk menemukan arah konten yang jelas untuk audience disebut sebagai ...",
+            "type": "mc",
+            "correct": 1,
+            "options": [
+              "Jargon konten",
+              "Angle content",
+              "Content Batching",
+              "Content Pillar"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645269501,
+            "text": "10. Urutkan Fase pembuatan ideation konten dibawah ini, manakah urutan yang tepat?",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Spesific niche - content value - content pillar - generic content - spesific content",
+              "Content value - Spesific Content - Content pillar - Spesific content - Generic content",
+              "Spesific niche - Content pillar - Content value - generic content - spesific content",
+              "Content Pillar - Spesific content - Generic content - Content Value"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645269924,
+            "text": "Kritik dan saran untuk Materi Class malam ini",
+            "type": "long_text",
+            "correct": 0,
+            "options": [
+              "",
+              "",
+              "",
+              ""
+            ],
+            "required": true
+          }
+        ]
+      },
+      "assets_json": [],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-08T14:25:03.172799+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Individual Assignment - Content Ideation",
+      "description": null,
+      "content_rich": "",
+      "type": "individual_assignment",
+      "module_name": null,
+      "due_date": "2026-04-10T15:59:00+00:00",
+      "video_url": "",
+      "quiz_data": {
+        "questions": []
+      },
+      "assets_json": [
+        {
+          "url": "https://canva.link/0z6n160bpg2092h",
+          "name": "Brief Tugas"
+        }
+      ],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-08T14:26:53.695735+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Post Test Content Scriptwriting",
+      "description": null,
+      "content_rich": "",
+      "type": "post_test",
+      "module_name": "Materi 4",
+      "due_date": "2026-04-11T15:59:00+00:00",
+      "video_url": "",
+      "quiz_data": {
+        "questions": [
+          {
+            "id": 1775746939996,
+            "text": "Kata-kata atau tulisan yang dibuat untuk tujuan menjual barang atau jasa dalam komunikasi iklan digital disebut?",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Content Writing",
+              "Copywriting",
+              "Copywriter",
+              "Copy"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746966020,
+            "text": "Seseorang yang bertugas membuat dan merangkai copy agar terlihat menarik disebut sebagai?",
+            "type": "mc",
+            "correct": 1,
+            "options": [
+              "Copy",
+              "Copywriter",
+              "Writer",
+              "Content Writer"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746966234,
+            "text": "Prinsip dasar copywriting ada 4C yaitu?",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Consise",
+              "Clear",
+              "Compeling",
+              "Semua benar"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746966427,
+            "text": "salah satu Tahapan proses dimana Social Media Specalist membuat development sebuah konten yang akan di upload adalah pengertian dari ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Ghost Writing",
+              "Copywriting",
+              "Writting",
+              "Content Scriptwriting"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746966607,
+            "text": "yang TIDAK termasuk dalam elemen scriptwriting adalah ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Hook",
+              "Scripting",
+              "Tone of voice",
+              "Social Media"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746966782,
+            "text": "Fungsi Hook adalah ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Sebagai Penjelas",
+              "Sebagai Engagement",
+              "Sebagai pembagus konten",
+              "Sebagai Magnet"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746966957,
+            "text": "Keresahan audience yang sering di highlight pada konten adalah jenis komponen script yaitu ..",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Gain point",
+              "Problem",
+              "Solution",
+              "Pain point"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746967144,
+            "text": "Sebuah ajakan bagi audience untuk melakukan sesuatu di dalam konten kita disebut?",
+            "type": "mc",
+            "correct": 2,
+            "options": [
+              "Calll to value",
+              "Call to me",
+              "Call to action",
+              "Calling all tenants"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746967764,
+            "text": "Copy yang di buat haruslah memiliki dampak yang kuat, baik secara emosional maupun rasional adalah salah satu bagian dari ...",
+            "type": "mc",
+            "correct": 1,
+            "options": [
+              "Syarat Copywriting",
+              "Prinsip Copywriting",
+              "Makna Copywriting",
+              "Aturan Copywriting"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746967950,
+            "text": "deskripsi yang ditempatkan di bawah foto, video, atau konten lainnya saat mem-posting di platform media sosial adalah pengertian dari ...",
+            "type": "mc",
+            "correct": 1,
+            "options": [
+              "Hastag",
+              "Caption",
+              "Story",
+              "Konten"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775746968738,
+            "text": "Kritik dan saran untuk Materi Class malam ini",
+            "type": "long_text",
+            "correct": 0,
+            "options": [
+              "",
+              "",
+              "",
+              ""
+            ],
+            "required": true
+          }
+        ]
+      },
+      "assets_json": [],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-09T15:09:21.093961+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "af7bb97f-7fe4-4ad1-977f-28c3c5665eba",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Content Scriptwriting",
+      "description": null,
+      "content_rich": "",
+      "type": "material",
+      "module_name": "Materi 4 - Batch 16",
+      "due_date": "2026-04-10T12:30:00+00:00",
+      "video_url": "https://youtu.be/-Fg_5JTdFYA",
+      "quiz_data": {
+        "questions": []
+      },
+      "assets_json": [
+        {
+          "url": "https://canva.link/c7ics47unc0l7hl",
+          "name": "Presentation Deck"
+        }
+      ],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-09T16:20:52.919801+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "3f55057f-6d72-46ec-b32e-581c648b6d23",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Social Media Analytics Fundamental",
+      "description": null,
+      "content_rich": "",
+      "type": "material",
+      "module_name": "Materi 5 - Batch 16",
+      "due_date": "2026-04-12T12:30:00+00:00",
+      "video_url": "https://youtu.be/xAWALRsfZ3g",
+      "quiz_data": {
+        "questions": []
+      },
+      "assets_json": [
+        {
+          "url": "https://canva.link/fia825k7dodddxr",
+          "name": "Present Deck"
+        }
+      ],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-12T16:52:11.451252+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Post Test Social Media Analytics Fundamental",
+      "description": null,
+      "content_rich": "",
+      "type": "post_test",
+      "module_name": "Materi 5",
+      "due_date": "2026-04-14T15:59:00+00:00",
+      "video_url": "",
+      "quiz_data": {
+        "questions": [
+          {
+            "id": 1775645015581,
+            "text": "Apa itu Social Media Analytic?",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Menemukan Ide konten",
+              "Proses untuk menentukan objetive pada sosial media",
+              "Menganalisa konten dan turunannya",
+              "proses membaca, memahami, dan mengevaluasi data"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645267816,
+            "text": "Kenapa Menganalisa Social Media itu penting?",
+            "type": "mc",
+            "correct": 2,
+            "options": [
+              "Diminta Atasan",
+              "Karena Konten akan selalu turun dan naik",
+              "Audience berubah seiring waktu",
+              "Karena konten adalah pillar dari akun"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268175,
+            "text": "metrics yang menarik secara visual tapi dampaknya tidak nyata yang dampaknya akan membuaat si pembuat konten merasa “sukses” membuat konten yang bagus tapi tidak menjawab pertanyaan bisnis atau tujuan suatu akun malahan hanya bisa di ukur dalam jangka pendek adalah pengertian dari ....",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Vanity Metrics",
+              "Meanigfull Metrics",
+              "Engagement Metrics",
+              "Shareable Metrics"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268375,
+            "text": "metrics yang menunjukan kualitas Engagement dan dampak real terhadap objective suatu akun dan kebanyakan akan menjawab apakah nantinya konten yang di buat relevan atau tidak, mendorong action tertentu hingga menentukan apakah audeince benar-benar peduli dengan akun kita adalah pengertian dari",
+            "type": "mc",
+            "correct": 1,
+            "options": [
+              "Vanity Metrics",
+              "Meanigfull Metrics",
+              "Engagement Metrics",
+              "Shareable Metrics"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268525,
+            "text": "Views Tinggi, FYP atau konten viral termasuk contoh dari ...",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Vanity Metrics",
+              "Meanigfull Metrics",
+              "Engagement Metrics",
+              "Shareable Metrics"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268681,
+            "text": "Watch Time / Retention Time termasuk contoh dari",
+            "type": "mc",
+            "correct": 0,
+            "options": [
+              "Meanigfull Metrics",
+              "Shareable Metrics",
+              "Vanity Metrics",
+              "Engagement Metrics"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268831,
+            "text": "Ketika audeince nonton lama konten kita, maka konten akan dianggap ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Efektif",
+              "FYP",
+              "Viral",
+              "Berkualitas"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645268973,
+            "text": "Dibawah ini adalah 3 layer dari analytics, kecuali ...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Data",
+              "Insight",
+              "Action",
+              "Leads"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645269358,
+            "text": "tercipta dari rangkaian funnel marketing yang disederhanakan dengan tujuan dikenal, dilihat dan di ingat, adalah pengertian dari ,...",
+            "type": "mc",
+            "correct": 3,
+            "options": [
+              "Pain Poin",
+              "Gain Poin",
+              "Solution",
+              "Objective"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645269501,
+            "text": "2 Jenis Utama KPI dalam Social Media adalah ...",
+            "type": "mc",
+            "correct": 2,
+            "options": [
+              "KPI pendukung dan pelengkap",
+              "KPI Utama dan pelengkap",
+              "KPI Utama dan Pendukung",
+              "KPI Basic dan Intermediate"
+            ],
+            "required": true
+          },
+          {
+            "id": 1775645269924,
+            "text": "Kritik dan saran untuk Materi Class malam ini",
+            "type": "long_text",
+            "correct": 0,
+            "options": [
+              "",
+              "",
+              "",
+              ""
+            ],
+            "required": true
+          }
+        ]
+      },
+      "assets_json": [],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-12T17:17:58.309946+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    },
+    {
+      "id": "edcafa66-dde6-4a0f-bff9-308a290d885d",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "title": "Pengumpulan Group Challenge",
+      "description": null,
+      "content_rich": "",
+      "type": "challenge",
+      "module_name": "Group Assignment",
+      "due_date": "2026-04-15T15:59:00+00:00",
+      "video_url": "",
+      "quiz_data": {
+        "questions": []
+      },
+      "assets_json": [],
+      "is_published": "true",
+      "points_weight": "10",
+      "created_at": "2026-04-15T01:45:03.34815+00:00",
+      "assignment_group_id": null,
+      "grading_mode": "auto"
+    }
+  ],
+  "v2_submissions": [
+    {
+      "id": "01468afe-09f6-4d69-855f-3ff0ed72eb26",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "49f749b7-6973-463f-a122-22748aa7da8f",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1P6Pln-RcYBMd2kMybZ1M_CRlNZ6IxK3N/view?usp=sharing",
+      "status": "completed",
+      "grade": 80,
+      "mentor_feedback": "sudah oke, but ini perlu imporvisasi dan pendetailan lebih jauh tetang audience nya karena konte yang sudah di buat biasanya ada audiencenya tersendiri. sisanya mantap radi thankyou",
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T06:56:24.607751+00:00",
+      "criteria_scores": null,
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "0c060af5-53d8-431e-8604-6c429b125bce",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/v6ududlqi0c18lt",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T12:26:55.489218+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "d7522aa0-f007-458f-b4fa-0c8eff40f5ed",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/z88swdcwjl3iiec",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T13:50:56.291598+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "d364cbfc-1110-4762-9b13-13b1918fe0da",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/ixnkbadsszb67ct",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T14:03:24.787879+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "82960b5f-7079-4c4e-b374-5227e5e8c9a5",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/13sq4v7DmvQbhJ-At7G6Fp4zsgLfGNOzy/view?usp=sharing",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T14:08:13.443305+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "0e83ed6a-9eda-4b6d-8d76-234c8eb389d7",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/103V4zFuK2NYvsbXgbZxkcDhhMBn6EPYI/view",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T14:25:02.412172+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "b669f37f-3018-45b6-a267-febe060e57d8",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://www.canva.com/design/DAHFnCSp9FY/iX6IKtbZnNaxHVeRqL1KvA/edit",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T15:25:17.651147+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "00c4cbed-7cc3-4309-957c-6f66593ed39c",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/xlyo1ygk2ln1816 ",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T15:27:30.381367+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "17a153b6-6ef5-4671-93d1-a31d80ae909c",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/gdeq8v2kp5f4y6v",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T15:56:32.587475+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "406a65b5-2a7d-4f2b-9ce5-49bccef7a259",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "12089ea2-7925-4209-ba3a-d6b0976079b9",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1jGIZStSFcAHJ2auAUqC8lYTAIFEyvwhb/view?usp=drive_link",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T16:44:07.096494+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "b79e92da-5a6b-4e0c-ba56-fd99f85b8f02",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1qBBWpWpy9SvG6bNDd9Wcx_W84AkxG0Rv/view?usp=sharing",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T21:09:20.236761+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "d05681bd-e933-4411-b180-fbd31dfe458c",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/g1a19bpijk04giq",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-02T07:06:51.195374+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "1afa5f90-9ae9-4f7c-afc0-7b2c4cf176c9",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1BNi9b65j8v7rtRDiyCZ2kiaeSPPqwhLd/view?usp=sharing",
+      "status": "in_review",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": "2026-04-01T14:57:29.218211+00:00",
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "dfe22df2-2baf-4c54-8d8a-1efe5533d0ca",
+      "curriculum_id": "edcafa66-dde6-4a0f-bff9-308a290d885d",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1bGlh-iWH3cbkc91eGlnyYJi4ryyyY7yU/view?usp=drive_link",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "50ec5d25-3d2b-4369-8c51-998b4e8596a0",
+      "curriculum_id": "0dead9e3-98c9-4d4b-92d7-660886c8b7e1",
+      "profile_id": "70f406c8-985c-4b16-af6d-68481e60bf32",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "http://localhost:3000/ruang-sosmed/be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "status": "completed",
+      "grade": 90,
+      "mentor_feedback": "tessseeee",
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": null,
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "4e14a090-ecae-4237-b717-767038aef5ce",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1SNjD3GoeK29RVV27okGL3XbnhjwqVwq2/view?usp=drivesdk",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "be4004d5-f724-4298-8797-aa171fb6bb1a",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/pyq8knldx9ns6dy",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "df6758a7-ba4c-45fb-a5bd-12521aefbf01",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/ruqymp09lq5f4tn",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "d91ad2f6-92c2-4857-b3d9-27319f614263",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://www.canva.com/design/DAHGEN6RF3c/LSbdo0SGgDwexE8ACOnqOw/edit?ui=eyJEIjp7IlAiOnsiQiI6ZmFsc2V9fX0",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "561419e3-174e-45d5-83fb-5ccd8b6dba32",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "49f749b7-6973-463f-a122-22748aa7da8f",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1dMbmeSLF97L-8tWKC7LfS1cn-oG4KZ_u/view?usp=sharing",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "f1ddc972-7f3a-439f-8b26-38499d514b8d",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/laivq8dilhwr2h9",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "ba925104-cfd1-469d-b636-91e4b621d1c0",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/13nUixQxR3XLcqftxWiqQsY_Dod-C758y/view?usp=sharing",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "13ef471f-9b06-4c40-a9e3-1f668edc8187",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/3763k19950h7o4g",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "e8165d13-1fb1-40d0-a5c7-97ce03c1c315",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/favbl6s3rcwbddm",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "8e9ffb7f-a676-495b-8a0b-4fb1c61bd1ef",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://www.canva.com/design/DAHGKTYgr5U/fHnHwjPlfj6yLsfa1LrjsA/edit",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "133c7b0d-7012-47e1-a6ed-a98e95c6db7a",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "e6cc8572-9783-42bc-94bd-bdc32ccfbac8",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1xvSS8aW9IlOXmIlYY_AjJ4VjlekA_bku/view?usp=sharing",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "48b9836d-dc75-4480-941c-d969718cb5f4",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/h8whz2ipbnc87vs",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "e389a9d0-8349-46b8-9c55-1325f0cfb9a6",
+      "curriculum_id": "55dcf96a-b47b-480d-b171-8caa80eea8d6",
+      "profile_id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/pyr949xcvsolpfu",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "8c89ed3e-9f77-455b-aa86-ffcad52213b4",
+      "curriculum_id": "eb7fb7a2-cfb5-43ee-b7a1-e40fc0e23b09",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://www.canva.com/design/DAHGt4yb5QU/15zhpbvL4m3p5FMmIh_sEg/edit?ui=eyJBIjp7fX0&referrer=https%3A%2F%2Fwww.canva.com%2Fs%2Ftemplates%3Fquery%3Djepang%2Bstyle",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "71ab95e9-9f89-4a81-867e-f626b8596fa7",
+      "curriculum_id": "eb7fb7a2-cfb5-43ee-b7a1-e40fc0e23b09",
+      "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://www.canva.com/design/DAHGt4yb5QU/15zhpbvL4m3p5FMmIh_sEg/edit",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "844379ae-b005-44fe-a53a-bf5519ea8976",
+      "curriculum_id": "eb7fb7a2-cfb5-43ee-b7a1-e40fc0e23b09",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1gmEsWIKFSrNym4k8cchRle0mXhb4UFGA/view?usp=sharing",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "505da525-5f40-4a3d-93b3-fa1a97694995",
+      "curriculum_id": "edcafa66-dde6-4a0f-bff9-308a290d885d",
+      "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1kaNzFB3D2birVbiH6IUmUJzxU8glUj_m/view?usp=sharing",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "372a1631-4900-4b67-a36b-90b51a819235",
+      "curriculum_id": "edcafa66-dde6-4a0f-bff9-308a290d885d",
+      "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/wxpbknu2gdjnhfq",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "6b2487a1-b490-4f2b-92a8-d28b383cca16",
+      "curriculum_id": "edcafa66-dde6-4a0f-bff9-308a290d885d",
+      "profile_id": "49f749b7-6973-463f-a122-22748aa7da8f",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://drive.google.com/file/d/1OkjMwesSmgOkwKtlQJ_TpJQX5oLimrML/view?usp=drivesdk",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    },
+    {
+      "id": "5ef7bc08-abd3-44ee-bb95-1bad1fe06d97",
+      "curriculum_id": "edcafa66-dde6-4a0f-bff9-308a290d885d",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "file_link": "https://canva.link/wxpbknu2gdjnhfq",
+      "status": "pending",
+      "grade": null,
+      "mentor_feedback": null,
+      "is_feedback_read": false,
+      "graded_at": null,
+      "created_at": null,
+      "criteria_scores": {},
+      "is_cloned": false,
+      "cloned_from_submission_id": null,
+      "submitted_by_profile_id": null
+    }
+  ],
+  "v2_quiz_results": [
+    {
+      "id": "2c1671a7-2eb2-41e9-aff1-344f3677e1b6",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "-"
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "e1f4f0cc-bd85-4506-9fcf-3ded66668997",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 3,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": "-"
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "71691994-e3a9-4e5b-9747-e01f8cb0e1c2",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": "Alhamdulillah kelas berjalan dengan baik dan mudah dipahami. Thank you mas dinur"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "04637f53-eef7-45ef-8607-ed4cc07c2336",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "-"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "a5c63dc4-b156-482a-b16b-020d05cdba7a",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 2,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "Alhamdulillah bisa menyimak kelas ini, jadi lebih paham cara membreakdown ide menjadikan konten"
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "e08e4902-d8f1-491b-a412-2d877603608b",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 2,
+        "10": "Alhamdulillah bisa mengikuti kelas ini sampai selesai"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "eb6ca35b-8613-4ba0-b7a8-73d270fe3fd9",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "semangat, mas Dinur! "
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "51b142eb-7ab7-4ac9-828d-dcc67c20c41d",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 3,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": "semangat, mas Dinur! sebenernya yg sebelumnya di no 2 itu kujawab konten, tapi salah. yg bener kan strategi. tapi pas kelas, dan pas kudenger lagi recordingnya, mas DInur bilang \"produk utama sosmed itu konten\". jadi kukira jawabannya konten. bisa tolong jelasin bedanya apa ga ya mas? ehe thank you. oh atau, tiap ada yg salah jawab post test, mungkin next-nya dikasih penjelasan kenapanya kali ya mas? kayak, oke aku jadi tau jawaban benernya itu. but why tho? saran aja ya mass. thank you!"
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "16d131ad-60ce-45ff-9522-f78c2f6a3d82",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 0,
+        "3": 3,
+        "4": 1,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "di part ini masih banyak yang agak bingung. Materi oke sih. "
+      },
+      "score": 60,
+      "created_at": null
+    },
+    {
+      "id": "b7ea6db5-9871-4c82-8d92-cf5963bc5319",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "sudah bagus. mudah dimengerti. "
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "b1e9074f-5765-4783-9af8-8c6eaf799df2",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 1,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": "Sudah Oke. "
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "5a37e8dd-def5-4e1f-ab84-753d804ba8b4",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "g ada mas... aman... maklum... "
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "114461fb-7de1-4ebf-b585-c3ad3579af3a",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "semangat, mas Dinur! btw yg sebelumnya di no 5 aku salah, jawabanku conclusion. karena kukira dalam buat ide juga butuh di-review di akhir (?) boleh tolong dijelasin kenapanya ga ya mas? aku agak bingung karena kayaknya ga ada di deck ya alurnya? maaf sebelumnya mas Dinur, thank you!"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "b996a656-d404-42f7-b47a-85e9c67f352a",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 3,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 3,
+        "10": "harusnya seneng ya bisa ulang test... kynya a sama aja wkwkwkwk"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "fde77335-5a00-4c7b-8427-711aed8f6e9d",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 2,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 2,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 3,
+        "9": 0,
+        "10": "g ada mas... antara seneng dan puyeng aplikasinya down tuh wkwkk"
+      },
+      "score": 60,
+      "created_at": null
+    },
+    {
+      "id": "05111a23-0bee-4822-82fb-ae1fcec528b1",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 0,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 1,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "Materinya padat, akan lebih baik menyampaikannya tidak sekaligus dalam 1 session, sehingga peserta bener-bener paham materinya."
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "13800192-afb2-4e0c-8909-5efd83b77250",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": "Alhamdulillah, materi tidak terlalu panjang dan pembahasannya lumayan bisa dipahami. Jika materi terlalu panjang khawatir tidak terserap semua."
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "09a36437-ea70-408a-a234-42253d75627c",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 0,
+        "1": 2,
+        "2": 1,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 1,
+        "8": 0,
+        "9": 1,
+        "10": "ok banget"
+      },
+      "score": 70,
+      "created_at": null
+    },
+    {
+      "id": "cb9cab30-5b88-47ef-8b4e-c2e724fdd531",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": "ok banget"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "12a30a46-4979-4dcb-bfd1-3027e0f0193e",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "ok banget"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "46d43f47-9b7d-45f9-bdbb-983bea22160a",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "49f749b7-6973-463f-a122-22748aa7da8f",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 0,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "."
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "46c6561e-8fe9-4df9-966c-24da1260cfc8",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "49f749b7-6973-463f-a122-22748aa7da8f",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 1,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": ","
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "f49b0a25-6aa7-4757-884f-db64ee6bdf8f",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "49f749b7-6973-463f-a122-22748aa7da8f",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 2,
+        "2": 0,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "."
+      },
+      "score": 70,
+      "created_at": null
+    },
+    {
+      "id": "011e9a1a-ff42-4324-8ccf-6a95ed2ea1e5",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 3,
+        "10": "Mantap"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "9171f5e2-1c7b-40e5-aa23-5cbbbde3ac4a",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 1,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 3,
+        "10": "mangtap"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "7f36c12d-9fcd-4471-81d7-d0f68271a854",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 1,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "Mantap"
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "c6d9d816-ff23-410a-8409-5ffd88b254df",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "Materinya kalau bisa ada menu downloadnya kak, selain link"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "eb34647b-3b81-4273-bc8e-78382dfc7990",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": "Kalau bolej ada ppt/pdf nya yang bisa di download"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "7859c462-71a6-4040-a90c-19742ff1fd5f",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 2,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "Pdf/ppt materinya supaya biza didownload"
+      },
+      "score": 70,
+      "created_at": null
+    },
+    {
+      "id": "452d3056-9303-441a-8706-8fc217d6a676",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "-"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "beed129f-5539-4b01-aec3-ef6fbf12917d",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 3,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": "-"
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "4e66bcc3-8b9c-4b1f-8dc7-3d59d2aea09d",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 0,
+        "1": 0,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "-"
+      },
+      "score": 70,
+      "created_at": null
+    },
+    {
+      "id": "7ae2a814-798a-42fd-931d-98798f22607f",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 1,
+        "5": 0,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "pada saat memberikan contoh membuat content value, content pillar dan generic content masih kurang jelas.. karena mentor bekerja sendiri."
+      },
+      "score": 60,
+      "created_at": null
+    },
+    {
+      "id": "69da2de5-d502-4260-8004-29c9824c5b27",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "7f569eac-1fb2-4c5a-9074-ca5fa50d3724",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 3,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "Xakeppp"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "d1b9016c-c92c-4876-ad15-f2b3aaa8acf7",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "7f569eac-1fb2-4c5a-9074-ca5fa50d3724",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 1,
+        "4": 1,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 0,
+        "10": "Inii sihh basic yah tapi all goods"
+      },
+      "score": 70,
+      "created_at": null
+    },
+    {
+      "id": "f37a3a94-edac-4deb-8501-68c2a6373be5",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "e6cc8572-9783-42bc-94bd-bdc32ccfbac8",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "Materi bagus dan jelas. Saya personal suka dengan kelas mas Dinur, ngebuka mata saya tentang socmed spesialist. Terimakasih banyak Mas. "
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "042ee26c-f5eb-4cff-8876-f07fa50df378",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "seru bangett! daging, karena langsung kasih tes pemahaman dengan contoh, meskipun masih kegocek. selama ini taunya cuma hook, cta. ternyata ada headline dan ctv juga. "
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "2d2fe1e3-3b64-4610-a5d4-bf59faec1ef2",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 2,
+        "7": 2,
+        "8": 3,
+        "9": 0,
+        "10": "-"
+      },
+      "score": 70,
+      "created_at": null
+    },
+    {
+      "id": "6487ad1b-9524-4efb-853d-ec8aca8019da",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "-"
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "710d6c75-acc7-4292-9724-c440ed2971b0",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "-"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "3f8cd07d-1b01-478e-9b2b-7c5a65b27669",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "Kerenn"
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "2959ded3-2b99-4573-92b0-0ba2535b26ae",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "ok banget"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "4839202d-7be8-4d6b-8424-314637c90b8b",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 0,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "udah mantapp kakk mudah dimengerti besttt"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "90771afd-723d-499f-b464-472c2bb6bd2a",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 3,
+        "10": "materinya udah lengkap, jelas & mudah dipahami kak.. mungkin boleh dikasih contoh buat mentoring private nanti ke aku untuk studi kasus yang lebih spesifik contohnya :D"
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "9b1e3a01-063f-40b6-85fc-63f7a30593fb",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "materinya menarik bangett kak tapi jujurly aku masih bingung membedakan antara konten pillar dengan konten value hehe"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "b71f5229-2791-4a0d-a7f3-084048b32a17",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "12089ea2-7925-4209-ba3a-d6b0976079b9",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": "Cukup dapat di pahami"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "3de74bec-f983-44bd-85c7-e737ce7aadc7",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "12089ea2-7925-4209-ba3a-d6b0976079b9",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 3,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 3,
+        "9": 0,
+        "10": "Cukup dapat di pahami"
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "5ce71075-2cbf-450b-9554-c6cfafc6b11f",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "12089ea2-7925-4209-ba3a-d6b0976079b9",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 2,
+        "5": 2,
+        "6": 1,
+        "7": 0,
+        "8": 3,
+        "9": 0,
+        "10": "Cukup dapat di pahami"
+      },
+      "score": 50,
+      "created_at": null
+    },
+    {
+      "id": "c26e49e0-cc32-4e2d-81a8-9818859764eb",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "Alhamdulillah materinya sangat menarik. Cuma saya masih bingung bedakan headline dan subheadline juga bridge"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "03410ea4-c84a-4ad9-b8b9-d897400b7d78",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 3,
+        "3": 1,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "Sudah bagus kak. banyak ilmu yang di dapat. mungkin banyakin contoh real dr sosmednya untuk ngebedah gitu. jadi deep pembahasannya."
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "8ea4c2bb-5314-4bc7-b308-50bb0f0b5578",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "12089ea2-7925-4209-ba3a-d6b0976079b9",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "Cukup dapat di pahami\n"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "39259ad1-f37f-4b28-b537-13c542809b34",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "as always materinya menarik tapi aku masih bingung sama perbedaan pain point dan gain point kak wkwkwk *curhat lagi :')"
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "ef9c55f5-c318-4bbe-9ca8-cb4aca0b033b",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "Alhamdulillah dapat ilmu baru tentang Copywriting "
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "bf4d7c0b-f76e-47e5-bb0b-354b035e9545",
+      "curriculum_id": "1081276f-1170-449d-8c75-52d70aa2a306",
+      "profile_id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 3,
+        "6": 3,
+        "7": 2,
+        "8": 1,
+        "9": 1,
+        "10": "g ada sih mas"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "7de2d427-4eb8-47e0-8459-a733b671d436",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 3,
+        "7": 3,
+        "8": 3,
+        "9": 2,
+        "10": "-"
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "51d9ff12-f363-4a59-b8c1-d1efb89985dc",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 3,
+        "8": 1,
+        "9": 2,
+        "10": "Hmm jangan terlalu cepet kalo menjelaskan hehe"
+      },
+      "score": 70,
+      "created_at": null
+    },
+    {
+      "id": "00020426-473b-4337-bb31-7cd2f8bfb40c",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 3,
+        "7": 3,
+        "8": 3,
+        "9": 2,
+        "10": "kukira bakal langsung dinilai tugas group mendadaknya wkwk agak penasaran sebenernya gimana hasil analisa singkat kita dari soal tugas grupnya semoga nanti dijelasin. thank you mas Dinur"
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "47ab46ad-d6c2-4258-8f7e-272458e67a8b",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 2,
+        "6": 0,
+        "7": 3,
+        "8": 3,
+        "9": 2,
+        "10": "Tidak ada. Terima kasih"
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "219caef5-519f-4067-9ca5-cd93cc39a360",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 3,
+        "7": 3,
+        "8": 3,
+        "9": 2,
+        "10": "Ok mantap"
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "576967f2-65ab-43f3-be36-53bb5d2328f1",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 3,
+        "7": 2,
+        "8": 3,
+        "9": 2,
+        "10": "Alhamdulillah sedikitnya memahami cara menganalisa sosial media"
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "4b98d39c-0cbd-4a07-a60c-8fdd2867bad1",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 2,
+        "4": 0,
+        "5": 3,
+        "6": 0,
+        "7": 3,
+        "8": 1,
+        "9": 2,
+        "10": "-"
+      },
+      "score": 60,
+      "created_at": null
+    },
+    {
+      "id": "4ca59794-6230-4dbb-aba2-fb12f3f099a7",
+      "curriculum_id": "db1e6935-7e1c-40e4-853f-9c2c93b8fcf6",
+      "profile_id": "8bc0bda5-b788-476e-9966-31206b9fb38d",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 0,
+        "2": 3,
+        "3": 3,
+        "4": 3,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "Ok"
+      },
+      "score": 70,
+      "created_at": null
+    },
+    {
+      "id": "a14c0db9-9135-4c17-a708-8af63a1da040",
+      "curriculum_id": "5917c66f-d299-403b-91f9-35e39161727c",
+      "profile_id": "8bc0bda5-b788-476e-9966-31206b9fb38d",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 1,
+        "2": 2,
+        "3": 0,
+        "4": 1,
+        "5": 0,
+        "6": 2,
+        "7": 2,
+        "8": 2,
+        "9": 1,
+        "10": "Ok"
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "595d4d91-e3d9-4687-8153-e661d2b997ef",
+      "curriculum_id": "5b68acef-b646-442b-8182-3860c146af49",
+      "profile_id": "8bc0bda5-b788-476e-9966-31206b9fb38d",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 1,
+        "1": 3,
+        "2": 0,
+        "3": 0,
+        "4": 1,
+        "5": 2,
+        "6": 2,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": "Ok"
+      },
+      "score": 30,
+      "created_at": null
+    },
+    {
+      "id": "f62f658a-4e0a-4294-8abe-ed2cb0303ea3",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 1,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 3,
+        "7": 0,
+        "8": 3,
+        "9": 2,
+        "10": "Aku gak ikut kelas krn lg outing kantor dan gak bisa pegang hape. Tapi lihat rekamannya aku suka sekali karena pembahasannya dalem dan banyak ilmu baru. Cuma sedih aja gak ikut yang diskusi dadakan. Plis adain remedial buat anak kantoran ini, huhuhu. aku aktif tapi waktunya yang sulit banget aku bagi. huhuhu. "
+      },
+      "score": 80,
+      "created_at": null
+    },
+    {
+      "id": "cf7b7eef-c560-45cb-a8c4-2712c124d43a",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 3,
+        "7": 3,
+        "8": 3,
+        "9": 2,
+        "10": "overall materinya menarik banget tapii kalo boleh kasi saran, kakak kasih contoh dari brand atau campaign tertentu biar lebih kebayang aja kalo ada contoh real case hehe "
+      },
+      "score": 100,
+      "created_at": null
+    },
+    {
+      "id": "b23b41e4-55c2-41ec-805c-cdb8d1d66cb1",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 2,
+        "5": 0,
+        "6": 1,
+        "7": 3,
+        "8": 0,
+        "9": 1,
+        "10": "saya masih banyak belum paham.. mungkin saya harus mengikuti kelas pemula."
+      },
+      "score": 60,
+      "created_at": null
+    },
+    {
+      "id": "62ebff34-df1a-4429-bf60-843139c085ca",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "e6cc8572-9783-42bc-94bd-bdc32ccfbac8",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 3,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 3,
+        "8": 3,
+        "9": 2,
+        "10": "Tidak ada mas... bagus,, menambah pengetahuan walaupun pusing "
+      },
+      "score": 90,
+      "created_at": null
+    },
+    {
+      "id": "81bc5893-985e-47a1-bb02-aa225bb9bf7f",
+      "curriculum_id": "f3399829-ae2b-4247-8746-5e6e9630c7fc",
+      "profile_id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+      "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+      "answers_json": {
+        "0": 2,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 3,
+        "7": 3,
+        "8": 1,
+        "9": 2,
+        "10": "sukanya bikin jantungan aja deh... herman"
+      },
+      "score": 80,
+      "created_at": null
+    }
+  ]
+}
