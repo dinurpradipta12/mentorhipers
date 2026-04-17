@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { 
-  Users, Settings, LogOut, LayoutDashboard, FileText, Target, User, Calendar as CalendarIcon, Sparkles
+  Users, Settings, LogOut, LayoutDashboard, FileText, Target, User, Calendar as CalendarIcon, Sparkles, Palette
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -119,6 +119,13 @@ export default function AdminSidebar({ isSidebarOpen, appSettings }: AdminSideba
               icon={<Settings />} 
               href="/admin/settings" 
               active={pathname === "/admin/settings"}
+              collapsed={!isSidebarOpen} 
+            />
+            <AdminNavItem 
+              label="Login Theme (V2)" 
+              icon={<Palette size={18} />} 
+              href="/admin/settings/portal-theme" 
+              active={pathname === "/admin/settings/portal-theme"}
               collapsed={!isSidebarOpen} 
             />
             <AdminNavItem 

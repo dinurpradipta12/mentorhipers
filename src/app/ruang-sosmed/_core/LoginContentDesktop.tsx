@@ -21,8 +21,10 @@ import { supabaseV2 as supabase } from "@/lib/supabase";
 import { invalidateSessionCache } from "@/lib/authCache";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { usePortalTheme } from "./usePortalTheme";
 
 export default function LoginContentDesktop() {
+   const { theme, loading: themeLoading } = usePortalTheme();
    const router = useRouter();
    const [loading, setLoading] = useState(false);
    const [email, setEmail] = useState("");
@@ -36,6 +38,17 @@ export default function LoginContentDesktop() {
       const t = setTimeout(() => setCooldown(c => c - 1), 1000);
       return () => clearTimeout(t);
    }, [cooldown]);
+
+   // Default fallback values if theme is not loaded yet
+   const primaryGradient = theme?.primary_color || "from-blue-600 to-indigo-700";
+   const secondaryColorClass = theme?.secondary_color || "text-blue-400";
+   const backgroundCss = theme?.background_css || "bg-[radial-gradient(circle_at_30%_20%,_#1e1b4b_0%,_transparent_50%),radial-gradient(circle_at_70%_80%,_#0f172a_0%,_transparent_50%)]";
+   const backgroundBase = theme?.background_base_color || "bg-slate-950";
+   const heroTitle = theme?.hero_title || "Elevate your Creative Career.";
+   const heroSubtitle = theme?.hero_subtitle || "Satu portal terpadu untuk murid Akademi dan tim Agensi B2B. Masuk untuk mengelola tugas, nilai, dan roadmap konten Anda.";
+   const footerText = theme?.footer_text || "V2 Portal Environment (BETA)";
+   const customLogo = theme?.logo_url || "/logo.png";
+
    const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
       setLoading(true);
@@ -119,9 +132,9 @@ export default function LoginContentDesktop() {
    };
 
    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden font-sans selection:bg-blue-500/30 selection:text-white">
+      <div className={`min-h-screen ${backgroundBase} flex items-center justify-center p-6 relative overflow-hidden font-sans selection:bg-blue-500/30 selection:text-white`}>
          {/* Background Magic */}
-         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,_#1e1b4b_0%,_transparent_50%),radial-gradient(circle_at_70%_80%,_#0f172a_0%,_transparent_50%)]"/>
+         <div className={`absolute top-0 left-0 w-full h-full ${backgroundCss}`}/>
          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(circle,white_1px,transparent_1px)] bg-[length:40px_40px]"/>
 
          {/* Floating Blobs */}
@@ -138,25 +151,31 @@ export default function LoginContentDesktop() {
             >
                <div className="flex items-center gap-5">
                   <img
-                     src="/logo.png"
+                     src={customLogo}
                      className="h-20 w-auto object-contain transition-all hover:scale-105 brightness-0 invert"
-                     alt="Ruang Sosmed Logo"
+                     alt="Portal Logo"
                  />
                </div>
 
                <div className="space-y-8">
                   <h2 className="text-5xl md:text-6xl font-black text-white leading-tight tracking-tight">
-                     Elevate your <br/>
-                     <span className="bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Creative Career.</span>
+                     {heroTitle.split('\n').map((line, i) => (
+                        <React.Fragment key={i}>
+                           {i > 0 && <br/>}
+                           {line.includes('Career.') || line.includes('Presence.') ? (
+                               <span className={`bg-gradient-to-r ${primaryGradient} bg-clip-text text-transparent`}>{line}</span>
+                           ) : line}
+                        </React.Fragment>
+                     ))}
                   </h2>
                   <p className="text-slate-400 text-lg font-medium leading-relaxed max-w-md">
-                     Satu portal terpadu untuk murid Akademi dan tim Agensi B2B. Masuk untuk mengelola tugas, nilai, dan roadmap konten Anda.
+                     {heroSubtitle}
                   </p>
                </div>
 
                <div className="grid grid-cols-2 gap-4 max-w-md">
                   <div className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-3">
-                     <GraduationCap className="text-blue-400" size={24}/>
+                     <GraduationCap className={secondaryColorClass} size={24}/>
                      <p className="text-xs font-black text-white">LMS Academy</p>
                      <p className="text-[10px] font-bold text-slate-500">Pusat pengerjaan tugas murid batch & grading.</p>
                   </div>
@@ -225,7 +244,7 @@ export default function LoginContentDesktop() {
 
                      <Button
                         disabled={loading || cooldown > 0}
-                        className="w-full h-20 rounded-[32px] bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-black text-lg shadow-2xl shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-4 hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+                        className={`w-full h-20 rounded-[32px] bg-gradient-to-r ${primaryGradient} text-white font-black text-lg shadow-2xl shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-4 hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed`}
                      >
                         {loading ? (
                            <div className="w-6 h-6 border-4 border-white/20 border-t-white rounded-full animate-spin"/>
@@ -250,7 +269,7 @@ export default function LoginContentDesktop() {
          </div>
 
          <footer className="absolute bottom-10 text-[10px] font-black text-slate-700">
-            V2 Portal Environment (BETA)
+            {footerText}
          </footer>
       </div>
    );
