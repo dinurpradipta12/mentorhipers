@@ -17,6 +17,7 @@ import {
   User,
   Users,
   Layout,
+  Heart,
   MessageSquare,
   Zap,
   CheckCircle2,
@@ -71,6 +72,13 @@ export default function PortalContentMobile({ id }: { id: string }) {
   const [membership, setMembership] = useState<any>(null);
   const [myQuizResults, setMyQuizResults] = useState<any[]>([]);
   const [myAssignments, setMyAssignments] = useState<any[]>([]);
+  const [myCustomGroups, setMyCustomGroups] = useState<any[]>([]);
+  const [selectedGroupToRepresent, setSelectedGroupToRepresent] = useState<string | null>(null);
+
+  // Feed States
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [activeArticle, setActiveArticle] = useState<any>(null);
+  const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [isAssetsExpanded, setIsAssetsExpanded] = useState(false);
@@ -118,7 +126,7 @@ export default function PortalContentMobile({ id }: { id: string }) {
        return;
     }
 
-    const [bRes, cRes, pRes, mRes, qRes, sRes, allMemsRes, allQuizRes, allSubRes] = await Promise.all([
+    const [bRes, cRes, pRes, mRes, qRes, sRes, allMemsRes, allQuizRes, allSubRes, customGrpRes, annRes] = await Promise.all([
       supabase.from('v2_workspaces').select('id, name, description, type, start_date, end_date, max_members, status, settings, schedules, created_at').eq('id', id).single(),
       supabase.from('v2_curriculums').select('id, title, type, module_name, description, due_date, video_url, quiz_data, assets_json, is_published, created_at').eq('workspace_id', id).order('created_at', { ascending: true }),
       supabase.from('v2_profiles').select('id, full_name, username, role, avatar_url, updated_at').eq('id', user.id).single(),
@@ -128,7 +136,9 @@ export default function PortalContentMobile({ id }: { id: string }) {
      //Leaderboard data
       supabase.from('v2_memberships').select('*, v2_profiles:profile_id(full_name, avatar_url)').eq('workspace_id', id),
       supabase.from('v2_quiz_results').select('profile_id, curriculum_id, score').eq('workspace_id', id),
-      supabase.from('v2_submissions').select('profile_id, curriculum_id, grade').eq('workspace_id', id)
+      supabase.from('v2_submissions').select('profile_id, curriculum_id, grade').eq('workspace_id', id),
+      supabase.from('v2_assignment_group_members').select('group_id, v2_assignment_groups(id, name)').eq('profile_id', user.id),
+      supabase.from('v2_announcements').select('*').eq('workspace_id', id).order('is_pinned', { ascending: false }).order('created_at', { ascending: false })
     ]);
 
     const batchData = bRes.data;
@@ -147,6 +157,17 @@ export default function PortalContentMobile({ id }: { id: string }) {
     setMembership(membershipData);
     setMyQuizResults(quizResults);
     setMyAssignments(assignmentSubmissions);
+    
+    if (customGrpRes.data) {
+        setMyCustomGroups(customGrpRes.data.map((g: any) => ({ 
+           id: g.v2_assignment_groups?.id, 
+           name: g.v2_assignment_groups?.name 
+        })));
+    }
+
+    if (annRes.data) {
+        setAnnouncements(annRes.data);
+    }
 
     if (curriculumData.length > 0) {
        setSelectedLesson(curriculumData.find((c: any) => c.type === 'material') || curriculumData[0]);
@@ -382,12 +403,37 @@ export default function PortalContentMobile({ id }: { id: string }) {
     }
  };
 
- const handleReviewQuiz = (task: any, result: any) => {
-    setActiveQuiz(task);
-    setQuizAnswers(result.answers_json || {});
-    setLastQuizResult(result.score);
-    setIsResultModalOpen(true);
- };
+  const handleReviewQuiz = (task: any, result: any) => {
+     setActiveQuiz(task);
+     setQuizAnswers(result.answers_json || {});
+     setLastQuizResult(result.score);
+     setIsResultModalOpen(true);
+  };
+
+  const handleReaction = async (annId: string) => {
+    if (!currentUser) return;
+    try {
+      const ann = announcements.find(a => a.id === annId);
+      if (!ann) return;
+
+      let newReactions = Array.isArray(ann.reactions) ? [...ann.reactions] : [];
+      if (newReactions.includes(currentUser.id)) {
+          newReactions = newReactions.filter(id => id !== currentUser.id);
+      } else {
+          newReactions.push(currentUser.id);
+      }
+
+      const { error } = await supabase.from('v2_announcements').update({ reactions: newReactions }).eq('id', annId);
+      if (!error) {
+          setAnnouncements(prev => prev.map(a => a.id === annId ? { ...a, reactions: newReactions } : a));
+          if (activeArticle && activeArticle.id === annId) {
+             setActiveArticle({ ...activeArticle, reactions: newReactions });
+          }
+      }
+    } catch (err) {
+      console.error("handleReaction failed", err);
+    }
+  };
 
   const handleOpenSubmitModal = (task: any) => {
      setActiveTask(task);
@@ -400,23 +446,25 @@ export default function PortalContentMobile({ id }: { id: string }) {
      if (!submitForm.file_link) { alert("Sediakan link tugas!"); return; }
      setIsLoading(true);
      try {
+        const groupIdToUse = selectedGroupToRepresent || activeTask.assignment_group_id || null;
         const { data: mainSubmission, error } = await supabase.from('v2_submissions').insert([{
            curriculum_id: activeTask.id,
            profile_id: currentUser.id,
            workspace_id: id,
            file_link: submitForm.file_link,
-           status: 'pending'
+           status: 'pending',
+           assignment_group_id: groupIdToUse
         }]).select().single();
         if (error) throw error;
         
         // ==========================================
         // AUTO-CLONING LOGIC FOR GROUP TASKS
         // ==========================================
-        if (activeTask.type === 'group_assignment' || activeTask.assignment_group_id) {
+        if (activeTask.type === 'group_assignment' || activeTask.assignment_group_id || selectedGroupToRepresent) {
            if (membership) {
               let membersToClone = [];
-              if (activeTask.assignment_group_id) {
-                  const { data } = await supabase.from('v2_assignment_group_members').select('profile_id').eq('group_id', activeTask.assignment_group_id);
+              if (groupIdToUse) {
+                  const { data } = await supabase.from('v2_assignment_group_members').select('profile_id').eq('group_id', groupIdToUse);
                   if (data) membersToClone = data.map((d:any) => d.profile_id).filter((pid:any) => pid !== currentUser.id);
               } else if (membership.group_name || membership.group) {
                   membersToClone = groupMembers.filter((m:any) => m.profile_id !== currentUser.id).map((m:any) => m.profile_id);
@@ -431,16 +479,18 @@ export default function PortalContentMobile({ id }: { id: string }) {
                     status: 'pending',
                     is_cloned: true,
                     cloned_from_submission_id: mainSubmission.id,
-                    submitted_by_profile_id: currentUser.id
+                    submitted_by_profile_id: currentUser.id,
+                    assignment_group_id: groupIdToUse
                  }));
                  await supabase.from('v2_submissions').insert(clonePayload);
               }
            }
         }
         
+        alert("Tugas Kelompok Berhasil Terkirim! \u2728\n\nTugas grup telah otomatis dibagikan ke seluruh anggota tim.");
         setIsSubmitModalOpen(false);
-        initMobile();
-        alert("Berhasil dikirim! Tugas grup telah otomatis dibagikan ke anggota tim. 🛸✨");
+        setSelectedGroupToRepresent(null);
+        await initMobile();
      } catch (err: any) { alert(err.message); }
      finally { setIsLoading(false); }
   };
@@ -652,6 +702,69 @@ export default function PortalContentMobile({ id }: { id: string }) {
                      ))}
                   </div>
                </motion.div>
+            </div>
+         )}
+
+         {activeTab === 'board' && (
+            <div className="p-6 pb-32 space-y-10">
+               <div className="space-y-1">
+                  <h3 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">Board Info</h3>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Update & Artikel Terbaru Mentor</p>
+               </div>
+
+               {announcements.length > 0 ? (
+                  <div className="space-y-8">
+                     {announcements.map((ann) => (
+                        <motion.div 
+                           key={ann.id}
+                           onClick={() => {
+                              window.location.href = `/ruang-sosmed/board/${id}/${ann.id}`;
+                           }}
+                           className="bg-white rounded-[44px] shadow-2xl shadow-slate-200/60 overflow-hidden border border-slate-50 flex flex-col active:scale-95 transition-all"
+                        >
+                           <div className="aspect-[16/10] bg-slate-100 relative">
+                              {ann.image_url ? (
+                                 <img src={ann.image_url} alt={ann.title} className="w-full h-full object-cover"/>
+                              ) : (
+                                 <div className="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-900 flex items-center justify-center">
+                                    <Layout size={40} className="text-white/20"/>
+                                 </div>
+                              )}
+                              <div className="absolute top-6 left-6 px-4 py-2 rounded-xl bg-white/90 backdrop-blur-md text-[9px] font-black uppercase tracking-widest text-blue-600 shadow-sm border border-white/50">
+                                 {ann.category}
+                              </div>
+                           </div>
+                           <div className="p-8 space-y-4">
+                              <h4 className="text-xl font-black text-slate-900 leading-tight uppercase tracking-tighter">{ann.title}</h4>
+                              <p className="text-xs text-slate-400 font-bold line-clamp-2 leading-relaxed">{ann.summary}</p>
+                              <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
+                                 <div className="flex items-center gap-3">
+                                    <button 
+                                       onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleReaction(ann.id);
+                                       }}
+                                       className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black transition-all ${ann.reactions?.includes(currentUser?.id) ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-50 text-slate-400 border border-slate-50'}`}
+                                    >
+                                       <Heart size={14} fill={ann.reactions?.includes(currentUser?.id) ? "currentColor" : "none"}/>
+                                       {ann.reactions?.length || 0}
+                                    </button>
+                                    <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">{new Date(ann.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                                 </div>
+                                 <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                    <ChevronRight size={18}/>
+                                 </div>
+                              </div>
+                           </div>
+                        </motion.div>
+                     ))}
+                  </div>
+               ) : (
+                  <div className="py-20 text-center space-y-4 bg-white rounded-[44px] border border-slate-50 border-dashed">
+                     <Layout size={40} className="mx-auto text-slate-200"/>
+                     <p className="text-xs font-black text-slate-300 uppercase tracking-widest">Belum ada info terbaru.</p>
+                  </div>
+               )}
             </div>
          )}
 
@@ -1139,6 +1252,70 @@ export default function PortalContentMobile({ id }: { id: string }) {
 
       {/* 7. ASSIGNMENT SUBMIT MODAL - MOBILE */}
       <AnimatePresence>
+         {/* ARTICLE MODAL */}
+         <AnimatePresence>
+            {isArticleModalOpen && activeArticle && (
+               <div className="fixed inset-0 z-[200] bg-slate-950 flex flex-col">
+                  {/* Header */}
+                  <div className="relative h-[40vh] w-full shrink-0">
+                     {activeArticle.image_url ? (
+                        <img src={activeArticle.image_url} alt={activeArticle.title} className="w-full h-full object-cover"/>
+                     ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center">
+                           <Layout size={60} className="text-white/20"/>
+                        </div>
+                     )}
+                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"/>
+                     <button 
+                        onClick={() => setIsArticleModalOpen(false)}
+                        className="absolute top-12 right-6 w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white flex items-center justify-center"
+                     >
+                        <X size={24}/>
+                     </button>
+                     <div className="absolute bottom-10 left-8 right-8 space-y-4">
+                        <div className="px-4 py-2 bg-blue-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-white w-fit">
+                           {activeArticle.category}
+                        </div>
+                        <h2 className="text-3xl font-black text-white leading-tight uppercase tracking-tighter">{activeArticle.title}</h2>
+                     </div>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="flex-1 bg-white rounded-t-[48px] -mt-8 relative z-10 p-10 overflow-y-auto space-y-10">
+                     <div className="flex items-center justify-between py-2 border-b border-slate-50">
+                        <div className="flex items-center gap-3">
+                           <button 
+                              onClick={() => handleReaction(activeArticle.id)}
+                              className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl transition-all ${activeArticle.reactions?.includes(currentUser?.id) ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-50 text-slate-400'}`}
+                           >
+                              <Heart size={18} fill={activeArticle.reactions?.includes(currentUser?.id) ? "currentColor" : "none"}/>
+                              <span className="text-sm font-black">{activeArticle.reactions?.length || 0}</span>
+                           </button>
+                        </div>
+                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Post: {new Date(activeArticle.created_at).toLocaleDateString('id-ID')}</span>
+                     </div>
+
+                     <div className="space-y-8">
+                        <p className="text-base font-bold text-slate-500 italic leading-relaxed pl-6 border-l-4 border-blue-500">
+                           {activeArticle.summary}
+                        </p>
+                        
+                        <div className="text-base text-slate-700 leading-loose whitespace-pre-wrap font-medium">
+                           {activeArticle.content}
+                        </div>
+                     </div>
+
+                     <button 
+                        onClick={() => setIsArticleModalOpen(false)}
+                        className="w-full h-16 bg-slate-950 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-slate-900/40"
+                     >
+                        Done Reading
+                     </button>
+                  </div>
+               </div>
+            )}
+         </AnimatePresence>
+
          {isSubmitModalOpen && (
             <div className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-xl p-6 flex items-end pb-12">
                <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="w-full bg-white rounded-[40px] p-8 space-y-8 shadow-2xl">
@@ -1150,12 +1327,30 @@ export default function PortalContentMobile({ id }: { id: string }) {
                      <h2 className="text-xl font-black text-slate-900 tracking-tighter">Submit Assignment</h2>
                      <p className="text-[10px] font-medium text-slate-400">Input link Canva/Gdrive yang bisa diakses oleh mentor.</p>
                   </div>
-                  <input 
-                     value={submitForm.file_link}
-                     onChange={(e) => setSubmitForm({ file_link: e.target.value })}
-                     placeholder="https://canva.com/..."
-                     className="w-full h-14 bg-slate-50 rounded-2xl px-6 text-base font-bold border border-slate-100 focus:border-blue-500 focus:outline-none transition-all"
-                 />
+                  <div className="space-y-4">
+                     <input 
+                        value={submitForm.file_link}
+                        onChange={(e) => setSubmitForm({ file_link: e.target.value })}
+                        placeholder="https://canva.com/..."
+                        className="w-full h-14 bg-slate-50 rounded-2xl px-6 text-base font-bold border border-slate-100 focus:border-blue-500 focus:outline-none transition-all"
+                     />
+
+                     {(activeTask?.type === 'group_assignment' || activeTask?.assignment_group_id) && myCustomGroups.length > 0 && (
+                        <div className="space-y-2">
+                            <select 
+                               value={selectedGroupToRepresent || ''}
+                               onChange={(e) => setSelectedGroupToRepresent(e.target.value)}
+                               className="w-full h-14 bg-slate-50 rounded-2xl px-6 text-sm font-bold border border-slate-100 focus:border-blue-500 focus:outline-none transition-all outline-none"
+                            >
+                               <option value="">-- Representing Group? --</option>
+                               {myCustomGroups.map(g => (
+                                  <option key={g.id} value={g.id}>{g.name}</option>
+                               ))}
+                            </select>
+                            <p className="text-[9px] font-bold text-blue-500 ml-2 uppercase tracking-tighter">✨ Auto-clone to teammates!</p>
+                        </div>
+                     )}
+                  </div>
                   <Button onClick={handleSubmitAssignment} disabled={isLoading} className="w-full h-14 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl shadow-indigo-100">
                      SUBMIT NOW
                   </Button>
@@ -1169,8 +1364,8 @@ export default function PortalContentMobile({ id }: { id: string }) {
          {[
             { id: 'home', icon: <Home size={22} strokeWidth={2.5}/>, label: 'Home' },
             { id: 'learning', icon: <PlayCircle size={22} strokeWidth={2.5}/>, label: 'Classes' },
+            { id: 'board', icon: <Layout size={22} strokeWidth={2.5}/>, label: 'Feed' },
             { id: 'tasks', icon: <FileText size={22} strokeWidth={2.5}/>, label: 'Tasks' },
-            { id: 'ranking', icon: <Trophy size={22} strokeWidth={2.5}/>, label: 'Hall of Fame' },
             { id: 'profile', icon: <User size={22} strokeWidth={2.5}/>, label: 'Me' }
          ].map((t) => (
             <button key={t.id} onClick={() => setActiveTab(t.id)} className={`relative flex flex-col items-center justify-center gap-1 transition-all ${activeTab === t.id ? 'text-sky-600 scale-105 font-black' : 'text-slate-400 font-bold'}`}>

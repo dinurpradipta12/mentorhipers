@@ -43,6 +43,11 @@ import {
   Fingerprint,
   Camera,
   Eye,
+  Layout,
+  Heart,
+  ArrowRight,
+  MessageCircle,
+  Share2,
   LogOut,
   User
 } from "lucide-react";
@@ -113,6 +118,13 @@ export default function PortalContentDesktop({ id }: { id: string }) {
   
   const [myQuizResults, setMyQuizResults] = useState<any[]>([]);
   const [myAssignments, setMyAssignments] = useState<any[]>([]);
+  const [myCustomGroups, setMyCustomGroups] = useState<any[]>([]);
+  const [selectedGroupToRepresent, setSelectedGroupToRepresent] = useState<string | null>(null);
+
+  // Community Feed States
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [activeArticle, setActiveArticle] = useState<any>(null);
+  const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
   
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
@@ -218,7 +230,8 @@ export default function PortalContentDesktop({ id }: { id: string }) {
         fetchBatchDetail(),
         fetchCurriculum(),
         fetchStudents(),
-        fetchMySubmissions(user.id)
+        fetchMySubmissions(user.id),
+        fetchAnnouncements()
       ]);
       console.log("✅ Initialization Complete.");
     } catch (err) {
@@ -246,6 +259,55 @@ export default function PortalContentDesktop({ id }: { id: string }) {
       .eq('profile_id', userId)
       .eq('workspace_id', resolvedParams.id);
     if (aData) setMyAssignments(aData);
+
+    //3. My Custom Groups (Hybrid Group Assignment Feature)
+    const { data: gData } = await supabase
+      .from('v2_assignment_group_members')
+      .select('group_id, v2_assignment_groups(id, name)')
+      .eq('profile_id', userId);
+    
+    if (gData) {
+        setMyCustomGroups(gData.map((g: any) => ({ 
+           id: g.v2_assignment_groups?.id, 
+           name: g.v2_assignment_groups?.name 
+        })));
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('v2_announcements')
+        .select('*')
+        .eq('workspace_id', resolvedParams.id)
+        .order('is_pinned', { ascending: false })
+        .order('created_at', { ascending: false });
+      if (!error && data) setAnnouncements(data);
+    } catch (err) {
+      console.error("fetchAnnouncements failed", err);
+    }
+  };
+
+  const handleReaction = async (annId: string) => {
+    if (!currentUser) return;
+    try {
+      const ann = announcements.find(a => a.id === annId);
+      if (!ann) return;
+
+      let newReactions = Array.isArray(ann.reactions) ? [...ann.reactions] : [];
+      if (newReactions.includes(currentUser.id)) {
+          newReactions = newReactions.filter(id => id !== currentUser.id);
+      } else {
+          newReactions.push(currentUser.id);
+      }
+
+      const { error } = await supabase.from('v2_announcements').update({ reactions: newReactions }).eq('id', annId);
+      if (!error) {
+          setAnnouncements(prev => prev.map(a => a.id === annId ? { ...a, reactions: newReactions } : a));
+      }
+    } catch (err) {
+      console.error("handleReaction failed", err);
+    }
   };
 
   const fetchStudents = async () => {
@@ -443,13 +505,15 @@ export default function PortalContentDesktop({ id }: { id: string }) {
 
      setIsLoading(true);
      try {
+        const groupIdToUse = selectedGroupToRepresent || activeTask.assignment_group_id || null;
         const { data: mainSubmission, error } = await supabase.from('v2_submissions').insert([
            {
               curriculum_id: activeTask.id,
               profile_id: currentUser.id,
               workspace_id: resolvedParams.id,
               file_link: submitForm.file_link,
-              status: 'pending'
+              status: 'pending',
+              assignment_group_id: groupIdToUse
            }
         ]).select().single();
         if (error) throw error;
@@ -569,11 +633,12 @@ export default function PortalContentDesktop({ id }: { id: string }) {
   }
 
   const TABS = [
-    { id: "learning", label: "Class Material (LMS)", icon: <PlayCircle size={16}/> },
-    { id: "assignments", label: "My Assignments", icon: <FileText size={16}/> },
-    ...(students && currentUser && students.find((s: any) => s.profile_id === currentUser?.id)?.group_name && students.find((s: any) => s.profile_id === currentUser?.id)?.group_name !== 'Unassigned' ? [{ id: "group", label: "Challenge Team", icon: <Users size={16}/> }] : []),
-    { id: "results", label: "Learning Analytics", icon: <BarChart3 size={16}/> },
-    { id: "attendance", label: "Attendance Log", icon: <CalendarCheck size={16}/> }
+    { id: "learning", label: "Learning Center", icon: <PlayCircle size={16}/> },
+    { id: "board", label: "Community Feed", icon: <Layout size={16}/> },
+    { id: "assignments", label: "My Tasks", icon: <FileText size={16}/> },
+    ...(students && currentUser && students.find((s: any) => s.profile_id === currentUser?.id)?.group_name && students.find((s: any) => s.profile_id === currentUser?.id)?.group_name !== 'Unassigned' ? [{ id: "group", label: "My Team", icon: <Users size={16}/> }] : []),
+    { id: "results", label: "Analytics", icon: <BarChart3 size={16}/> },
+    { id: "attendance", label: "Presence", icon: <CalendarCheck size={16}/> }
   ];
 
   return (
@@ -804,6 +869,97 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                     </Card>
                  )}
               </div>
+           </div>
+        )}
+
+        {activeTab === 'board' && (
+           <div className="space-y-12">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-6">
+                 <div className="space-y-1">
+                    <h3 className="text-3xl font-black text-[#0F172A] tracking-tighter">Community Board</h3>
+                    <p className="text-sm font-bold text-slate-400">Update terbaru, pengumuman, dan artikel bacaan untukmu</p>
+                 </div>
+                 <div className="flex items-center gap-3">
+                    {['Semua', 'Pengumuman', 'Artikel', 'Tips'].map(cat => (
+                       <button key={cat} className="px-5 py-2.5 rounded-2xl bg-white border border-slate-100 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm">
+                          {cat}
+                       </button>
+                    ))}
+                 </div>
+              </div>
+
+              {announcements.length > 0 ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                    {announcements.map((ann) => (
+                       <motion.div 
+                         key={ann.id}
+                         whileHover={{ y: -8 }}
+                         onClick={() => {
+                            if (ann.category === 'Pengumuman' && ann.image_url) {
+                               setActiveArticle(ann);
+                               setIsArticleModalOpen(true);
+                            } else {
+                               window.location.href = `/ruang-sosmed/board/${resolvedParams.id}/${ann.id}`;
+                            }
+                         }}
+                         className="group cursor-pointer bg-white rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden flex flex-col transition-all active:scale-95"
+                       >
+                          <div className="aspect-[16/11] w-full bg-slate-100 relative overflow-hidden">
+                             {ann.image_url ? (
+                                <img src={ann.image_url} alt={ann.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"/>
+                             ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-blue-600">
+                                   <Layout size={40} className="text-white/20"/>
+                                </div>
+                             )}
+                             <div className="absolute top-8 left-8 px-5 py-2.5 rounded-2xl bg-white/90 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-blue-600 shadow-xl border border-white/50">
+                                {ann.category}
+                             </div>
+                             {ann.is_pinned && (
+                                <div className="absolute top-8 right-8 w-12 h-12 rounded-2xl bg-amber-400 text-white flex items-center justify-center shadow-xl border-4 border-white">
+                                   <Zap size={22} fill="currentColor"/>
+                                </div>
+                             )}
+                          </div>
+                          
+                          <div className="p-10 flex-1 flex flex-col gap-6">
+                             <h4 className="text-2xl font-black text-slate-900 leading-tight group-hover:text-blue-600 transition-colors uppercase tracking-tighter">{ann.title}</h4>
+                             <p className="text-sm text-slate-400 font-medium leading-relaxed line-clamp-3">{ann.summary}</p>
+                             
+                             <div className="mt-auto pt-8 border-t border-slate-50 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                   <button 
+                                     onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleReaction(ann.id);
+                                     }}
+                                     className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl transition-all ${ann.reactions?.includes(currentUser?.id) ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-50 text-slate-400 border border-slate-100 hover:bg-rose-50 hover:text-rose-600'}`}
+                                   >
+                                      <Heart size={16} fill={ann.reactions?.includes(currentUser?.id) ? "currentColor" : "none"}/>
+                                      <span className="text-xs font-black">{ann.reactions?.length || 0}</span>
+                                   </button>
+                                   <div className="h-4 w-[1px] bg-slate-100 mx-2"/>
+                                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{new Date(ann.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</p>
+                                </div>
+                                <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                                   <ArrowRight size={18}/>
+                                </div>
+                             </div>
+                          </div>
+                       </motion.div>
+                    ))}
+                 </div>
+              ) : (
+                 <div className="flex flex-col items-center justify-center py-32 space-y-8 bg-white rounded-[56px] border border-slate-100 border-dashed">
+                    <div className="w-24 h-24 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-200">
+                       <Layout size={40}/>
+                    </div>
+                    <div className="text-center space-y-2">
+                       <h4 className="text-xl font-black text-slate-900 uppercase tracking-widest">Feed is quiet today...</h4>
+                       <p className="text-sm text-slate-400 font-bold uppercase tracking-wider">Tunggu update seru berikutnya dari mentor!</p>
+                    </div>
+                 </div>
+              )}
            </div>
         )}
 
@@ -1495,6 +1651,129 @@ export default function PortalContentDesktop({ id }: { id: string }) {
           })()}
         </AnimatePresence>
 
+        {/* PHOTO LIGHTBOX (Pengumuman) */}
+        <AnimatePresence>
+          {isArticleModalOpen && activeArticle && activeArticle.category === 'Pengumuman' && (
+             <motion.div
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               onClick={() => setIsArticleModalOpen(false)}
+               className="fixed inset-0 z-[300] flex items-center justify-center p-4 md:p-12 bg-slate-950/90 backdrop-blur-2xl cursor-zoom-out"
+             >
+                <motion.div
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0.9 }}
+                  onClick={e => e.stopPropagation()}
+                  className="relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[32px] shadow-2xl cursor-default"
+                >
+                   {activeArticle.image_url && (
+                      <img src={activeArticle.image_url} alt={activeArticle.title} className="w-full h-auto max-h-[85vh] object-contain rounded-[32px]"/>
+                   )}
+                   <div className="absolute top-4 right-4">
+                      <button onClick={() => setIsArticleModalOpen(false)} className="p-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl text-white hover:bg-white/20 transition-all">
+                         <X size={22}/>
+                      </button>
+                   </div>
+                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-8 rounded-b-[32px]">
+                      <span className="px-4 py-2 bg-blue-500 rounded-xl text-[10px] font-black uppercase tracking-widest text-white">{activeArticle.category}</span>
+                      <h3 className="text-2xl font-black text-white mt-3 leading-tight">{activeArticle.title}</h3>
+                      {activeArticle.summary && <p className="text-sm text-white/60 mt-2 leading-relaxed">{activeArticle.summary}</p>}
+                   </div>
+                </motion.div>
+             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ARTICLE READING MODAL (Artikel/Tips/etc) */}
+        <AnimatePresence>
+          {isArticleModalOpen && activeArticle && activeArticle.category !== 'Pengumuman' && (
+             <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 md:p-12 bg-slate-900/60 backdrop-blur-3xl">
+                <motion.div 
+                  initial={{ opacity: 0, y: 100 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 100 }}
+                  className="w-full max-w-5xl h-full max-h-[90vh] bg-white rounded-[56px] shadow-3xl overflow-hidden flex flex-col md:flex-row border border-white/20"
+                >
+                   {/* Left: Image/Visual Side (Desktop) */}
+                   <div className="hidden md:block w-2/5 h-full bg-slate-100 relative overflow-hidden shrink-0">
+                      {activeArticle.image_url ? (
+                         <img src={activeArticle.image_url} alt={activeArticle.title} className="w-full h-full object-cover"/>
+                      ) : (
+                         <div className="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-900 flex items-center justify-center">
+                            <Layout size={80} className="text-white/10"/>
+                         </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"/>
+                      <div className="absolute bottom-12 left-12 right-12 text-white space-y-4">
+                         <div className="px-4 py-2 bg-blue-500 rounded-xl text-[10px] font-black uppercase tracking-widest w-fit">
+                            {activeArticle.category}
+                         </div>
+                         <h2 className="text-3xl font-black leading-tight tracking-tighter uppercase">{activeArticle.title}</h2>
+                      </div>
+                   </div>
+
+                   {/* Right: Content Side */}
+                   <div className="flex-1 overflow-y-auto p-8 md:p-16 lg:p-20 flex flex-col gap-10 scrollbar-hide">
+                      <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
+                               <MessageCircle size={24}/>
+                            </div>
+                            <div>
+                               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Post by Mentor</p>
+                               <p className="text-xs font-bold text-slate-900">{new Date(activeArticle.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                            </div>
+                         </div>
+                         <button onClick={() => setIsArticleModalOpen(false)} className="p-4 bg-slate-50 rounded-2xl text-slate-300 hover:text-rose-500 transition-all active:scale-90">
+                            <X size={24}/>
+                         </button>
+                      </div>
+
+                      <div className="space-y-8">
+                         <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-[1.1]">{activeArticle.title}</h1>
+                         
+                         <div className="flex items-center gap-6">
+                            <button 
+                               onClick={() => handleReaction(activeArticle.id)}
+                               className={`flex items-center gap-2 px-6 py-3 rounded-2xl transition-all ${activeArticle.reactions?.includes(currentUser?.id) ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-50 text-slate-400 border border-slate-100'}`}
+                            >
+                               <Heart size={20} fill={activeArticle.reactions?.includes(currentUser?.id) ? "currentColor" : "none"}/>
+                               <span className="text-sm font-black">{activeArticle.reactions?.length || 0} Likes</span>
+                            </button>
+                            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+                               <Share2 size={18}/>
+                            </div>
+                         </div>
+
+                         <div className="h-1 w-20 bg-blue-600 rounded-full"/>
+
+                         <div className="prose prose-slate max-w-none">
+                            <p className="text-lg md:text-xl font-bold text-slate-600 italic leading-relaxed border-l-8 border-blue-50 pl-8 mb-10">
+                                {activeArticle.summary}
+                            </p>
+                            
+                            <div className="text-lg text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
+                               {activeArticle.content}
+                            </div>
+                         </div>
+                      </div>
+
+                      <div className="mt-auto pt-12">
+                         <button 
+                            onClick={() => setIsArticleModalOpen(false)}
+                            className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black text-sm uppercase shadow-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-3"
+                         >
+                            SELESAI MEMBACA <Check size={20}/>
+                         </button>
+                      </div>
+                   </div>
+                </motion.div>
+             </div>
+          )}
+        </AnimatePresence>
+
         {/* SUBMIT ASSIGNMENT MODAL (Non-Quiz) */}
          <AnimatePresence>
            {isSubmitModalOpen && (
@@ -1532,6 +1811,23 @@ export default function PortalContentDesktop({ id }: { id: string }) {
                              className="w-full h-16 rounded-[24px] bg-slate-50 border border-slate-100 px-8 text-sm font-bold focus:border-blue-500/50 focus:outline-none transition-all"
                          />
                        </div>
+
+                       {(activeTask?.type === 'group_assignment' || activeTask?.assignment_group_id) && myCustomGroups.length > 0 && (
+                          <div className="space-y-2">
+                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">🗳️ MEWAKILI KELOMPOK (Daftar Tim)</label>
+                             <select 
+                                value={selectedGroupToRepresent || ''}
+                                onChange={(e) => setSelectedGroupToRepresent(e.target.value)}
+                                className="w-full h-16 rounded-[24px] bg-slate-50 border border-slate-100 px-8 text-sm font-bold focus:border-blue-500/50 focus:outline-none transition-all outline-none"
+                             >
+                                <option value="">-- Pilih Kelompok Kamu --</option>
+                                {myCustomGroups.map(g => (
+                                   <option key={g.id} value={g.id}>{g.name}</option>
+                                ))}
+                             </select>
+                             <p className="text-[9px] font-bold text-blue-500 ml-4 uppercase tracking-tighter">✨ Tugas otomatis dikloning ke teman satu tim!</p>
+                          </div>
+                       )}
                     </div>
 
                     <Button 

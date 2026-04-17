@@ -43,9 +43,13 @@ import {
   MoreVertical,
   Medal,
   UserX,
-  ShuffleIcon,
+  Layout,
+  Heart,
+  Edit3,
   ArrowRight,
-  User
+  ShuffleIcon,
+  User,
+  Camera
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
@@ -53,7 +57,7 @@ import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
-import { getYouTubeEmbedUrl } from "@/lib/utils";
+import { getYouTubeEmbedUrl, compressImage } from "@/lib/utils";
 //Server Actions replaced with fetch calls to Edge-compatible API routes
 
 import dynamic from "next/dynamic";
@@ -168,6 +172,23 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const [customGroups, setCustomGroups] = useState<any[]>([]);
   const [isCustomGroupModalOpen, setIsCustomGroupModalOpen] = useState(false);
   const [customGroupForm, setCustomGroupForm] = useState({ name: '', description: '', members: [] as string[] });
+
+  // Feed Board States
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [isAnnModalOpen, setIsAnnModalOpen] = useState(false);
+  const [annForm, setAnnForm] = useState({ 
+      category: 'Umum', 
+      title: '', 
+      summary: '', 
+      content: '', 
+      image_url: '', 
+      gallery_images: [] as string[],
+      is_pinned: false 
+  });
+  const [isUploading, setIsUploading] = useState(false);
+  const [isGalleryUploading, setIsGalleryUploading] = useState(false);
+  const [editingAnnId, setEditingAnnId] = useState<string | null>(null);
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   const [gradingConfig, setGradingConfig] = useState<any>({
      post_test_weight: 40,
@@ -815,6 +836,46 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      }
   };
 
+  const handleForceGroupSync = async (subId: string, groupId: string | null) => {
+      if (!groupId) { alert("Pilih stempel grup terlebih dahulu untuk melakukan override!"); return; }
+      setIsLoading(true);
+      try {
+          await supabase.from('v2_submissions').update({ assignment_group_id: groupId }).eq('id', subId);
+          
+          const { data: members } = await supabase.from('v2_assignment_group_members').select('profile_id').eq('group_id', groupId);
+          if (members && members.length > 0) {
+              const currentSub = submissionsData.find(s => s.id === subId);
+              const membersToClone = members.map(m => m.profile_id).filter(id => id !== currentSub?.profile_id);
+              
+              if (membersToClone.length > 0) {
+                  const clonePayload = membersToClone.map((id) => ({
+                      curriculum_id: currentSub.curriculum_id,
+                      profile_id: id,
+                      workspace_id: resolvedParams.id,
+                      file_link: currentSub.file_link,
+                      status: currentSub.status,
+                      is_cloned: true,
+                      cloned_from_submission_id: currentSub.id,
+                      submitted_by_profile_id: currentSub.profile_id,
+                      assignment_group_id: groupId,
+                      grade: currentSub.grade || 0,
+                      mentor_feedback: `[AUTO-SYNC] Didistribusikan via Admin Override dari jawaban Ketua Tim!`
+                  }));
+                  
+                  await supabase.from('v2_submissions').insert(clonePayload);
+                  alert(`Berhasil melakukan Force-Clone ke ${membersToClone.length} anggota! 🚀`);
+                  handleViewSubmissions(viewingCurriculum); 
+              } else {
+                  alert("Grup ini hanya berisi anak tersebut, tidak ada yang perlu di-clone.");
+              }
+          }
+      } catch (err: any) {
+          alert("Gagal melakukan sync: " + err.message);
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
   const handleSavePlusPoints = async (studId: string, category: string, points: string) => {
      const pNum = parseInt(points) || 0;
      const student = students.find(s => s.id === studId);
@@ -913,6 +974,129 @@ export default function BatchContentDesktop({ id }: { id: string }) {
           if (!error && data) setCustomGroups(data);
       } catch (err) {
           console.error("fetchCustomGroups failed", err);
+      }
+  };
+
+  const fetchAnnouncements = async () => {
+      try {
+          const { data, error } = await supabase
+            .from('v2_announcements')
+            .select('*')
+            .eq('workspace_id', resolvedParams.id)
+            .order('created_at', { ascending: false });
+          if (!error && data) setAnnouncements(data);
+      } catch (err) {
+          console.error("fetchAnnouncements failed", err);
+      }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setIsUploading(true);
+      try {
+          // 1. Compress Image (Client Side) - Max 1200px, 70% quality
+          const compressedBlob = await compressImage(file, 1200, 0.7);
+          
+          // 2. Prepare Path
+          const fileExt = 'jpg'; // We compress to jpeg
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `${resolvedParams.id}/${fileName}`;
+
+          // 3. Upload to Supabase Storage (Bucket: 'lms')
+          const { data, error } = await supabase.storage
+              .from('lms')
+              .upload(filePath, compressedBlob, {
+                  contentType: 'image/jpeg',
+                  upsert: true
+              });
+
+          if (error) throw error;
+
+          // 4. Get Public URL
+          const { data: { publicUrl } } = supabase.storage
+              .from('lms')
+              .getPublicUrl(filePath);
+
+          setAnnForm({ ...annForm, image_url: publicUrl });
+          alert("✓ Foto berhasil diunggah dan dikompres!");
+      } catch (err: any) {
+          console.error("Upload failed", err);
+          alert("Gagal mengunggah foto: " + err.message);
+      } finally {
+          setIsUploading(false);
+      }
+  };
+
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (!files || files.length === 0) return;
+      if ((annForm.gallery_images?.length || 0) + files.length > 4) {
+          alert("Maksimal 4 gambar gallery."); return;
+      }
+
+      setIsGalleryUploading(true);
+      try {
+          const uploadedUrls: string[] = [];
+          for (const file of Array.from(files)) {
+              const compressedBlob = await compressImage(file, 1000, 0.7);
+              const fileName = `gallery-${Date.now()}-${Math.random().toString(36).substring(2)}.jpg`;
+              const filePath = `${resolvedParams.id}/${fileName}`;
+              const { error } = await supabase.storage.from('lms').upload(filePath, compressedBlob, { contentType: 'image/jpeg', upsert: true });
+              if (error) throw error;
+              const { data: { publicUrl } } = supabase.storage.from('lms').getPublicUrl(filePath);
+              uploadedUrls.push(publicUrl);
+          }
+          setAnnForm(prev => ({ ...prev, gallery_images: [...(prev.gallery_images || []), ...uploadedUrls] }));
+      } catch (err: any) {
+          alert("Gagal upload gallery: " + err.message);
+      } finally {
+          setIsGalleryUploading(false);
+      }
+  };
+
+  const handleSaveAnnouncement = async () => {
+      if (!annForm.title) { alert("Judul wajib diisi!"); return; }
+      setIsLoading(true);
+      try {
+          const payload = { 
+              ...annForm, 
+              workspace_id: resolvedParams.id,
+              creator_id: currentUser?.id 
+          };
+
+          if (editingAnnId) {
+              const { error } = await supabase.from('v2_announcements').update(payload).eq('id', editingAnnId);
+              if (error) throw error;
+          } else {
+              const { error } = await supabase.from('v2_announcements').insert([payload]);
+              if (error) throw error;
+          }
+          
+          setIsAnnModalOpen(false);
+          setAnnForm({ category: 'Umum', title: '', summary: '', content: '', image_url: '', is_pinned: false });
+          setEditingAnnId(null);
+          fetchAnnouncements();
+          alert("Pemberitahuan berhasil disimpan! \u2728");
+      } catch (err: any) {
+          alert("Gagal simpan: " + err.message);
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+      if (!confirm("Hapus pengumuman ini?")) return;
+      setIsLoading(true);
+      try {
+          const { error } = await supabase.from('v2_announcements').delete().eq('id', id);
+          if (error) throw error;
+          fetchAnnouncements();
+      } catch (err: any) {
+          alert(err.message);
+      } finally {
+          setIsLoading(false);
       }
   };
 
@@ -1032,6 +1216,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const TABS = [
     ...(isAdminView ? [{ id: "students", label: "Student List & Groups", icon: <Users size={16}/> }] : []),
     { id: "learning", label: isAdminView ? "Class Material (LMS)" : "Learning Journey", icon: <PlayCircle size={16}/> },
+    { id: "board", label: "Community Board", icon: <Layout size={16}/> },
     { id: "assignments", label: isAdminView ? "Manage Tasks" : "My Assignments", icon: <ClipboardList size={16}/> },
     { id: "grades", label: isAdminView ? "Grading Matrix" : "My Results", icon: <BarChart4 size={16}/> },
     { id: "attendance", label: isAdminView ? "Attendance History" : "My Attendance", icon: <CheckCircle2 size={16}/> }
@@ -1563,6 +1748,107 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                           </div>
                       </Card>
                    )}
+                </div>
+             </div>
+          )}
+
+          {activeTab === 'board' && (
+             <div className="space-y-10">
+                <div className="flex items-center justify-between px-6">
+                   <div className="space-y-1">
+                      <h3 className="text-3xl font-black text-[#0F172A] tracking-tighter">Community Board</h3>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Bagikan pengumuman atau artikel bacaan kursus</p>
+                   </div>
+                   {isAdminView && (
+                      <button 
+                        onClick={() => {
+                            setEditingAnnId(null);
+                            setAnnForm({ category: 'Umum', title: '', summary: '', content: '', image_url: '', is_pinned: false });
+                            setIsAnnModalOpen(true);
+                        }}
+                        className="h-14 px-8 rounded-2xl bg-blue-600 text-white font-black text-sm uppercase shadow-xl shadow-blue-900/20 hover:bg-slate-900 transition-all flex items-center gap-3"
+                      >
+                         <Plus size={20}/> Post New Info
+                      </button>
+                   )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {announcements.length > 0 ? (
+                        announcements.map((ann) => (
+                            <div key={ann.id} onClick={() => {
+                                    if (ann.category === 'Pengumuman' && ann.image_url) {
+                                        setLightboxImg(ann.image_url);
+                                    } else {
+                                        window.open(`/ruang-sosmed/board/${resolvedParams.id}/${ann.id}`, '_blank');
+                                    }
+                                }} className="group relative cursor-pointer bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden flex flex-col transition-all hover:scale-[1.02] hover:shadow-2xl">
+                                <div className="aspect-[16/10] w-full bg-slate-100 relative overflow-hidden">
+                                    {ann.image_url ? (
+                                        <img src={ann.image_url} alt={ann.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"/>
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600">
+                                            <Layout size={40} className="text-white/20"/>
+                                        </div>
+                                    )}
+                                    <div className="absolute top-6 left-6 px-4 py-2 rounded-xl bg-white/90 backdrop-blur-md text-[10px] font-black uppercase tracking-widest text-blue-600 shadow-sm">
+                                        {ann.category}
+                                    </div>
+                                    {ann.is_pinned && (
+                                        <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-amber-400 text-white flex items-center justify-center shadow-lg">
+                                            <Zap size={18} fill="currentColor"/>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="p-8 flex-1 flex flex-col gap-4">
+                                    <h4 className="text-xl font-black text-slate-900 leading-tight group-hover:text-blue-600 transition-colors">{ann.title}</h4>
+                                    <p className="text-sm text-slate-400 font-medium line-clamp-2">{ann.summary}</p>
+                                    
+                                    <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Heart size={14} className="text-rose-500" fill={ann.reactions?.length > 0 ? "currentColor" : "none"}/>
+                                            <span className="text-[10px] font-black text-slate-400">{ann.reactions?.length || 0} Reactions</span>
+                                        </div>
+                                        {isAdminView && (
+                                            <div className="flex items-center gap-2">
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setEditingAnnId(ann.id);
+                                                        setAnnForm({
+                                                            category: ann.category,
+                                                            title: ann.title,
+                                                            summary: ann.summary,
+                                                            content: ann.content,
+                                                            image_url: ann.image_url,
+                                                            gallery_images: ann.gallery_images || [],
+                                                            is_pinned: ann.is_pinned
+                                                        });
+                                                        setIsAnnModalOpen(true);
+                                                    }}
+                                                    className="p-3 bg-slate-50 text-slate-400 hover:text-blue-600 rounded-xl transition-all"
+                                                >
+                                                    <Edit3 size={16}/>
+                                                </button>
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteAnnouncement(ann.id); }}
+                                                    className="p-3 bg-slate-50 text-slate-400 hover:text-rose-600 rounded-xl transition-all"
+                                                >
+                                                    <Trash2 size={16}/>
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="col-span-full py-32 text-center space-y-4">
+                             <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto text-slate-200"><Layout size={32}/></div>
+                             <p className="text-slate-400 font-bold">Belum ada pengumuman di Community Board.</p>
+                        </div>
+                    )}
                 </div>
              </div>
           )}
@@ -2589,7 +2875,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(sub.created_at).toLocaleString()}</p>
                                        </div>
                                     </div>
-                                   {viewingCurriculum?.type === 'post_test' ? (
+                                   {/* TEST COMMENT */}
+                                 {viewingCurriculum?.type === 'post_test' ? (
                                       <div className="px-5 py-2 rounded-2xl bg-emerald-50 text-emerald-600 font-bold text-xs">
                                          PASSED
                                       </div>
@@ -2602,6 +2889,35 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                       </button>
                                    )}
                                 </div>
+
+                                {viewingCurriculum?.type === 'group_assignment' && customGroups.length > 0 && !sub.is_cloned && (
+                                   <div className="mt-2 p-6 rounded-[32px] bg-slate-100/50 border border-slate-200/60 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+                                       <div className="flex-1 w-full">
+                                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 block mb-3 ml-2">🏷️ STEMPEL GRUP PENGUMPULAN (Admin Fallback)</label>
+                                           <select 
+                                               value={sub.assignment_group_id || ''}
+                                               onChange={(e) => {
+                                                   const newVal = e.target.value || null;
+                                                   setSubmissionsData(prev => prev.map(s => s.id === sub.id ? { ...s, assignment_group_id: newVal } : s));
+                                               }}
+                                               className="w-full h-14 text-sm font-bold text-slate-700 px-6 rounded-2xl border border-slate-200 bg-white shadow-sm focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all"
+                                           >
+                                               <option value="">-- Murid lupa milih Grup? (Set manual di sini) --</option>
+                                               {customGroups.map(g => (
+                                                   <option key={g.id} value={g.id}>{g.name}</option>
+                                               ))}
+                                           </select>
+                                       </div>
+                                       {sub.assignment_group_id && (
+                                           <button 
+                                               onClick={() => handleForceGroupSync(sub.id, sub.assignment_group_id)}
+                                               className="w-full md:w-auto h-14 px-8 rounded-2xl bg-[#0F172A] text-white font-black text-xs uppercase shadow-xl shadow-slate-900/10 hover:bg-blue-600 hover:shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                           >
+                                               <Zap size={16}/> Force Clone!
+                                           </button>
+                                       )}
+                                   </div>
+                                )}
 
                                 {viewingCurriculum?.type === 'post_test' ? (
                                  <div className="space-y-1 flex items-end justify-between">
@@ -3366,6 +3682,175 @@ export default function BatchContentDesktop({ id }: { id: string }) {
         })()}
       </AnimatePresence>
 
+      {/* COMMUNITY BOARD MODAL */}
+      <AnimatePresence>
+        {isAnnModalOpen && (
+           <div className="fixed inset-0 z-[250] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="w-full max-w-3xl max-h-[90vh] bg-white rounded-[40px] shadow-3xl overflow-hidden flex flex-col border border-white/20"
+              >
+                 <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-blue-50/50 shrink-0">
+                    <div className="flex items-center gap-4">
+                       <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
+                          <Layout size={24}/>
+                       </div>
+                       <div>
+                          <h3 className="text-xl font-black text-slate-900 tracking-tight">{editingAnnId ? 'Update Info' : 'New Board Post'}</h3>
+                          <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Community Board Management</p>
+                       </div>
+                    </div>
+                    <button onClick={() => setIsAnnModalOpen(false)} className="p-4 bg-white rounded-2xl text-slate-300 hover:text-rose-500 transition-all shadow-sm">
+                       <X size={20}/>
+                    </button>
+                 </div>
+
+                 <div className="flex-1 overflow-y-auto p-10 space-y-8">
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">CATEGORY</label>
+                           <select 
+                              value={annForm.category}
+                              onChange={(e) => setAnnForm({ ...annForm, category: e.target.value })}
+                              className="w-full h-14 rounded-2xl bg-slate-50 border border-slate-100 px-6 font-bold text-sm focus:border-blue-500 focus:outline-none transition-all"
+                           >
+                              <option value="Pengumuman">📢 Pengumuman</option>
+                              <option value="Artikel">📰 Artikel / Bacaan</option>
+                              <option value="Tips">💡 Tips & Trick</option>
+                              <option value="Update">🚀 System Update</option>
+                              <option value="Umum">✨ Umum</option>
+                           </select>
+                        </div>
+                        <div className="flex items-center gap-4 px-6 h-14 bg-amber-50 rounded-2xl border border-amber-100 mt-6 md:mt-0">
+                            <input 
+                                type="checkbox"
+                                id="is_pinned"
+                                checked={annForm.is_pinned}
+                                onChange={(e) => setAnnForm({ ...annForm, is_pinned: e.target.checked })}
+                                className="w-5 h-5 rounded-md border-amber-200 text-amber-500 focus:ring-amber-500"
+                            />
+                            <label htmlFor="is_pinned" className="text-xs font-black text-amber-700 cursor-pointer">PINNED POST (Prioritas Atas)</label>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">TITLE</label>
+                        <input 
+                           value={annForm.title}
+                           onChange={(e) => setAnnForm({ ...annForm, title: e.target.value })}
+                           placeholder="Judul Info Keren Kamu..."
+                           className="w-full h-14 rounded-2xl bg-slate-50 border border-slate-100 px-8 text-sm font-bold focus:border-blue-500 focus:outline-none transition-all"
+                        />
+                    </div>
+
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Featured Image</label>
+                        <div className="flex items-center gap-6 p-6 bg-slate-50 border border-slate-100 rounded-[32px]">
+                           <div className="w-24 h-24 rounded-2xl bg-white border border-slate-100 overflow-hidden flex-shrink-0 relative group">
+                              {annForm.image_url ? (
+                                 <img src={annForm.image_url} alt="Preview" className="w-full h-full object-cover"/>
+                              ) : (
+                                 <div className="w-full h-full flex items-center justify-center text-slate-200">
+                                    <Camera size={30}/>
+                                 </div>
+                              )}
+                              {isUploading && (
+                                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                                    <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"/>
+                                 </div>
+                              )}
+                           </div>
+                           <div className="flex-1 space-y-3">
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upload foto artikel/info (Auto-compressed)</p>
+                              <div className="flex gap-2">
+                                 <label className="cursor-pointer px-5 py-2.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-700 transition-all">
+                                    {isUploading ? 'Uploading...' : 'Pilih Foto'}
+                                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={isUploading}/>
+                                 </label>
+                                 {annForm.image_url && (
+                                    <button 
+                                      onClick={() => setAnnForm({...annForm, image_url: ''})}
+                                      className="px-5 py-2.5 bg-rose-50 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all"
+                                    >
+                                       Hapus
+                                    </button>
+                                 )}
+                              </div>
+                           </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">SUMMARY (Feed Preview)</label>
+                        <textarea 
+                           value={annForm.summary}
+                           onChange={(e) => setAnnForm({ ...annForm, summary: e.target.value })}
+                           placeholder="Deskripsi singkat yang tampil di feed..."
+                           className="w-full h-24 rounded-2xl bg-slate-50 border border-slate-100 p-6 text-sm font-bold focus:border-blue-500 focus:outline-none transition-all resize-none"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">FULL CONTENT (Detailed Article)</label>
+                        <textarea 
+                           value={annForm.content}
+                           onChange={(e) => setAnnForm({ ...annForm, content: e.target.value })}
+                           placeholder="Tulis artikel lengkap di sini..."
+                           className="w-full h-64 rounded-[32px] bg-slate-50 border border-slate-100 p-8 text-sm font-medium leading-relaxed focus:border-blue-500 focus:outline-none transition-all resize-none"
+                        />
+                    </div>
+
+                    {/* Gallery Section */}
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between ml-4">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Gallery Foto Artikel</label>
+                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">{annForm.gallery_images?.length || 0}/4 Foto</span>
+                       </div>
+                       <div className="grid grid-cols-4 gap-3">
+                          {(annForm.gallery_images || []).map((url: string, idx: number) => (
+                             <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 group">
+                                <img src={url} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover"/>
+                                <button  
+                                   onClick={() => setAnnForm((prev: any) => ({ ...prev, gallery_images: prev.gallery_images.filter((_: any, i: number) => i !== idx) }))}
+                                   className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-all"
+                                >
+                                   <X size={20}/>
+                                </button>
+                             </div>
+                          ))}
+                          {(annForm.gallery_images?.length || 0) < 4 && (
+                             <label className="aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all group">
+                                {isGalleryUploading ? (
+                                   <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"/>
+                                ) : (
+                                   <>
+                                      <Camera size={22} className="text-slate-300 group-hover:text-blue-500 transition-colors mb-1"/>
+                                      <span className="text-[9px] font-black text-slate-300 group-hover:text-blue-500 uppercase tracking-widest">Add Photos</span>
+                                   </>
+                                )}
+                                <input type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryUpload} disabled={isGalleryUploading}/>
+                             </label>
+                          )}
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="p-8 border-t border-slate-50 bg-slate-50/50 shrink-0">
+                    <button 
+                        onClick={handleSaveAnnouncement}
+                        disabled={isLoading}
+                        className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black text-sm uppercase shadow-xl shadow-slate-900/10 hover:bg-blue-600 transition-all flex items-center justify-center gap-3"
+                    >
+                       <Zap size={20}/> {editingAnnId ? 'Update Information' : 'Publish to Students'}
+                    </button>
+                 </div>
+              </motion.div>
+           </div>
+        )}
+      </AnimatePresence>
+
       {/* CUSTOM GROUP BUILDER MODAL */}
       <AnimatePresence>
         {isCustomGroupModalOpen && (
@@ -3469,6 +3954,39 @@ export default function BatchContentDesktop({ id }: { id: string }) {
             ))}
          </AnimatePresence>
       </div>
+
+       {/* PHOTO LIGHTBOX (Preview) */}
+       <AnimatePresence>
+         {lightboxImg && (
+           <motion.div
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0 }}
+             onClick={() => setLightboxImg(null)}
+             className="fixed inset-0 z-[500] flex items-center justify-center p-6 md:p-12 bg-slate-950/90 backdrop-blur-2xl cursor-zoom-out"
+           >
+             <motion.div
+               initial={{ scale: 0.9, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               exit={{ scale: 0.9, opacity: 0 }}
+               onClick={(e) => e.stopPropagation()}
+               className="relative w-full max-w-5xl max-h-[90vh] flex items-center justify-center"
+             >
+               <img 
+                 src={lightboxImg} 
+                 alt="Lightbox Preview" 
+                 className="w-auto h-auto max-w-full max-h-[85vh] rounded-[32px] shadow-2xl border border-white/10"
+               />
+               <button 
+                 onClick={() => setLightboxImg(null)}
+                 className="absolute top-4 right-4 p-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl text-white hover:bg-white/20 transition-all shadow-2xl"
+               >
+                 <X size={24}/>
+               </button>
+             </motion.div>
+           </motion.div>
+         )}
+       </AnimatePresence>
 
     </div>
   );

@@ -30,11 +30,12 @@ ADD COLUMN IF NOT EXISTS assignment_group_id UUID REFERENCES public.v2_assignmen
 ADD COLUMN IF NOT EXISTS grading_mode VARCHAR(20) DEFAULT 'auto'; -- 'auto' atau 'manual'
 
 -- 4. Modifikasi tabel Pengumpulan/Penilaian (v2_submissions)
--- Gunanya: mencatat apakah submission ini di-clone dari ketua, dan siapa ketuanya
+-- Gunanya: mencatat apakah submission ini di-clone dari ketua, siapa ketuanya, dan Cap Grup-nya
 ALTER TABLE public.v2_submissions
 ADD COLUMN IF NOT EXISTS is_cloned BOOLEAN DEFAULT FALSE,
 ADD COLUMN IF NOT EXISTS cloned_from_submission_id UUID REFERENCES public.v2_submissions(id) ON DELETE SET NULL,
-ADD COLUMN IF NOT EXISTS submitted_by_profile_id UUID REFERENCES public.v2_profiles(id) ON DELETE SET NULL;
+ADD COLUMN IF NOT EXISTS submitted_by_profile_id UUID REFERENCES public.v2_profiles(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS assignment_group_id UUID REFERENCES public.v2_assignment_groups(id) ON DELETE SET NULL;
 
 
 -- ======================================================================================
@@ -43,5 +44,5 @@ ADD COLUMN IF NOT EXISTS submitted_by_profile_id UUID REFERENCES public.v2_profi
 ALTER TABLE public.v2_assignment_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.v2_assignment_group_members ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Enable all access for authenticated users" ON public.v2_assignment_groups FOR ALL USING (auth.role() = 'authenticated');
-CREATE POLICY "Enable all access for authenticated users" ON public.v2_assignment_group_members FOR ALL USING (auth.role() = 'authenticated');
+CREATE POLICY "Enable all access for authenticated users" ON public.v2_assignment_groups FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Enable all access for authenticated users" ON public.v2_assignment_group_members FOR ALL USING (true) WITH CHECK (true);
