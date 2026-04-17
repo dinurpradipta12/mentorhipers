@@ -1075,7 +1075,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
           }
           
           setIsAnnModalOpen(false);
-          setAnnForm({ category: 'Umum', title: '', summary: '', content: '', image_url: '', is_pinned: false });
+          setAnnForm({ category: 'Umum', title: '', summary: '', content: '', image_url: '', gallery_images: [], is_pinned: false });
           setEditingAnnId(null);
           fetchAnnouncements();
           alert("Pemberitahuan berhasil disimpan! \u2728");
@@ -1763,7 +1763,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                       <button 
                         onClick={() => {
                             setEditingAnnId(null);
-                            setAnnForm({ category: 'Umum', title: '', summary: '', content: '', image_url: '', is_pinned: false });
+                            setAnnForm({ category: 'Umum', title: '', summary: '', content: '', image_url: '', gallery_images: [], is_pinned: false });
                             setIsAnnModalOpen(true);
                         }}
                         className="h-14 px-8 rounded-2xl bg-blue-600 text-white font-black text-sm uppercase shadow-xl shadow-blue-900/20 hover:bg-slate-900 transition-all flex items-center gap-3"
