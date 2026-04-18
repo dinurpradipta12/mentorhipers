@@ -9,6 +9,7 @@ import { supabase, supabaseV2 } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import AvatarCreator from "./_core/AvatarCreator";
 import NotificationBell from "./_core/NotificationBell";
+import { isLegacyAdmin } from "@/lib/authCache";
 
 export default function RuangSosmedLayoutContent({
   children,
@@ -41,7 +42,7 @@ export default function RuangSosmedLayoutContent({
        const { data: profile } = await supabaseV2.from('v2_profiles').select('*').eq('id', user.id).single();
        if (profile) {
           setUserProfile(profile);
-          if (profile.role === 'admin') {
+          if (profile.role === 'admin' || isLegacyAdmin()) {
              setIsAdmin(true);
           } else {
              setIsAdmin(false);
@@ -49,6 +50,9 @@ export default function RuangSosmedLayoutContent({
                 setShowOnboarding(true);
              }
           }
+       } else if (isLegacyAdmin()) {
+          setIsAdmin(true);
+          setUserProfile({ full_name: 'Admin Arunika', role: 'admin' });
        }
     } else {
        setIsAdmin(false);
@@ -111,7 +115,7 @@ export default function RuangSosmedLayoutContent({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-blue-100 selection:text-blue-700">
-      {!isLoginPage && !isPortalPage && isAdmin && (
+      {!isLoginPage && isAdmin && (
         <nav className="fixed top-0 left-0 right-0 h-24 bg-white border-b border-slate-100 z-50 flex items-center justify-between px-10 shadow-sm transition-all duration-300">
           <Link href="/ruang-sosmed" className="flex items-center group">
             <img 

@@ -21,7 +21,9 @@ import {
   Crown,
   Trophy,
   Medal,
-  Star
+  Star,
+  Zap,
+  Layout
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
@@ -34,6 +36,7 @@ export default function BatchContentMobile({ id }: { id: string }) {
   const [students, setStudents] = useState<any[]>([]);
   const [curriculum, setCurriculum] = useState<any[]>([]);
   const [allSubmissions, setAllSubmissions] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
  //--- MOBILE ADMIN QUICK ACTION STATES ---
@@ -74,6 +77,10 @@ export default function BatchContentMobile({ id }: { id: string }) {
          setCurriculum(cData || []);
          setAllSubmissions([...(subData || []), ...(qData || [])]);
       }
+
+     //Fetch Announcements
+      const { data: annData } = await supabase.from('v2_announcements').select('*').eq('workspace_id', id).order('created_at', { ascending: false });
+      if (isMounted && annData) setAnnouncements(annData);
 
      //Safe Profile Fetching (Avoid 500 Base64 Crash)
       const { data: basicMem } = await supabase.from('v2_memberships').select('id, workspace_id, profile_id, group_name, group_wa_link, is_leader, attendance, plus_points, joined_at').eq('workspace_id', id);
@@ -224,6 +231,40 @@ export default function BatchContentMobile({ id }: { id: string }) {
                    </div>
                 </div>
               ))}
+           </div>
+         )}
+
+         {activeTab === 'board' && (
+           <div className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                 <h2 className="text-2xl font-black text-slate-800 tracking-tight">Community Board</h2>
+              </div>
+              <div className="space-y-4 pb-20">
+                 {announcements.length > 0 ? (
+                   announcements.map(ann => (
+                     <div key={ann.id} onClick={() => window.open(`/ruang-sosmed/board/${id}/${ann.id}`, '_blank')} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm active:scale-[0.98] transition-all">
+                       {ann.image_url && (
+                         <div className="aspect-video w-full bg-slate-100">
+                            <img src={ann.image_url} alt={ann.title} className="w-full h-full object-cover"/>
+                         </div>
+                       )}
+                       <div className="p-6 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[8px] font-black uppercase tracking-widest border border-blue-100 inline-block">{ann.category}</span>
+                            {ann.is_pinned && <span className="w-5 h-5 bg-amber-400 text-white rounded-lg flex items-center justify-center shrink-0 shadow-sm"><Zap size={10} fill="currentColor"/></span>}
+                          </div>
+                          <h4 className="text-base font-black text-slate-800 leading-tight">{ann.title}</h4>
+                          <p className="text-xs text-slate-400 font-medium line-clamp-2">{ann.summary || ann.title}</p>
+                       </div>
+                     </div>
+                   ))
+                 ) : (
+                   <div className="py-20 text-center opacity-40">
+                      <Layout size={40} className="mx-auto mb-4 text-slate-300"/>
+                      <p className="font-bold text-[10px] uppercase tracking-widest">Belum ada pengumuman.</p>
+                   </div>
+                 )}
+              </div>
            </div>
          )}
 
@@ -564,6 +605,7 @@ export default function BatchContentMobile({ id }: { id: string }) {
       <nav className="fixed bottom-8 left-6 right-6 z-[100] h-20 bg-white/70 backdrop-blur-2xl rounded-2xl border border-white/40 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] flex items-center justify-around px-4">
          {[
             { id: 'learning', icon: <BookOpen size={22} strokeWidth={2.5}/>, label: 'Materi' },
+            { id: 'board', icon: <div className="relative"><span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full border border-white"/> <Layout size={22} strokeWidth={2.5}/></div>, label: 'Board' },
             { id: 'students', icon: <Users size={22} strokeWidth={2.5}/>, label: 'Students' },
             { id: 'grades', icon: <BarChart4 size={22} strokeWidth={2.5}/>, label: 'Grades' },
             { id: 'tasks', icon: <ClipboardList size={22} strokeWidth={2.5}/>, label: 'Tasks' }

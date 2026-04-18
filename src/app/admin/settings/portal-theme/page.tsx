@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-   Settings, Save, Palette, Image as ImageIcon, Type, Layout, CheckCircle2, AlertCircle, Plus, Trash2, Power, Zap
+   Save, Palette, Type, Layout, Plus, Power, Zap
 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -12,14 +12,30 @@ import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/layout/AdminHeader";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 
+export interface PortalTheme {
+    id: string;
+    theme_name: string;
+    is_active: boolean;
+    primary_color: string;
+    secondary_color: string;
+    background_css: string;
+    background_base_color: string;
+    hero_title: string;
+    hero_subtitle: string;
+    footer_text: string;
+    config: any;
+    created_at: string;
+    updated_at: string;
+}
+
 export default function PortalThemeCMS() {
    const router = useRouter();
    const [isSidebarOpen, setSidebarOpen] = useState(true);
-   const [themes, setThemes] = useState<any[]>([]);
+   const [themes, setThemes] = useState<PortalTheme[]>([]);
    const [activeThemeId, setActiveThemeId] = useState<string | null>(null);
    const [isLoaded, setIsLoaded] = useState(false);
    const [isSaving, setIsSaving] = useState(false);
-   const [editTheme, setEditTheme] = useState<any>(null);
+   const [editTheme, setEditTheme] = useState<PortalTheme | null>(null);
    const [appSettings, setAppSettings] = useState({
       app_name: "Mentorhipers",
       app_logo: "",

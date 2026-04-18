@@ -12,23 +12,14 @@ import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
 import { invalidateSessionCache } from "@/lib/authCache";
 import { Button } from "@/components/ui/Button";
-import { usePortalTheme } from "./usePortalTheme";
 
 export default function LoginContentMobile() {
-   const { theme, loading: themeLoading } = usePortalTheme();
    const router = useRouter();
    const [loading, setLoading] = useState(false);
    const [email, setEmail] = useState("");
    const [password, setPassword] = useState("");
    const [error, setError] = useState("");
    const [cooldown, setCooldown] = useState(0);//seconds remaining before retry allowed
-
-   // Default fallback values
-   const primaryGradient = theme?.primary_color || "from-blue-600 to-indigo-700";
-   const backgroundBase = theme?.background_base_color || "bg-[#020617]";
-   const heroTitle = theme?.hero_title || "Welcome to \nRuang Sosmed.";
-   const heroSubtitle = theme?.hero_subtitle || "Masuk untuk mengelola tugas, roadmap, dan journey kreatifmu.";
-   const customLogo = theme?.logo_url || "/logo.png";
 
   //Cooldown timer countdown
    React.useEffect(() => {
@@ -106,7 +97,7 @@ export default function LoginContentMobile() {
                     return;
                   }
                } else {
-                  //NO MEMBERSHIP FOUND IN NEW DB
+                 //NO MEMBERSHIP FOUND IN NEW DB
                   setError("Akun Anda belum terdaftar di Batch manapun di sistem baru ini.");
                   setLoading(false);
                   return;
@@ -115,11 +106,11 @@ export default function LoginContentMobile() {
             router.push('/ruang-sosmed');
          }
       } catch (err: any) {
-         //Detect CORS/network error = server is temporarily down
+        //Detect CORS/network error = server is temporarily down
          const isNetworkError = err?.message?.includes('fetch') || err?.message?.includes('network') || err?.message?.includes('CORS') || err instanceof TypeError;
          if (isNetworkError) {
             setError('🔧 Server sedang dalam pemeliharaan. Silakan coba lagi dalam beberapa menit.');
-            setCooldown(60);//60s cooldown — don't spam during outage
+            setCooldown(60);//60s cooldown — don\'t spam during outage
          } else {
             setError("Terjadi kesalahan sistem.");
             setCooldown(10);
@@ -129,28 +120,22 @@ export default function LoginContentMobile() {
    };
 
    return (
-      <div className={`min-h-screen ${backgroundBase} text-white flex flex-col p-8 font-sans selection:bg-blue-500/30`}>
+      <div className="min-h-screen bg-[#020617] text-white flex flex-col p-8 font-sans selection:bg-blue-500/30">
          {/* Top Branding Section */}
          <div className="pt-12 pb-16 space-y-8 animate-in fade-in slide-in-from-top-4 duration-1000">
             <div className="flex items-center gap-4">
-               <img src={customLogo} className="h-10 w-auto brightness-0 invert" alt="Logo"/>
+               <img src="/logo.png" className="h-10 w-auto brightness-0 invert" alt="Logo"/>
                <div className="h-4 w-[1px] bg-white/20"/>
                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500">Student Portal</p>
             </div>
             
             <div className="space-y-4">
                <h1 className="text-4xl font-black tracking-tighter leading-none">
-                  {heroTitle.split('\n').map((line, i) => (
-                      <React.Fragment key={i}>
-                          {i > 0 && <br/>}
-                          {line.includes('Ruang Sosmed.') ? (
-                              <span className="text-blue-500">{line}</span>
-                          ) : line}
-                      </React.Fragment>
-                  ))}
+                  Welcome to <br/>
+                  <span className="text-blue-500">Ruang Sosmed.</span>
                </h1>
                <p className="text-slate-400 text-sm font-medium leading-relaxed max-w-[260px]">
-                  {heroSubtitle}
+                  Masuk untuk mengelola tugas, roadmap, dan journey kreatifmu.
                </p>
             </div>
          </div>
@@ -201,7 +186,7 @@ export default function LoginContentMobile() {
 
                <Button
                   disabled={loading || cooldown > 0}
-                  className={`w-full h-16 rounded-[24px] bg-blue-600 text-white font-black text-sm shadow-2xl shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-4 hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed`}
+                  className="w-full h-16 rounded-[24px] bg-blue-600 text-white font-black text-sm shadow-2xl shadow-blue-600/20 active:scale-95 transition-all flex items-center justify-center gap-4 hover:bg-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
                >
                   {loading ? (
                      <div className="w-5 h-5 border-3 border-white/20 border-t-white rounded-full animate-spin"/>
@@ -217,8 +202,9 @@ export default function LoginContentMobile() {
             </form>
          </div>
 
+         {/* Bottom Decoration */}
          <div className="py-10 text-center opacity-20">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em]">{theme?.footer_text || "Alpha Engine v2.0"}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em]">Alpha Engine v2.0</p>
          </div>
       </div>
    );

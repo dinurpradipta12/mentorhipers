@@ -229,12 +229,15 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       }, 40000);
 
       try {
-        await fetchUserData();
-        await fetchBatchDetail();
-        await fetchCurriculum();
-        await fetchStudents();
-        await fetchAllSubmissions();
-        await fetchCustomGroups();
+        await Promise.all([
+          fetchUserData(),
+          fetchBatchDetail(),
+          fetchCurriculum(),
+          fetchStudents(),
+          fetchAllSubmissions(),
+          fetchCustomGroups(),
+          fetchAnnouncements()
+        ]);
         console.log("✅ Initialization Complete.");
       } catch (err: any) {
         console.error("❌ Overall Page Initialization Failed:", err.message);

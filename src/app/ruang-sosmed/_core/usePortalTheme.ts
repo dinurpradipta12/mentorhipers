@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabaseV2 as supabase } from "@/lib/supabase";
+import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 export interface PortalTheme {
     id: string;
@@ -52,7 +53,7 @@ export function usePortalTheme() {
                 schema: 'public', 
                 table: 'v2_portal_themes',
                 filter: 'is_active=eq.true'
-            }, (payload) => {
+            }, (payload: RealtimePostgresChangesPayload<PortalTheme>) => {
                 if (payload.new) {
                     setTheme(payload.new as PortalTheme);
                 }
