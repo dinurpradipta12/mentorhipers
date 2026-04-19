@@ -1,0 +1,82 @@
+[
+  {
+    "id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "name": "Social Media Specialist Batch 16",
+    "description": null,
+    "type": "batch",
+    "status": "active",
+    "logo_url": null,
+    "max_members": null,
+    "start_date": null,
+    "end_date": null,
+    "settings": {},
+    "schedules": [
+      {
+        "id": "2841e96c-f417-419e-bcf7-f75f8c68df43",
+        "date": "2026-03-28",
+        "time": "21:00",
+        "title": "Batch 16 - Onboarding Class",
+        "meet_link": ""
+      },
+      {
+        "id": "cb48e22a-652f-43d6-8cad-351e55b556e7",
+        "date": "2026-03-29",
+        "time": "20:30",
+        "title": "Fundamental & Landscaping Socmed Specialist",
+        "meet_link": ""
+      },
+      {
+        "id": "e5ad3354-803c-4031-ade1-3dc05851acd2",
+        "date": "2026-04-02",
+        "time": "20:30",
+        "title": "Social Media Behavioral",
+        "meet_link": ""
+      },
+      {
+        "id": "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98",
+        "date": "2026-04-05",
+        "time": "20:30",
+        "title": "Content Ideation & Strategy",
+        "meet_link": ""
+      },
+      {
+        "id": "62876293-e7be-43a6-8754-4728e53953d1",
+        "date": "2026-04-09",
+        "time": "20:30",
+        "title": "Content Scriptwriting",
+        "meet_link": ""
+      },
+      {
+        "id": "5a7e54ae-01dc-458b-9be6-bb6ab37c5871",
+        "date": "2026-04-12",
+        "time": "20:30",
+        "title": "Social Media Analytic",
+        "meet_link": ""
+      },
+      {
+        "id": "c6fdb072-bed5-489d-a689-9960241c3023",
+        "date": "2026-04-16",
+        "time": "20:30",
+        "title": "Social Media Reporting",
+        "meet_link": ""
+      }
+    ],
+    "created_at": "2026-03-27T18:57:43.766723+00:00",
+    "updated_at": "2026-03-29T07:11:00.672535+00:00"
+  },
+  {
+    "id": "272ff65a-3f35-470b-9c31-6b22cdc69637",
+    "name": "Snail Mentoring",
+    "description": "",
+    "type": "agency",
+    "status": "active",
+    "logo_url": null,
+    "max_members": "10",
+    "start_date": null,
+    "end_date": null,
+    "settings": {},
+    "schedules": [],
+    "created_at": "2026-04-19T05:16:42.96913+00:00",
+    "updated_at": "2026-04-19T05:16:42.96913+00:00"
+  }
+]
