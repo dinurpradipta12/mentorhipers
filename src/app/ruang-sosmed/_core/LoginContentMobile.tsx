@@ -44,27 +44,34 @@ export default function LoginContentMobile() {
        try {
           // ENSURE CLEAN STATE
           await supabase.auth.signOut();
+          localStorage.removeItem("v2_legacy_admin");
           
           let loginIdentifier = email;
-         if (email && !email.includes('@')) {
-            loginIdentifier = `${email.toLowerCase().trim()}@ruangsosmed.local`;
-         }
+          //1. USERNAME MAPPING (Agency & Academy)
+          if (email && !email.includes('@')) {
+             loginIdentifier = `${email.toLowerCase().trim()}@ruangsosmed.v2.local`;
+          }
 
          let { data, error: authError } = await supabase.auth.signInWithPassword({
             email: loginIdentifier,
             password
          });
 
-         // FALLBACK for legacy accounts
-         if (authError && email && !email.includes('@') && loginIdentifier.endsWith('@ruangsosmed.local')) {
-            const legacyEmail = `${email.toLowerCase().trim()}@mentorhipers.local`;
-            const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-               email: legacyEmail,
-               password
-            });
-            if (!retryError) {
-               data = retryData;
-               authError = null;
+         // FALLBACK CHAIN: Try @ruangsosmed.local then @mentorhipers.local
+         if (authError && email && !email.includes('@')) {
+            const domains = ['@ruangsosmed.local', '@mentorhipers.local'];
+            for (const domain of domains) {
+               const retryEmail = `${email.toLowerCase().trim()}${domain}`;
+               const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+                  email: retryEmail,
+                  password
+               });
+               
+               if (!retryError) {
+                  data = retryData;
+                  authError = null;
+                  break;
+               }
             }
          }
 
@@ -87,15 +94,18 @@ export default function LoginContentMobile() {
             if (profile && profile.role !== 'admin') {
                const { data: memberships } = await supabase
                  .from('v2_memberships')
-                 .select('workspace_id')
+                 .select('workspace_id, v2_workspaces(type)')
                  .eq('profile_id', data.user.id);
 
                if (memberships && memberships.length > 0) {
-                 //If has multiple, still allow them to pick, but normally they have one
-                  if (memberships.length === 1) {
-                    router.push(`/ruang-sosmed/${memberships[0].workspace_id}`);
+                  // Jika profil Agensi, langsung ke Workspace
+                  if (memberships.length === 1 && (memberships[0] as any).v2_workspaces?.type === 'agency') {
+                    router.push(`/ruang-sosmed/agency/${memberships[0].workspace_id}`);
                     return;
                   }
+                  // Selain Agensi (Batch Akademi), ke Academy Hub
+                  router.push('/ruang-sosmed');
+                  return;
                } else {
                  //NO MEMBERSHIP FOUND IN NEW DB
                   setError("Akun Anda belum terdaftar di Batch manapun di sistem baru ini.");

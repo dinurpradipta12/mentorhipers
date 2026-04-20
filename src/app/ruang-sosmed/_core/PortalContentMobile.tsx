@@ -142,6 +142,10 @@ export default function PortalContentMobile({ id }: { id: string }) {
     ]);
 
     const batchData = bRes.data;
+    if (batchData && batchData.type === 'agency') {
+       router.push(`/ruang-sosmed/agency/${id}`);
+       return;
+    }
     const curriculumData = cRes.data || [];
     const profileData = pRes.data;
     const membershipData = mRes.data;

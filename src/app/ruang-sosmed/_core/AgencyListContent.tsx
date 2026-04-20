@@ -67,12 +67,22 @@ export default function AgencyListContent() {
 
   const fetchWorkspaces = async () => {
     setIsLoading(true);
-    const { data } = await supabase
+    // Fetch workspaces with their member count and top 3 member profiles
+    const { data, error } = await supabase
       .from('v2_workspaces')
-      .select('*')
+      .select('*, members:v2_memberships(profile_id, v2_profiles(avatar_url, full_name))')
       .eq('type', 'agency')
       .order('created_at', { ascending: false });
-    if (data) setWorkspaces(data);
+
+    if (error) {
+      console.error("❌ fetchWorkspaces Error:", error);
+      setIsLoading(false);
+      return;
+    }
+
+    if (data) {
+      setWorkspaces(data);
+    }
     setIsLoading(false);
   };
 
@@ -111,6 +121,9 @@ export default function AgencyListContent() {
             B2B Collaborative Workspace
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-[#0F172A] tracking-tight flex items-center gap-4">
+            <Link href="/ruang-sosmed" className="p-3 bg-slate-100 rounded-2xl hover:bg-emerald-50 hover:text-emerald-600 transition-all group">
+               <ChevronRight size={24} className="rotate-180 group-hover:-translate-x-1 transition-transform"/>
+            </Link> 
             <Building2 className="text-emerald-500" size={44}/> Agency Management
           </h1>
           <p className="text-slate-500 font-medium max-w-xl leading-relaxed">Kelola klien korporat dan tim agensi Anda dalam ruang kolaboratif yang terpusat.</p>
@@ -140,26 +153,41 @@ export default function AgencyListContent() {
                     <Layers size={28}/>
                   </div>
                   <div className="flex -space-x-3">
-                     {[1, 2, 3].map((i) => (
-                        <div key={i} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white"/>
+                     {ws.members?.slice(0, 3).map((m: any) => (
+                        <div key={m.profile_id} className="w-8 h-8 rounded-full bg-slate-100 border-2 border-white overflow-hidden shadow-sm">
+                           <img 
+                              src={m.v2_profiles?.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${m.v2_profiles?.full_name || 'A'}`} 
+                              className="w-full h-full object-contain"
+                              alt="Member"
+                           />
+                        </div>
                      ))}
-                     <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-[10px] font-bold text-white border-2 border-white">+7</div>
+                     {ws.members?.length > 3 && (
+                        <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-[10px] font-black text-white border-2 border-white shadow-sm">
+                           +{ws.members.length - 3}
+                        </div>
+                     )}
+                     {ws.members?.length === 0 && (
+                        <div className="w-8 h-8 rounded-full bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center text-slate-300">
+                           <Users size={12}/>
+                        </div>
+                     )}
                   </div>
                </div>
 
                <div className="space-y-3 relative z-10">
-                  <h3 className="text-2xl font-black text-[#0F172A] tracking-tight group-hover:text-emerald-600 transition-colors">{ws.name}</h3>
-                  <p className="text-slate-500 font-medium text-sm line-clamp-2">{ws.description || 'No description provided.'}</p>
+                  <h3 className="text-2xl font-black text-[#0F172A] tracking-tight group-hover:text-emerald-600 transition-colors uppercase italic">{ws.name}</h3>
+                  <p className="text-slate-500 font-medium text-sm line-clamp-2 italic">{ws.description || 'No strategy description provided for this agency.'}</p>
                </div>
 
                <div className="pt-6 border-t border-slate-50 flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-4">
                      <div className="flex items-center gap-2 text-[10px] font-black uppercase text-slate-400">
-                        <Users size={12}/> 10 Seats
+                        <Users size={12}/> {ws.max_members || 10} Seats
                      </div>
                      <div className="w-px h-3 bg-slate-200"/>
                      <div className="flex items-center gap-2 text-[10px] font-black uppercase text-emerald-500">
-                        <TrendingUp size={12}/> Sync On
+                        <TrendingUp size={12}/> {ws.members?.length > 0 ? 'Sync On' : 'Idle'}
                      </div>
                   </div>
                   <ArrowUpRight size={18} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all"/>

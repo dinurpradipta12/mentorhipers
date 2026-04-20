@@ -115,7 +115,7 @@ export default function RuangSosmedLayoutContent({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans selection:bg-blue-100 selection:text-blue-700">
-      {!isLoginPage && isAdmin && (
+      {!isLoginPage && isAdmin && !pathname.includes('/agency') && (
         <nav className="fixed top-0 left-0 right-0 h-24 bg-white border-b border-slate-100 z-50 flex items-center justify-between px-10 shadow-sm transition-all duration-300">
           <Link href="/ruang-sosmed" className="flex items-center group">
             <img 
@@ -154,7 +154,7 @@ export default function RuangSosmedLayoutContent({
         </nav>
       )}
 
-      <main className={`${(isLoginPage || !isAdmin) ? 'pt-0' : 'pt-24'} min-h-screen relative`}>
+      <main className={`${(isLoginPage || !isAdmin || pathname.includes('/agency')) ? 'pt-0' : 'pt-24'} min-h-screen relative`}>
         <AnimatePresence>
           {showSuccessModal && (
             <motion.div

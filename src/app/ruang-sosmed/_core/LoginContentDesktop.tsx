@@ -44,6 +44,7 @@ export default function LoginContentDesktop() {
       try {
         // ENSURE CLEAN STATE: Clear any existing session before trying to sign in
         await supabase.auth.signOut();
+        localStorage.removeItem("v2_legacy_admin");
         
          //INTERCEPT FOR USERNAME/ADMIN LOGIN
          let loginIdentifier = email;
@@ -54,9 +55,9 @@ export default function LoginContentDesktop() {
             router.push('/ruang-sosmed');
             return;
          } 
-        //2. STUDENT USERNAME MAPPING
+        //2. USERNAME MAPPING (Academy & Agency)
          else if (email && !email.includes('@')) {
-            loginIdentifier = `${email.toLowerCase().trim()}@ruangsosmed.local`;
+            loginIdentifier = `${email.toLowerCase().trim()}@ruangsosmed.v2.local`;
          }
 
          let { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -64,17 +65,21 @@ export default function LoginContentDesktop() {
             password
          });
 
-         // FALLBACK: If login fails with new domain, try the legacy mentorhipers domain
-         if (authError && email && !email.includes('@') && loginIdentifier.endsWith('@ruangsosmed.local')) {
-            const legacyEmail = `${email.toLowerCase().trim()}@mentorhipers.local`;
-            const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-               email: legacyEmail,
-               password
-            });
-            
-            if (!retryError) {
-               data = retryData;
-               authError = null;
+         // FALLBACK CHAIN: Try @ruangsosmed.local then @mentorhipers.local
+         if (authError && email && !email.includes('@')) {
+            const domains = ['@ruangsosmed.local', '@mentorhipers.local'];
+            for (const domain of domains) {
+               const retryEmail = `${email.toLowerCase().trim()}${domain}`;
+               const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+                  email: retryEmail,
+                  password
+               });
+               
+               if (!retryError) {
+                  data = retryData;
+                  authError = null;
+                  break;
+               }
             }
          }
 
@@ -90,14 +95,22 @@ export default function LoginContentDesktop() {
             invalidateSessionCache();
            //Intelligent Redirect
             const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', data.user.id).maybeSingle();
-            if (profile && profile.role !== 'admin') {
-               const { data: memberships } = await supabase.from('v2_memberships').select('workspace_id').eq('profile_id', data.user.id);
-               if (memberships && memberships.length > 0) {
-                  if (memberships.length === 1) {
-                    router.push(`/ruang-sosmed/${memberships[0].workspace_id}`);
-                    return;
-                  }
-               } else {
+             if (profile && profile.role !== 'admin') {
+                const { data: memberships } = await supabase
+                  .from('v2_memberships')
+                  .select('workspace_id, v2_workspaces(type)')
+                  .eq('profile_id', data.user.id);
+
+                if (memberships && memberships.length > 0) {
+                   // Jika dia orang Agensi, langsung masukkan ke Workspace Agensi
+                   if (memberships.length === 1 && (memberships[0] as any).v2_workspaces?.type === 'agency') {
+                     router.push(`/ruang-sosmed/agency/${memberships[0].workspace_id}`);
+                     return;
+                   }
+                   // Selain Agensi (Batch Akademi), arahkan ke Academy Hub
+                   router.push('/ruang-sosmed');
+                   return;
+                } else {
                   setError("Akun Anda belum terdaftar di Batch manapun. Admin belum memasukkan data Anda ke Project Baru ini.");
                   setLoading(false);
                   return;

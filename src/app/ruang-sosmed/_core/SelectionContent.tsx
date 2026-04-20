@@ -45,12 +45,17 @@ export default function SelectionContent() {
         } else {
          //User is student, find their membership and redirect them
           const { data: membership } = await supabase.from('v2_memberships')
-            .select('workspace_id')
+            .select('workspace_id, v2_workspaces(type)')
             .eq('profile_id', session.user.id)
             .maybeSingle();
 
           if (membership?.workspace_id) {
-            router.push(`/ruang-sosmed/${membership.workspace_id}`);
+            const type = (membership as any).v2_workspaces?.type;
+            if (type === 'agency') {
+              router.push(`/ruang-sosmed/agency/${membership.workspace_id}`);
+            } else {
+              router.push(`/ruang-sosmed/${membership.workspace_id}`);
+            }
           } else {
             router.push('/ruang-sosmed/login');
           }
