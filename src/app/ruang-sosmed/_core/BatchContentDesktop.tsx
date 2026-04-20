@@ -2636,7 +2636,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                  ) : (
                                     filteredMatrix.map((mem) => {
                                    const plus = (mem.plus_points || {}) as any;
-                                   const sumPlus = Object.values(plus).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0);
+                                   const sumPlus = Object.values(plus).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
                                    const avgPlus = Math.round(sumPlus / 4);
 
                                    return (
