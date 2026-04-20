@@ -1257,17 +1257,25 @@ export default function PortalContentDesktop({ id }: { id: string }) {
 
             const attendCount = Object.values(me.attendance || {}).filter(v => v === 'P').length;
             const totalSessions = batch?.schedules?.length || 0; 
-            const keaktifan = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
+            const attendScore = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
 
-           //Formula: (PT + Assign + GC + Active)/4
+            const plusPoints = (me.plus_points || {}) as any;
+            const plusTotal = Object.values(plusPoints).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+            const participationScore = Object.keys(plusPoints).length > 0 ? Math.round(plusTotal / 4) : 0;
+            
+            // finalKeaktifan is 50% attendance rate and 50% participation bonus
+            const keaktifan = (attendScore * 0.5) + (participationScore * 0.5);
+
+            // Unified Formula: (PT + Assign + GC + Keaktifan)/4
             const finalScore = Math.round((avgPT + avgAssign + avgGroup + keaktifan)/4);
             
             const getGrade = (s: number) => {
-               if (s >= 90) return { label: 'A+', color: 'text-purple-600', bg: 'bg-purple-50', desc: 'Superstar (Outstanding)' };
-               if (s >= 85) return { label: 'A', color: 'text-indigo-600', bg: 'bg-indigo-50', desc: 'Very Good' };
-               if (s >= 80) return { label: 'B+', color: 'text-blue-600', bg: 'bg-blue-50', desc: 'Good' };
-               if (s >= 70) return { label: 'B', color: 'text-amber-600', bg: 'bg-amber-50', desc: 'Average' };
-               if (s >= 60) return { label: 'C', color: 'text-orange-600', bg: 'bg-orange-50', desc: 'Below Average' };
+               const rs = Math.round(s);
+               if (rs >= 90) return { label: 'A+', color: 'text-purple-600', bg: 'bg-purple-50', desc: 'Superstar (Outstanding)' };
+               if (rs >= 85) return { label: 'A', color: 'text-indigo-600', bg: 'bg-indigo-50', desc: 'Very Good' };
+               if (rs >= 80) return { label: 'B+', color: 'text-blue-600', bg: 'bg-blue-50', desc: 'Good' };
+               if (rs >= 70) return { label: 'B', color: 'text-amber-600', bg: 'bg-amber-50', desc: 'Average' };
+               if (rs >= 60) return { label: 'C', color: 'text-orange-600', bg: 'bg-orange-50', desc: 'Below Average' };
                return { label: 'D', color: 'text-rose-500', bg: 'bg-rose-50', desc: 'Very Poor' };
             };
             const grade = getGrade(finalScore);

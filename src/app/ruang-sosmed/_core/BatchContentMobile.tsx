@@ -331,11 +331,16 @@ export default function BatchContentMobile({ id }: { id: string }) {
                     const avgAssign = countAssign > 0 ? totalAssign/countAssign : 0;
                     const avgGC = countGC > 0 ? totalGC/countGC : 0;
                     
-                    const finalAvg = (
-                       (avgPT * gradingConfig.post_test_weight) +
-                       (avgAssign * gradingConfig.assignment_weight) +
-                       (avgGC * gradingConfig.challenge_weight)
-                    )/(gradingConfig.post_test_weight + gradingConfig.assignment_weight + gradingConfig.challenge_weight + gradingConfig.attendance_weight);
+                    const attendCount = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
+                    const totalSessions = batch?.schedules?.length || 0; 
+                    const attendScore = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
+                    const plusPoints = (mem.plus_points || {}) as any;
+                    const plusTotal = Object.values(plusPoints).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+                    const participationScore = Object.keys(plusPoints).length > 0 ? Math.round(plusTotal / 4) : 0;
+                    const finalKeaktifan = (attendScore * 0.5) + (participationScore * 0.5);
+
+                    // Unified Formula: (PT + Assign + GC + Keaktifan)/4
+                    const finalAvg = (avgPT + avgAssign + avgGC + finalKeaktifan) / 4;
 
                     return { ...mem, finalAvg };
                   }).sort((a, b) => b.finalAvg - a.finalAvg);

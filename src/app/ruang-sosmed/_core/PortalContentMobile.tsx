@@ -201,9 +201,13 @@ export default function PortalContentMobile({ id }: { id: string }) {
     const attendCount = Object.values(membershipData?.attendance || {}).filter(v => v === 'P').length;
     const totalSessions = batchData?.schedules?.length || 0; 
     const attendScore = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
-    const plusPointsTotal = Object.values(membershipData?.plus_points || {}).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
-    const finalKeaktifan = Math.min(100, attendScore + plusPointsTotal);
-    const finalAvg = (avgPT * 0.3 + avgAssign * 0.3 + avgGC * 0.2 + finalKeaktifan * 0.2);
+    const plusPoints = (membershipData?.plus_points || {}) as any;
+    const plusPointsTotal = Object.values(plusPoints).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+    const participationScore = Object.keys(plusPoints).length > 0 ? Math.round(plusPointsTotal / 4) : 0;
+    const finalKeaktifan = (attendScore * 0.5) + (participationScore * 0.5);
+
+    // Unified Formula: (PT + Assign + GC + Keaktifan)/4
+    const finalAvg = (avgPT + avgAssign + avgGC + finalKeaktifan) / 4;
 
     const now = new Date();
     const schedules = (batchData?.schedules || []).map((s: any) => ({ ...s, dateObj: new Date(s.date) }));
@@ -245,9 +249,13 @@ export default function PortalContentMobile({ id }: { id: string }) {
        const avgGC_L = countGC_L > 0 ? totalGC_L/countGC_L : 0;
        const attendCount_L = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
        const attendScore_L = totalSessions > 0 ? (attendCount_L/totalSessions) * 100 : 0;
-       const plusPoints_L = Object.values(mem.plus_points || {}).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
-       const finalKeaktifan_L = Math.min(100, attendScore_L + plusPoints_L);
-       const gpa_L = Math.round(avgPT_L * 0.3 + avgAssign_L * 0.3 + avgGC_L * 0.2 + finalKeaktifan_L * 0.2);
+
+       const plusPoints_L = (mem.plus_points || {}) as any;
+       const plusPointsTotal_L = Object.values(plusPoints_L).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+       const participationScore_L = Object.keys(plusPoints_L).length > 0 ? Math.round(plusPointsTotal_L / 4) : 0;
+       const finalKeaktifan_L = (attendScore_L * 0.5) + (participationScore_L * 0.5);
+
+       const gpa_L = Math.round((avgPT_L + avgAssign_L + avgGC_L + finalKeaktifan_L) / 4);
 
        return {
           id: mem.id,

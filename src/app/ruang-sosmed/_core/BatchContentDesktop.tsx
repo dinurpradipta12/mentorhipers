@@ -2,7 +2,7 @@
 
 
 
-import React, { useState, useEffect, useRef, use } from "react";
+import React, { useState, useEffect, useRef, use, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   GraduationCap, 
@@ -20,9 +20,11 @@ import {
   MessageSquare,
   Sparkles,
   Target,
+  Trophy,
   FileText,
   UserPlus,
   Share2,
+  ExternalLink,
   Check,
   Edit,
   Trash2,
@@ -191,10 +193,10 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
   const [gradingConfig, setGradingConfig] = useState<any>({
-     post_test_weight: 40,
-     assignment_weight: 40,
-     challenge_weight: 10,
-     attendance_weight: 10
+     post_test_weight: 25,
+     assignment_weight: 25,
+     challenge_weight: 25,
+     attendance_weight: 25
   });
 
   const [activeQuizReview, setActiveQuizReview] = useState<any>(null);
@@ -206,6 +208,17 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const [lastQuizResult, setLastQuizResult] = useState<number>(0);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedStudentDetail, setSelectedStudentDetail] = useState<any>(null);
+  const [matrixSearch, setMatrixSearch] = useState('');
+
+  const filteredMatrix = useMemo(() => {
+    const term = matrixSearch.toLowerCase().trim();
+    if (!term) return students;
+    return students.filter(s => (s.v2_profiles?.full_name || '').toLowerCase().includes(term));
+  }, [students, matrixSearch]);
+
+  // Bulk Grading Modal
+  const [isBulkGradeModalOpen, setIsBulkGradeModalOpen] = useState(false);
+  const [bulkGradeData, setBulkGradeData] = useState<{ sub: any, members: any[] } | null>(null);
 
  //Student Management State
   const [studentActionTarget, setStudentActionTarget] = useState<any>(null);
@@ -214,6 +227,9 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   const [studentSearch, setStudentSearch] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [toasts, setToasts] = useState<any[]>([]);
+  const [isManualGrading, setIsManualGrading] = useState(false);
+  const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false);
+  const [isCredentialSuccess, setIsCredentialSuccess] = useState(false);
   const [editStudentName, setEditStudentName] = useState('');
   const [certUrl, setCertUrl] = useState('');
   const [moveGroupTarget, setMoveGroupTarget] = useState('');
@@ -839,6 +855,110 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      }
   };
 
+  const openBulkGradeSelector = (sub: any) => {
+     const leaderMembership = students.find(s => s.profile_id === sub.profile_id);
+     if (!leaderMembership?.group_name) {
+        alert("Murid ini tidak memiliki data grup di membershipnya! Pastikan grup sudah di-set.");
+        return;
+     }
+
+     // Cari anggota yang satu grup (semua anggota, termasuk si pengumpul)
+     const groupMembers = students
+        .filter(s => s.group_name === leaderMembership.group_name)
+        .map(m => ({ ...m, selected: true }));
+
+     if (groupMembers.length === 0) {
+        alert("Grup ini hanya berisi 1 orang, tidak ada anggota lain untuk diberi nilai.");
+        return;
+     }
+
+     setBulkGradeData({ sub, members: groupMembers });
+     setIsBulkGradeModalOpen(true);
+  };
+
+  const handleApplyBulkGrade = async () => {
+     if (!bulkGradeData) return;
+     const { sub, members } = bulkGradeData;
+     const selectedMembers = members.filter(m => m.selected);
+
+     if (selectedMembers.length === 0) {
+        alert("Satu pun anggota tidak dipilih!");
+        return;
+     }
+
+     setIsLoading(true);
+     try {
+        const gradeNum = sub.grade || 0;
+        const criteria = sub.criteria_scores;
+
+        // 1. Ambil data submission yang sudah ada untuk member terpilih pada curriculum ini
+        const targetProfileIds = selectedMembers.map(m => m.profile_id);
+        const { data: existingSubs } = await supabase
+           .from('v2_submissions')
+           .select('id, profile_id')
+           .eq('curriculum_id', sub.curriculum_id)
+           .in('profile_id', targetProfileIds);
+
+        const existingMap = new Map(existingSubs?.map(s => [s.profile_id, s.id]));
+
+        // 2. Pisahkan mana yang harus di-update (punya ID) dan mana yang insert baru
+        const finalPayloads = selectedMembers.map(m => {
+           const isOriginalUploader = m.profile_id === sub.profile_id;
+           const payload: any = {
+              curriculum_id: sub.curriculum_id,
+              profile_id: m.profile_id,
+              workspace_id: resolvedParams.id,
+              grade: gradeNum,
+              criteria_scores: criteria,
+              status: 'completed',
+              mentor_feedback: isOriginalUploader ? sub.mentor_feedback : `[GROUP SYNC] Nilai kelompok disinkronkan dari hasil evaluasi ${sub.v2_profiles?.full_name || 'Ketua Tim'}!`,
+              is_cloned: !isOriginalUploader // Tandai sebagai clone jika bukan pengumpul asli
+           };
+           
+           // Jika sudah ada, sertakan ID agar disinkronkan (update)
+           if (existingMap.has(m.profile_id)) {
+              payload.id = existingMap.get(m.profile_id);
+           }
+           
+           return payload;
+        });
+
+        // 3. Eksekusi pemisahan (Update vs Insert) untuk menghindari error PK Null
+        const toUpdate = finalPayloads.filter(p => p.id);
+        const toInsert = finalPayloads.filter(p => !p.id);
+
+        if (toUpdate.length > 0) {
+           const { error: updErr } = await supabase.from('v2_submissions').upsert(toUpdate);
+           if (updErr) throw updErr;
+        }
+
+        if (toInsert.length > 0) {
+           const { error: insErr } = await supabase.from('v2_submissions').insert(toInsert);
+           if (insErr) throw insErr;
+        }
+
+        await fetchAllSubmissions(); // Await global matrix refresh
+        if (viewingCurriculum) {
+           await handleViewSubmissions(viewingCurriculum); // Refresh the current modal view
+        }
+
+        alert(`Berhasil sinkronisasi nilai ke ${selectedMembers.length} anggota! 🛸`);
+        setIsBulkGradeModalOpen(false);
+     } catch (err: any) {
+        alert("Gagal sinkronisasi nilai kelompok: " + err.message);
+     } finally {
+        setIsLoading(false);
+     }
+  };
+
+  const toggleBulkGradeMember = (profileId: string) => {
+     if (!bulkGradeData) return;
+     setBulkGradeData({
+        ...bulkGradeData,
+        members: bulkGradeData.members.map(m => m.profile_id === profileId ? { ...m, selected: !m.selected } : m)
+     });
+  };
+
   const handleForceGroupSync = async (subId: string, groupId: string | null) => {
       if (!groupId) { alert("Pilih stempel grup terlebih dahulu untuk melakukan override!"); return; }
       setIsLoading(true);
@@ -978,6 +1098,148 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       } catch (err) {
           console.error("fetchCustomGroups failed", err);
       }
+  };
+
+   const handleMatrixEdit = async (type: string, id: string | null, curriculumId: string, profileId: string, value: string) => {
+      const valNum = parseInt(value) || 0;
+      try {
+         if (type === 'post_test') {
+            if (id) {
+               await supabase.from('v2_quiz_results').update({ score: valNum }).eq('id', id);
+            } else {
+               await supabase.from('v2_quiz_results').insert({
+                  curriculum_id: curriculumId,
+                  profile_id: profileId,
+                  workspace_id: resolvedParams.id,
+                  score: valNum
+               });
+            }
+         } else {
+            if (id) {
+                await supabase.from('v2_submissions').update({ grade: valNum, status: 'completed' }).eq('id', id);
+            } else {
+                await supabase.from('v2_submissions').insert({
+                    curriculum_id: curriculumId,
+                    profile_id: profileId,
+                    workspace_id: resolvedParams.id,
+                    grade: valNum,
+                    status: 'completed'
+                });
+            }
+         }
+         fetchAllSubmissions();
+      } catch (err) {
+         console.error("Matrix edit failed", err);
+      }
+   };
+
+  const handleUpdateMemberInfo = async (id: string, field: string, value: string) => {
+    try {
+      const { error } = await supabase
+        .from('v2_memberships')
+        .update({ [field]: value })
+        .eq('id', id);
+      if (error) throw error;
+      
+      setStudents(prev => prev.map(s => s.id === id ? { ...s, [field]: value } : s));
+    } catch (err) {
+      console.error("Update member failed", err);
+    }
+  };
+
+  const handleAutoGenerateCredentials = () => {
+    setIsCredentialModalOpen(true);
+  };
+
+  const executeAutoGenerateCredentials = async () => {
+    setIsCredentialModalOpen(false);
+    setIsLoading(true);
+    try {
+      // Robust batch code extraction
+      let batchNo = 'XX';
+      const batchName = batch?.name || '';
+      
+      // Try to find numbers after 'Batch' or '#' or just any digit
+      const match = batchName.match(/Batch\s*#?(\d+)/i) || batchName.match(/#(\d+)/) || batchName.match(/(\d+)/);
+      if (match) {
+        batchNo = match[1];
+      } else {
+        // Fallback: Use the first two characters of the workspace name if no number found
+        batchNo = batchName.slice(0, 2).toUpperCase();
+      }
+      
+      const batchCode = `RS-${batchNo}`;
+      const programCode = 'SMS-MB'; 
+      
+      const updatePromises = students.map((s) => {
+        const randomNo = Math.floor(1000 + Math.random() * 9000);
+        const cred = `${batchCode}/${programCode}/${randomNo}`;
+        return supabase.from('v2_memberships').update({ credential_no: cred }).eq('id', s.id).then(res => {
+          if (res.error) throw res.error;
+          return res;
+        });
+      });
+      
+      await Promise.all(updatePromises);
+      await fetchStudents();
+      setIsCredentialSuccess(true);
+    } catch (err: any) {
+      console.error("Generate failed:", err);
+      alert("Gagal: " + (err.message || "Pastikan kamu sudah menjalankan SQL di Supabase dashboard."));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExportCSV = () => {
+    // 1. Prepare Period
+    const startDate = batch?.start_date ? new Date(batch.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' }) : '';
+    const endDate = batch?.end_date ? new Date(batch.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    const period = (startDate && endDate) ? `${startDate} - ${endDate}` : (batch?.name || 'Batch Periode');
+
+    // 2. Headers
+    const headers = ["Nama", "Periode", "No Credentials", "Avg Post Test", "Avg Assignment", "Avg Group Challenge", "Keaktifan (P+A)", "Final Score", "Grade", "Status"];
+    
+    // 3. Aggregate Data (Using Centralized Analytics)
+    const rows = analyticsData.map(data => {
+        const getGrading = (avg: number) => {
+            const s = Math.round(avg);
+            if (s >= 90) return { l: 'A+', k: 'Superstar (Outstanding)' };
+            if (s >= 85) return { l: 'A', k: 'Very Good' };
+            if (s >= 80) return { l: 'B+', k: 'Good' };
+            if (s >= 70) return { l: 'B', k: 'Average' };
+            if (s >= 60) return { l: 'C', k: 'Below Average' };
+            return { l: 'D', k: 'Very Poor' };
+        };
+        const g = getGrading(data.avg);
+
+        return [
+            `"${data.name || 'Anonymous'}"`,
+            `"${period}"`,
+            `"${data.mem.credential_no || '-'}"`,
+            data.avgPT.toFixed(1),
+            data.avgAssign.toFixed(1),
+            data.avgGC.toFixed(1),
+            data.finalKeaktifan.toFixed(1),
+            data.avg.toFixed(1),
+            g.l,
+            g.k
+        ];
+    });
+
+    // 4. Combine
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    
+    // 5. Download with BOM for Excel compatibility
+    const blob = new Blob(["\ufeff", csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Grading_Matrix_${batch?.name || 'Batch'}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const fetchAnnouncements = async () => {
@@ -1140,7 +1402,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
     try {
       const { data: basicMem, error: basicErr } = await supabase
         .from('v2_memberships')
-        .select('id, profile_id, group_name, is_leader, attendance, plus_points')
+        .select('id, profile_id, group_name, is_leader, attendance, plus_points, credential_no, certificate_url')
         .eq('workspace_id', resolvedParams.id);
       
       if (basicErr || !basicMem) {
@@ -1215,6 +1477,67 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.email?.includes('arunika');
   const isAdminView = isAdmin && !isPreviewMode;
+
+  const tasksForAnalytics = curriculum.filter(t => t.type !== 'material');
+  const analyticsData = students.map(mem => {
+     const studentSubmissions = allSubmissions.filter(s => s.profile_id === mem.v2_profiles?.id);
+     let totalPT = 0, countPT = 0;
+     let totalAssign = 0, countAssign = 0;
+     let totalGC = 0, countGC = 0;
+     
+     tasksForAnalytics.forEach(t => {
+        const res = studentSubmissions.find(s => s.curriculum_id === t.id);
+        const score = res ? (res.score || res.grade || 0) : 0;
+        if (t.type === 'post_test') { totalPT += score; countPT++; }
+        else if (t.type === 'individual_assignment' || t.type === 'assignment') { totalAssign += score; countAssign++; }
+        else if (t.type === 'challenge') { totalGC += score; countGC++; }
+     });
+
+     const avgPT = totalPT / (tasksForAnalytics.filter(tr => tr.type === 'post_test').length || 1);
+     const avgAssign = totalAssign / (tasksForAnalytics.filter(tr => tr.type === 'individual_assignment' || tr.type === 'assignment').length || 1);
+     const avgGC = totalGC / (tasksForAnalytics.filter(tr => tr.type === 'challenge').length || 1);
+     
+     const attendList = Object.values(mem.attendance || {});
+     const attendCount = attendList.filter(v => v === 'P').length;
+     const attendScore = (attendCount / (batch?.schedules?.length || 1)) * 100;
+     const plusPoints = (mem.plus_points || {}) as any;
+     const plusTotal = Object.values(plusPoints).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+     const participationScore = Object.keys(plusPoints).length > 0 ? Math.round(plusTotal / 4) : 0;
+     const finalKeaktifan = (attendScore * 0.5) + (participationScore * 0.5);
+
+     const finalAvg = (avgPT + avgAssign + avgGC + finalKeaktifan) / 4;
+     const getGrading = (avg: number) => {
+        const s = Math.round(avg);
+        if (s >= 90) return { label: 'A+', desc: 'Superstar (Outstanding)' };
+        if (s >= 85) return { label: 'A', desc: 'Very Good' };
+        if (s >= 80) return { label: 'B+', desc: 'Good' };
+        if (s >= 70) return { label: 'B', desc: 'Average' };
+        if (s >= 60) return { label: 'C', desc: 'Below Average' };
+        return { label: 'D', desc: 'Very Poor' };
+     };
+     const gInfo = getGrading(finalAvg);
+
+     return { 
+        mem,
+        name: mem.v2_profiles?.full_name, 
+        avatar: mem.v2_profiles?.avatar_url, 
+        avg: finalAvg,
+        grade: gInfo.label,
+        gradeDesc: gInfo.desc,
+        avgPT,
+        avgAssign,
+        avgGC,
+        finalKeaktifan,
+        attendance: attendCount,
+        p_diskusi: parseInt(plusPoints['Diskusi']) || 0,
+        p_aktif: parseInt(plusPoints['Aktif Grup']) || 0,
+        p_presentation: parseInt(plusPoints['Presentation']) || 0,
+        group: mem.group_name || 'Unassigned' 
+     };
+  });
+
+  const sortedStudents = [...analyticsData].sort((a, b) => b.avg - a.avg || b.attendance - a.attendance);
+  const star = sortedStudents[0];
 
   const TABS = [
     ...(isAdminView ? [{ id: "students", label: "Student List & Groups", icon: <Users size={16}/> }] : []),
@@ -1352,6 +1675,12 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                          />
                        </div>
                        <Button 
+                         onClick={handleAutoGenerateCredentials}
+                         className="h-12 px-6 rounded-2xl bg-amber-500 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-amber-200 hover:scale-[1.02] transition-all flex items-center gap-2 border-none"
+                       >
+                         <Award size={16}/> Generate IDs
+                       </Button>
+                       <Button 
                          onClick={() => setIsRegModalOpen(true)}
                          className="h-12 px-6 rounded-2xl bg-blue-600 text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-200 hover:scale-[1.02] transition-all flex items-center gap-2 border-none"
                        >
@@ -1366,7 +1695,8 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                         <tr className="bg-slate-50/50">
                           <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">FullName</th>
                           <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Team/Group</th>
-                          <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
+                          <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Credential ID</th>
+                          <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Cert Link</th>
                           <th className="px-10 py-5 text-left text-[10px] font-black uppercase tracking-widest text-slate-400">Action</th>
                         </tr>
                       </thead>
@@ -1382,7 +1712,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                              <td className="px-10 py-6">
                                <div className="flex items-center gap-4">
                                  <div className="relative flex-shrink-0">
-                                   <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden p-0.5 border-2 border-transparent group-hover/row:border-blue-200 transition-all flex items-center justify-center">
+                                   <div className="w-12 h-12 transition-all group-hover/row:scale-110 flex items-center justify-center">
                                       {mem.v2_profiles?.avatar_url ? (
                                          <img src={mem.v2_profiles.avatar_url} className="w-full h-full object-contain" alt=""/>
                                       ) : (
@@ -1413,9 +1743,31 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                </div>
                              </td>
                              <td className="px-10 py-6">
-                                <span className="flex items-center gap-2 text-xs font-bold text-emerald-600">
-                                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"/> Authorized
-                                </span>
+                                <input 
+                                   type="text"
+                                   placeholder="Ex: RS-16/SMS-MB/8897"
+                                   defaultValue={mem.credential_no}
+                                   onBlur={(e) => handleUpdateMemberInfo(mem.id, 'credential_no', e.target.value)}
+                                   onClick={(e) => e.stopPropagation()}
+                                   className="w-44 h-9 bg-slate-50 border-none text-[10px] font-bold text-blue-600 rounded-lg focus:bg-white focus:ring-1 ring-blue-200"
+                                />
+                             </td>
+                             <td className="px-10 py-6">
+                                <div className="flex items-center gap-2">
+                                   <input 
+                                      type="text"
+                                      placeholder="Paste link here..."
+                                      defaultValue={mem.certificate_url || mem.cert_url}
+                                      onBlur={(e) => handleUpdateMemberInfo(mem.id, 'certificate_url', e.target.value)}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="w-44 h-9 bg-slate-50 border-none text-[10px] font-bold text-slate-400 rounded-lg focus:bg-white focus:text-blue-600 focus:ring-1 ring-blue-200"
+                                   />
+                                   {(mem.certificate_url || mem.cert_url) && (
+                                      <a href={mem.certificate_url || mem.cert_url} target="_blank" rel="noreferrer" className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all">
+                                         <ExternalLink size={14}/>
+                                      </a>
+                                   )}
+                                </div>
                              </td>
                              <td className="px-10 py-6">
                                  <div className="relative">
@@ -1458,20 +1810,6 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
                           {/* 1. STAR STUDENT OF THE WEEK */}
                           {(() => {
-                            //Logic: Highest average score + attendance this week
-                             const analytics = students.map(mem => {
-                                const sub = allSubmissions.filter(s => s.profile_id === mem.v2_profiles?.id);
-                                let total = 0, count = 0;
-                                curriculum.filter(t => t.type !== 'material').forEach(t => {
-                                   const res = sub.find(s => s.curriculum_id === t.id);
-                                   if (res) { total += (res.score || res.grade || 0); count++; }
-                                });
-                                const avg = count > 0 ? total/count : 0;
-                                const attendanceCount = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
-                                return { mem, avg, attendance: attendanceCount };
-                             }).sort((a, b) => b.avg - a.avg || b.attendance - a.attendance);
-
-                             const star = analytics[0];
                              if (!star || star.avg === 0) return null;
 
                              return (
@@ -1480,14 +1818,16 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                       <Star size={60} fill="currentColor" className="text-amber-500"/>
                                    </div>
                                    <div className="relative z-10 flex items-center gap-4">
-                                      <div className="w-14 h-14 rounded-2xl bg-white border-2 border-amber-200 flex items-center justify-center font-black text-amber-600 shadow-sm overflow-hidden p-1">
-                                         {star.mem.v2_profiles?.avatar_url ? (
-                                            <img src={star.mem.v2_profiles.avatar_url} className="w-full h-full object-contain"/>
-                                         ) : star.mem.v2_profiles?.full_name?.charAt(0)}
+                                      <div className="w-16 h-16 flex items-center justify-center relative">
+                                         {star.avatar ? (
+                                            <img src={star.avatar} className="w-full h-full object-contain drop-shadow-sm transition-transform group-hover:scale-110 duration-500"/>
+                                         ) : (
+                                            <div className="w-full h-full rounded-full bg-white flex items-center justify-center font-black text-amber-600 border-2 border-amber-200 shadow-sm">{star.name?.charAt(0)}</div>
+                                         )}
                                       </div>
                                       <div>
                                          <div className="px-2 py-0.5 rounded-md bg-amber-500 text-white text-[8px] font-black uppercase tracking-widest w-fit mb-1 shadow-sm">Star Student</div>
-                                         <h4 className="text-sm font-black text-slate-800">{star.mem.v2_profiles?.full_name}</h4>
+                                         <h4 className="text-sm font-black text-slate-800">{star.name}</h4>
                                          <p className="text-[10px] font-bold text-amber-600">{star.avg.toFixed(1)} Avg Score • {star.attendance} Presence</p>
                                       </div>
                                    </div>
@@ -1943,163 +2283,316 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
           {activeTab === 'grades' && (
              <div className="space-y-10">
-                <div className="flex items-center justify-between px-6">
-                   <div className="space-y-1">
-                       <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Grading Matrix Raport</h3>
-                       <p className="text-xs text-slate-400 font-bold">Dynamic performance breakdown based on assignments and kuis.</p>
-                    </div>
-                 </div>
+                {/* GRADES DASHBOARD ANALYTICS */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-8 px-2">
+                   {(() => {
+                      const top5 = sortedStudents.slice(0, 5);
+                      
+                      const groupMap: any = {};
+                      analyticsData.forEach(s => {
+                         if (s.group === 'Unassigned') return;
+                         if (!groupMap[s.group]) groupMap[s.group] = { totalG: 0, sumD: 0, sumA: 0, sumP: 0, count: 0, activePresenters: 0 };
+                         groupMap[s.group].totalG += s.avgGC;
+                         groupMap[s.group].sumD += s.p_diskusi;
+                         groupMap[s.group].sumA += s.p_aktif;
+                         groupMap[s.group].sumP += s.p_presentation;
+                         groupMap[s.group].count += 1;
+                         if (s.p_presentation > 0) groupMap[s.group].activePresenters += 1;
+                      });
+                      
+                      const groupsAnalytics = Object.keys(groupMap).map(g => {
+                         const avgG = groupMap[g].totalG / groupMap[g].count;
+                         const activePres = groupMap[g].activePresenters;
+                         
+                         // If no one presented, the participation score is 0
+                         const squadPart = activePres > 0 
+                            ? (groupMap[g].sumD + groupMap[g].sumA + groupMap[g].sumP) / activePres 
+                            : 0;
+
+                         return {
+                            name: g,
+                            avg: Math.round(avgG + squadPart)
+                         };
+                      }).sort((a, b) => b.avg - a.avg);
+
+                      const topGroup = groupsAnalytics[0];
+
+                      return (
+                         <>
+                            {/* Card 1: ELITE STUDENTS */}
+                            <div className="md:col-span-5 bg-white rounded-[44px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col gap-6 relative overflow-hidden group">
+                               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-10 -mt-10"/>
+                               <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                     <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                        <Award size={20}/>
+                                     </div>
+                                     <h4 className="text-xl font-black text-[#0F172A] tracking-tight">Elite Students</h4>
+                                  </div>
+                                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Top 5 Performer</span>
+                               </div>
+                               <div className="flex items-center justify-around">
+                                  {top5.map((s, idx) => (
+                                     <div 
+                                        key={idx} 
+                                        onClick={() => { setSelectedStudentDetail(s.mem); setIsDetailModalOpen(true); }}
+                                        className="flex flex-col items-center gap-2 group/avatar cursor-pointer"
+                                     >
+                                        <div className={`relative w-16 h-16 transition-transform group-hover/avatar:scale-110 duration-500`}>
+                                           {s.avatar ? (
+                                              <img src={s.avatar} className="w-full h-full object-contain drop-shadow-md" />
+                                           ) : (
+                                              <div className="w-full h-full rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border-2 border-dashed border-slate-200 capitalize">{s.name?.charAt(0)}</div>
+                                           )}
+                                           {idx === 0 && <Star size={16} className="absolute -top-1 -right-1 text-amber-400 fill-amber-400 animate-pulse drop-shadow-sm"/>}
+                                        </div>
+                                        <p className="text-[9px] font-black text-[#0F172A] text-center w-14 truncate">{s.name.split(' ')[0]}</p>
+                                        <div className={`px-2 py-0.5 rounded-full text-[8px] font-black ${idx === 0 ? 'bg-amber-400 text-white' : 'bg-blue-50 text-blue-600'}`}>
+                                           {Math.round(s.avg)}
+                                        </div>
+                                     </div>
+                                  ))}
+                               </div>
+                            </div>
+
+                            {/* Card 2: LEADING TEAM (Minimalist) */}
+                            <div className="md:col-span-3 bg-white rounded-[44px] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 relative flex flex-col justify-center gap-4 overflow-hidden group">
+                               <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl -mr-10 -mt-10"/>
+                               <div className="space-y-1 relative z-10">
+                                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Leading Group</p>
+                                  <h4 className="text-2xl font-black truncate text-[#0F172A]">{topGroup?.name || 'N/A'}</h4>
+                               </div>
+                               <div className="flex items-end justify-between mt-1 relative z-10">
+                                  <div className="flex flex-col">
+                                     <span className="text-[36px] font-black leading-none text-blue-600 tracking-tighter">{topGroup?.avg || 0}</span>
+                                     <span className="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">Avg Squad Score</span>
+                                  </div>
+                                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-sm">
+                                     <Trophy size={24}/>
+                                  </div>
+                               </div>
+                            </div>
+
+                            {/* Card 3: GROUP COMPARISON */}
+                            <div className="md:col-span-4 bg-white rounded-[44px] p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col gap-4">
+                               <div className="px-2 pt-2">
+                                  <h4 className="text-sm font-black text-[#0F172A] uppercase tracking-widest flex items-center gap-2">
+                                     <Target size={16} className="text-rose-500"/> Squad Performance
+                                  </h4>
+                               </div>
+                               <div className="space-y-3 px-2 pt-3 overflow-y-auto max-h-[160px] custom-scrollbar">
+                                  {groupsAnalytics.map((g, idx) => (
+                                     <div key={idx} className="space-y-1.5 group/g">
+                                        <div className="flex items-center justify-between text-[10px] font-black text-slate-600">
+                                           <span className="group-hover/g:text-blue-600 transition-colors">{g.name}</span>
+                                           <span>{g.avg} PT</span>
+                                        </div>
+                                        <div className="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100/50">
+                                           <motion.div 
+                                              initial={{ width: 0 }}
+                                              animate={{ width: `${g.avg}%` }}
+                                              className={`h-full rounded-full ${idx === 0 ? 'bg-blue-600' : 'bg-slate-300 group-hover/g:bg-blue-300'} transition-all`}
+                                           />
+                                        </div>
+                                     </div>
+                                  ))}
+                                  {groupsAnalytics.length === 0 && <p className="text-center text-[10px] font-bold text-slate-300 mt-10">Belum ada grup yang dibentuk.</p>}
+                               </div>
+                            </div>
+                         </>
+                      );
+                   })()}
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center justify-between px-8 gap-6">
+                    <div className="space-y-1">
+                        <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Grading Matrix Raport</h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Dynamic performance breakdown based on assignments and kuis.</p>
+                     </div>
+                     <div className="flex flex-wrap items-center gap-3">
+                         {/* MATRIX SEARCH */}
+                         <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
+                               <Search size={16}/>
+                            </div>
+                            <input 
+                               type="text"
+                               placeholder="Cari nama student..."
+                               value={matrixSearch}
+                               onChange={(e) => setMatrixSearch(e.target.value)}
+                               className="w-64 h-12 pl-12 pr-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white transition-all shadow-sm"
+                            />
+                         </div>
+
+                         <button 
+                            onClick={handleExportCSV}
+                            className="h-12 px-5 rounded-2xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center gap-2 font-black text-[10px] uppercase tracking-wider border border-emerald-100 shadow-sm"
+                         >
+                            <Download size={18} />
+                            <span>Export CSV</span>
+                         </button>
+                        <button 
+                           onClick={() => setIsManualGrading(!isManualGrading)}
+                           className={`h-12 px-5 rounded-2xl transition-all flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${isManualGrading ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}
+                        >
+                           <Settings size={18} className={isManualGrading ? 'animate-spin-slow' : ''}/>
+                           <span>{isManualGrading ? 'MANUAL MODE' : 'MANUAL MODE'}</span>
+                        </button>
+                     </div>
+                  </div>
 
                  <Card className="p-0 border-none shadow-2xl shadow-slate-200/50 bg-white overflow-hidden rounded-[44px]">
                     <div className="overflow-x-auto">
                        {students.length > 0 ? (
                           <table className="w-full border-collapse">
                              <thead>
-                                <tr className="bg-slate-900 text-white">
-                                   <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/5 sticky left-0 z-20 bg-slate-900">Student Profiles</th>
+                                <tr className="bg-[#0F172A] text-white">
+                                   <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/5 sticky left-0 z-20 bg-[#0F172A] min-w-[280px]">Student Profil</th>
                                    
                                    {/* DINAMIS HEADER BERDASARKAN TUGAS */}
                                    {curriculum.filter(t => t.type !== 'material').map((c) => (
-                                      <th key={c.id} className="px-6 py-6 text-center text-[10px] font-black uppercase tracking-widest min-w-[140px] border-r border-white/10">
-                                         {c.title}
+                                      <th key={c.id} className="px-4 py-8 text-center text-[9px] font-black uppercase tracking-widest min-w-[120px] max-w-[120px] border-r border-white/10 group relative">
+                                         <div className="line-clamp-2 leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity">
+                                            {c.title}
+                                         </div>
                                       </th>
                                    ))}
 
-                                   <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white">AVG SCORE</th>
-                                   <th className="px-8 py-4 text-center text-[10px] font-black uppercase tracking-widest bg-emerald-600 text-white">GRADE</th>
+                                    <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-widest bg-emerald-600/90 text-white">Participation</th>
+                                    <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-widest bg-blue-600 text-white">AVG SCORE</th>
+                                    <th className="px-8 py-4 text-center text-[10px] font-black uppercase tracking-widest bg-emerald-600 text-white">GRADE</th>
                                 </tr>
                              </thead>
                              <tbody>
-                                {students.map((mem) => {
-                                   const studentSubmissions = allSubmissions.filter(s => s.profile_id === mem.v2_profiles?.id);
-                                  //For quizzes, we need to fetch quiz results globally too. For now, we'll use a placeholder or assume they are part of allSubmissions if the schema allows.
-                                  //Assuming quiz results are also in `allSubmissions` for simplicity, or a separate `allQuizResults` state would be needed.
-                                  //For this implementation, I'll assume `allSubmissions` can contain both types if `grade` is present for non-quiz and `score` for quiz.
-                                  //A more robust solution would fetch `v2_quiz_results` separately.
-                                   
-                                   let totalPT = 0, countPT = 0;
-                                   let totalAssign = 0, countAssign = 0;
-                                   let totalGC = 0, countGC = 0;
-                                   
-                                   const tasks = curriculum.filter(t => t.type !== 'material');
-                                   
-                                   const scores = tasks.map(t => {
-                                      let score: number | null = null;
+                                 {filteredMatrix.length === 0 ? (
+                                    <tr>
+                                       <td colSpan={100} className="p-40 text-center opacity-30">
+                                          <Search size={44} className="mx-auto mb-4"/>
+                                          <p className="font-black text-xs uppercase tracking-[0.2em]">Tidak Ada Student Bernama "{matrixSearch}"</p>
+                                       </td>
+                                    </tr>
+                                 ) : (
+                                    filteredMatrix.map((mem) => {
+                                       const studentSubmissions = allSubmissions.filter(s => s.profile_id === mem.v2_profiles?.id);
                                        
-                                      //LETS WORK WITH AUTO-0 LOGIC
-                                      //Threshold: Due Date + 24 Hours
-                                       const now = new Date().getTime();
-                                       const hasDueDate = !!t.due_date;
-                                       const deadlineElapsed = hasDueDate ? (new Date(t.due_date).getTime() + 86400000) < now : false;
-
-                                       if (t.type === 'post_test') {
-                                          const quizResult = studentSubmissions.find(s => s.curriculum_id === t.id && s.score !== undefined); 
-                                          score = quizResult ? (quizResult.score || 0) : (deadlineElapsed ? 0 : null);
-                                       } else {
-                                          const sub = studentSubmissions.find(s => s.curriculum_id === t.id);
-                                          score = sub ? (sub.grade || 0) : (deadlineElapsed ? 0 : null);
-                                       }
+                                       let totalPT = 0, countPT = 0;
+                                       let totalAssign = 0, countAssign = 0;
+                                       let totalGC = 0, countGC = 0;
                                        
-                                      //Aggregate for Summary (If Null, it means still waiting/grace period)
-                                       const actualScore = score === null ? 0 : score;
-                                       if (t.type === 'post_test') { totalPT += actualScore; countPT++; }
-                                       else if (t.type === 'challenge') { totalGC += actualScore; countGC++; }
-                                       else if (t.type === 'individual_assignment') { totalAssign += actualScore; countAssign++; }
+                                       const tasks = curriculum.filter(t => t.type !== 'material');
                                        
-                                       return { val: score, isAutoZero: (score === 0 && !studentSubmissions.find(s => s.curriculum_id === t.id)) };
-                                    });
+                                       const scores = tasks.map(t => {
+                                          let score: number | null = null;
+                                           
+                                          //LETS WORK WITH AUTO-0 LOGIC
+                                          //Threshold: Due Date + 24 Hours
+                                           const now = new Date().getTime();
+                                           const hasDueDate = !!t.due_date;
+                                           const deadlineElapsed = hasDueDate ? (new Date(t.due_date).getTime() + 86400000) < now : false;
 
-                                   const avgPT = countPT > 0 ? totalPT/countPT : 0;
-                                   const avgAssign = countAssign > 0 ? totalAssign/countAssign : 0;
-                                   const avgGC = countGC > 0 ? totalGC/countGC : 0;
-                                   const attendCount = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
-                                    const totalSessions = batch?.schedules?.length || 0; 
-                                   const attendScore = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
-                                   
-                                   const plusPointsTotal = Object.values(mem.plus_points || {}).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
-                                   const finalKeaktifan = Math.min(100, attendScore + plusPointsTotal);
+                                           if (t.type === 'post_test') {
+                                              const quizResult = studentSubmissions.find(s => s.curriculum_id === t.id && s.score !== undefined); 
+                                              score = quizResult ? (quizResult.score || 0) : (deadlineElapsed ? 0 : null);
+                                              if (score !== null) { totalPT += score; countPT++; }
+                                           } else {
+                                              const sub = studentSubmissions.find(s => s.curriculum_id === t.id && s.grade !== undefined);
+                                              score = sub ? (sub.grade || 0) : (deadlineElapsed ? 0 : null);
+                                              if (score !== null) {
+                                                if (t.type === 'challenge') { totalGC += score; countGC++; }
+                                                else { totalAssign += score; countAssign++; }
+                                              }
+                                           }
+                                           return { id: t.id, score, isAutoZero: (score === 0 && !studentSubmissions.find(s => s.curriculum_id === t.id)) };
+                                       });
 
-                                   const finalAvg = (
-                                      (avgPT * gradingConfig.post_test_weight) +
-                                      (avgAssign * gradingConfig.assignment_weight) +
-                                      (avgGC * gradingConfig.challenge_weight) +
-                                      (finalKeaktifan * gradingConfig.attendance_weight)
-                                   )/(gradingConfig.post_test_weight + gradingConfig.assignment_weight + gradingConfig.challenge_weight + gradingConfig.attendance_weight);
-                                   
-                                   const getGrading = (avg: number) => {
-                                      if (avg >= 90) return { label: 'A+ (Superstar)', color: 'text-purple-600 bg-purple-50' };
-                                      if (avg >= 85) return { label: 'A (Very Good)', color: 'text-indigo-600 bg-indigo-50' };
-                                      if (avg >= 80) return { label: 'B+ (Good)', color: 'text-blue-600 bg-blue-50' };
-                                      if (avg >= 70) return { label: 'B (Average)', color: 'text-amber-600 bg-amber-50' };
-                                      if (avg >= 60) return { label: 'C (Below Avg)', color: 'text-orange-600 bg-orange-50' };
-                                      return { label: 'D (Very Poor)', color: 'text-rose-600 bg-rose-50' };
-                                   };
-                                   const grade = getGrading(finalAvg);
+                                       const avgPT = countPT > 0 ? totalPT / countPT : 0;
+                                       const avgAssign = countAssign > 0 ? totalAssign / countAssign : 0;
+                                       const avgGC = countGC > 0 ? totalGC / countGC : 0;
+                                       const attendCount = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
+                                       const attendScore = (attendCount / (batch?.schedules?.length || 1)) * 100;
+                                       const plusPoints = (mem.plus_points || {}) as any;
+                                       const plusTotal = Object.values(plusPoints).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+                                       const participationScore = Object.keys(plusPoints).length > 0 ? Math.round(plusTotal / 4) : 0;
+                                       const finalKeaktifan = (attendScore * 0.5) + (participationScore * 0.5);
 
-                                   return (
-                                      <tr key={mem.id} className="border-b border-slate-100 hover:bg-slate-50 transition-all">
-                                         <td className="px-8 py-5 border-r border-slate-100 bg-slate-50/50 sticky left-0 z-10">
-                                            <div className="flex items-center gap-4">
-                                               <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center font-black text-[10px] text-slate-400">
-                                                  {mem.v2_profiles?.full_name?.charAt(0)}
-                                               </div>
-                                               <p className="text-sm font-black text-[#0F172A]">{mem.v2_profiles?.full_name}</p>
-                                            </div>
-                                         </td>
-                                         {scores.map((s: any, idx) => {
-                                             const t = tasks[idx];
-                                             if (t.type === 'post_test') {
-                                                const qr = studentSubmissions.find(si => si.curriculum_id === t.id && si.score !== undefined);
-                                                return (
-                                                   <td key={idx} className="px-6 py-4 text-center border-r border-slate-100">
-                                                      {qr ? (
-                                                         <button 
-                                                            onClick={() => { setActiveQuizReview(qr); setIsQuizReviewModalOpen(true); }}
-                                                            className="px-4 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-[14px] font-black text-xs transition-all ring-1 ring-blue-100 shadow-sm"
-                                                         >
-                                                            {qr.score} Point
-                                                         </button>
+                                       const finalAvg = (avgPT + avgAssign + avgGC + finalKeaktifan) / 4;
+
+                                       const getGradingLabels = (avg: number) => {
+                                          const s = Math.round(avg);
+                                          if (s >= 90) return { label: 'A+ (Superstar)', color: 'text-purple-600 bg-purple-50' };
+                                          if (s >= 85) return { label: 'A (Very Good)', color: 'text-indigo-600 bg-indigo-50' };
+                                          if (s >= 80) return { label: 'B+ (Good)', color: 'text-blue-600 bg-blue-50' };
+                                          if (s >= 70) return { label: 'B (Average)', color: 'text-amber-600 bg-amber-50' };
+                                          if (s >= 60) return { label: 'C (Below Avg)', color: 'text-orange-600 bg-orange-50' };
+                                          return { label: 'D (Very Poor)', color: 'text-rose-600 bg-rose-50' };
+                                       };
+                                       const grade = getGradingLabels(finalAvg);
+
+                                       return (
+                                          <tr key={mem.id} className="border-b border-slate-100 hover:bg-slate-50 transition-all">
+                                             <td 
+                                                onClick={() => { setSelectedStudentDetail(mem); setIsDetailModalOpen(true); }}
+                                                className="px-8 py-5 text-left border-r border-slate-100 sticky left-0 z-10 bg-white group shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)] cursor-pointer"
+                                             >
+                                                <div className="flex items-center gap-3">
+                                                   <div className="w-10 h-10 rounded-2xl bg-slate-50 overflow-hidden border border-slate-100 flex-shrink-0 group-hover:scale-110 group-hover:border-blue-200 transition-all duration-300">
+                                                      {mem.v2_profiles?.avatar_url ? (
+                                                         <img src={mem.v2_profiles.avatar_url} className="w-full h-full object-contain drop-shadow-sm" />
                                                       ) : (
-                                                         s.isAutoZero ? (
-                                                           <div className="flex flex-col items-center">
-                                                              <span className="text-xl font-black text-rose-500">0</span>
-                                                              <span className="text-[8px] font-black text-rose-300 uppercase leading-none">ABSENT/TIMEOUT</span>
-                                                           </div>
+                                                         <div className="w-full h-full flex items-center justify-center font-black text-slate-300 text-xs">
+                                                            {mem.v2_profiles?.full_name?.charAt(0)}
+                                                         </div>
+                                                      )}
+                                                   </div>
+                                                   <div>
+                                                      <p className="text-sm font-black text-[#0F172A] group-hover:text-blue-600 transition-colors leading-none mb-1">{mem.v2_profiles?.full_name}</p>
+                                                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">{mem.group_name || 'Individual'}</p>
+                                                   </div>
+                                                </div>
+                                             </td>
+                                             {scores.map(s => {
+                                                const t = curriculum.find(tx => tx.id === s.id);
+                                                const sub = studentSubmissions.find(sx => sx.curriculum_id === s.id);
+                                                
+                                                const scoreValue = t?.type === 'post_test' ? sub?.score : sub?.grade;
+                                                const hasScore = scoreValue !== undefined && scoreValue !== null;
+                                                const isZero = s.isAutoZero || (hasScore && scoreValue === 0);
+
+                                                return (
+                                                   <td key={s.id} className="px-4 py-5 text-center border-r border-slate-50 group/cell hover:bg-slate-50 transition-colors">
+                                                      {isManualGrading && t?.type !== 'post_test' ? (
+                                                         <input 
+                                                            type="number"
+                                                            defaultValue={scoreValue || 0}
+                                                            onBlur={(e) => handleMatrixEdit('assignment', sub?.id || null, t.id, mem.v2_profiles.id, e.target.value)}
+                                                            className="w-12 h-8 bg-transparent border-b-2 border-transparent focus:border-blue-500 text-center font-black text-slate-600 focus:outline-none transition-all"
+                                                         />
+                                                      ) : (
+                                                         hasScore || s.isAutoZero ? (
+                                                            <div className="flex flex-col items-center">
+                                                               <span className={`text-sm font-black transition-all ${isZero ? 'text-rose-500' : (scoreValue || 0) >= 80 ? 'text-emerald-500' : 'text-slate-600'}`}>
+                                                                  {hasScore ? scoreValue : 0}
+                                                               </span>
+                                                               {sub?.is_cloned && <div className="w-1 h-1 rounded-full bg-blue-400 mt-0.5" title="Synced data" />}
+                                                            </div>
                                                          ) : (
-                                                           <span className="text-slate-200 font-bold">-</span>
+                                                            <span className="text-slate-200 font-bold opacity-30">-</span>
                                                          )
                                                       )}
                                                    </td>
                                                 );
-                                             } else {
-                                                const sub = studentSubmissions.find(si => si.curriculum_id === t.id);
-                                                return (
-                                                   <td key={idx} className="px-6 py-4 text-center border-r border-slate-100">
-                                                      {sub ? (
-                                                        <span className="text-sm font-bold text-slate-600">{sub.grade}</span>
-                                                      ) : (
-                                                        s.isAutoZero ? (
-                                                           <div className="flex flex-col items-center">
-                                                              <span className="text-xl font-black text-rose-500">0</span>
-                                                              <span className="text-[8px] font-black text-rose-300 uppercase leading-none">ABSENT/TIMEOUT</span>
-                                                           </div>
-                                                        ) : (
-                                                          <span className="text-slate-200 font-bold">-</span>
-                                                        )
-                                                      )}
-                                                   </td>
-                                                );
-                                             }
-                                          })}
-                                         <td className="px-8 py-5 text-center bg-blue-50/20 text-blue-600 font-black text-xl border-r border-slate-100">{Math.round(finalAvg)}</td>
-                                         <td className="px-8 py-5 text-center border-r border-slate-100">
-                                            <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase whitespace-nowrap ${grade.color}`}>
-                                               {grade.label}
-                                            </span>
-                                         </td>
-                                      </tr>
-                                   );
-                                })}
+                                             })}
+                                             <td className="px-6 py-5 text-center bg-emerald-50/30 text-emerald-600 font-black text-sm border-r border-slate-100">{participationScore}</td>
+                                             <td className="px-6 py-5 text-center bg-blue-50/10 text-blue-600 font-black text-lg border-r border-slate-100">{Math.round(finalAvg)}</td>
+                                             <td className="px-8 py-5 text-center border-r border-slate-100">
+                                                <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase whitespace-nowrap ${grade.color}`}>
+                                                   {grade.label}
+                                                </span>
+                                             </td>
+                                          </tr>
+                                       );
+                                    })
+                                 )}
                              </tbody>
                           </table>
                        ) : (
@@ -2124,38 +2617,65 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                        <div className="overflow-x-auto">
                           <table className="w-full border-collapse">
                              <thead>
-                                <tr className="bg-slate-900 text-white">
-                                   <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest sticky left-0 z-20 bg-slate-900">Student Profiles</th>
+                                <tr className="bg-emerald-950 text-white">
+                                   <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest sticky left-0 z-20 bg-emerald-950 min-w-[280px] border-r border-white/5">Student Profil</th>
                                    {['Diskusi', 'Aktif Grup', 'Challenge Presence', 'Presentation'].map(cat => (
-                                      <th key={cat} className="px-6 py-6 text-center text-[10px] font-black uppercase text-blue-200/60">{cat}</th>
+                                      <th key={cat} className="px-4 py-8 text-center text-[9px] font-black uppercase tracking-widest min-w-[120px] opacity-60 border-r border-white/5">{cat}</th>
                                    ))}
                                    <th className="px-8 py-6 text-center text-[10px] font-black uppercase tracking-widest bg-emerald-600 text-white">TOTAL BONUS</th>
                                 </tr>
                              </thead>
                              <tbody>
-                                {students.map((mem) => {
+                                 {filteredMatrix.length === 0 ? (
+                                    <tr>
+                                       <td colSpan={100} className="p-32 text-center opacity-30">
+                                          <Search size={44} className="mx-auto mb-4"/>
+                                          <p className="font-black text-[10px] uppercase tracking-[0.2em]">Tidak Ada Student Bernama "{matrixSearch}"</p>
+                                       </td>
+                                    </tr>
+                                 ) : (
+                                    filteredMatrix.map((mem) => {
                                    const plus = (mem.plus_points || {}) as any;
                                    const sumPlus = Object.values(plus).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0);
+                                   const avgPlus = Math.round(sumPlus / 4);
 
                                    return (
                                       <tr key={mem.id} className="border-b border-slate-100 hover:bg-slate-50 transition-all">
-                                         <td className="px-8 py-4 border-r border-slate-100 sticky left-0 z-10 bg-slate-50/50">
-                                            <p className="text-xs font-black text-slate-900">{mem.v2_profiles?.full_name}</p>
-                                         </td>
+                                         <td 
+                                                onClick={() => { setSelectedStudentDetail(mem); setIsDetailModalOpen(true); }}
+                                                className="px-8 py-4 border-r border-slate-100 sticky left-0 z-10 bg-white group shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)] cursor-pointer"
+                                             >
+                                                <div className="flex items-center gap-3">
+                                                   <div className="w-10 h-10 rounded-2xl bg-slate-50 overflow-hidden border border-slate-100 flex-shrink-0 group-hover:scale-110 group-hover:border-blue-200 transition-all duration-300">
+                                                      {mem.v2_profiles?.avatar_url ? (
+                                                         <img src={mem.v2_profiles.avatar_url} className="w-full h-full object-contain drop-shadow-sm" />
+                                                      ) : (
+                                                         <div className="w-full h-full flex items-center justify-center font-black text-slate-300 text-xs">
+                                                            {mem.v2_profiles?.full_name?.charAt(0)}
+                                                         </div>
+                                                      )}
+                                                   </div>
+                                                   <div>
+                                                      <p className="text-sm font-black text-[#0F172A] group-hover:text-blue-600 transition-colors leading-none mb-1">{mem.v2_profiles?.full_name}</p>
+                                                      <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">{mem.group_name || 'Individual'}</p>
+                                                   </div>
+                                                </div>
+                                             </td>
                                          {['Diskusi', 'Aktif Grup', 'Challenge Presence', 'Presentation'].map(cat => (
                                             <td key={cat} className="px-4 py-4 text-center border-r border-slate-100">
                                                <input 
                                                   type="number"
                                                   defaultValue={plus[cat] || 0}
                                                   onBlur={(e) => handleSavePlusPoints(mem.id, cat, e.target.value)}
-                                                  className="w-16 h-10 border-none bg-transparent text-center font-black text-blue-600 focus:bg-white focus:ring-2 ring-blue-500/10 rounded-xl"
+                                                  className="w-12 h-8 bg-transparent border-b-2 border-transparent focus:border-emerald-500 text-center font-black text-emerald-600 focus:outline-none transition-all"
                                               />
                                             </td>
                                          ))}
-                                         <td className="px-8 py-4 text-center bg-emerald-50 text-emerald-600 font-black text-sm">+{sumPlus as any}</td>
+                                         <td className="px-6 py-4 text-center bg-emerald-50/30 text-emerald-600 font-black text-sm">{avgPlus}</td>
                                       </tr>
-                                   )
-                                })}
+                                   );
+                                    })
+                                 )}
                              </tbody>
                           </table>
                        </div>
@@ -2180,13 +2700,13 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                    <div className="overflow-x-auto">
                       <table className="w-full border-collapse">
                         <thead>
-                            <tr className="bg-slate-900 text-white">
-                              <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/5 sticky left-0 z-20 bg-slate-900">Student Name</th>
+                            <tr className="bg-indigo-950 text-white">
+                              <th className="px-8 py-6 text-left text-[10px] font-black uppercase tracking-widest border-r border-white/5 sticky left-0 z-20 bg-indigo-950 min-w-[280px]">Student Profil</th>
                               {(() => {
                                  const slots = batch?.schedules || [];
                                  return slots.map((s: any, i: number) => (
-                                    <th key={s.id || i} className="w-20 min-w-[80px] px-2 py-4 text-center text-[7px] font-black border-r border-white/5 whitespace-nowrap uppercase tracking-tighter opacity-70">
-                                       <p className="mb-1 text-blue-400">{new Date(s.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}</p>
+                                    <th key={s.id || i} className="w-20 min-w-[80px] px-2 py-8 text-center text-[7px] font-black border-r border-white/5 whitespace-nowrap uppercase tracking-tighter opacity-60">
+                                       <p className="mb-1 text-white/40">{new Date(s.date).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}</p>
                                        {s.title}
                                     </th>
                                  ));
@@ -2195,13 +2715,40 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                            </tr>
                         </thead>
                         <tbody>
-                           {students.map((mem) => {
-                              const att = mem.attendance || {};
-                              const presentCount = Object.values(att).filter(v => v === 'P').length;
+                           {filteredMatrix.length === 0 ? (
+                              <tr>
+                                 <td colSpan={100} className="p-32 text-center opacity-30">
+                                    <Search size={44} className="mx-auto mb-4"/>
+                                    <p className="font-black text-[10px] uppercase tracking-[0.2em]">Tidak Ada Student Bernama "{matrixSearch}"</p>
+                                 </td>
+                              </tr>
+                           ) : (
+                              filteredMatrix.map((mem) => {
+                                 const att = mem.attendance || {};
+                                 const presentCount = Object.values(att).filter(v => v === 'P').length;
 
                               return (
                                  <tr key={mem.id} className="border-b border-slate-100 hover:bg-slate-50 transition-all">
-                                    <td className="px-8 py-5 text-sm font-black text-[#0F172A] border-r border-slate-100 bg-slate-50/50 sticky left-0 z-10">{mem.v2_profiles?.full_name}</td>
+                                    <td 
+                                        onClick={() => { setSelectedStudentDetail(mem); setIsDetailModalOpen(true); }}
+                                        className="px-8 py-5 text-left border-r border-slate-100 sticky left-0 z-10 bg-white group shadow-[4px_0_10px_-4px_rgba(0,0,0,0.05)] cursor-pointer"
+                                     >
+                                        <div className="flex items-center gap-3">
+                                           <div className="w-10 h-10 rounded-2xl bg-slate-50 overflow-hidden border border-slate-100 flex-shrink-0 group-hover:scale-110 group-hover:border-blue-200 transition-all duration-300">
+                                              {mem.v2_profiles?.avatar_url ? (
+                                                 <img src={mem.v2_profiles.avatar_url} className="w-full h-full object-contain drop-shadow-sm" />
+                                              ) : (
+                                                 <div className="w-full h-full flex items-center justify-center font-black text-slate-300 text-xs">
+                                                    {mem.v2_profiles?.full_name?.charAt(0)}
+                                                 </div>
+                                              )}
+                                           </div>
+                                           <div>
+                                              <p className="text-sm font-black text-[#0F172A] group-hover:text-blue-600 transition-colors leading-none mb-1">{mem.v2_profiles?.full_name}</p>
+                                              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">{mem.group_name || 'Individual'}</p>
+                                           </div>
+                                        </div>
+                                     </td>
                                     {(() => {
                                        const slots = batch?.schedules || [];
                                        return slots.map((s: any, i: number) => {
@@ -2238,11 +2785,12 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                        });
                                     })()}
                                     <td className="px-8 py-5 text-center font-black text-emerald-600 bg-emerald-50/30">
-                                       {Math.round((presentCount/(batch?.schedules?.length || 1)) * 100)}%
+                                       {Math.round((presentCount/(batch?.schedules?.length || 1)) * 100)}
                                     </td>
                                  </tr>
                               );
-                           })}
+                            })
+                         )}
                         </tbody>
                       </table>
                       {students.length === 0 && (
@@ -2851,9 +3399,9 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
-                   {submissionsData.length > 0 ? (
+                   {submissionsData.filter(s => !s.is_cloned).length > 0 ? (
                       <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
-                         {submissionsData.map((sub, i) => (
+                         {submissionsData.filter(s => !s.is_cloned).map((sub, i) => (
                               <div 
                                 key={i} 
                                 onClick={() => {
@@ -2866,7 +3414,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                               >
                                  <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
-                                       <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-inner flex items-center justify-center font-black text-xs text-slate-400 uppercase overflow-hidden shrink-0 p-1">
+                                       <div className="w-14 h-14 flex items-center justify-center shrink-0 relative">
                                           {sub.v2_profiles?.avatar_url ? (
                                              <img src={sub.v2_profiles.avatar_url} alt="Profile" className="w-full h-full object-contain"/>
                                           ) : (
@@ -2962,11 +3510,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                             <p className="text-2xl font-black text-blue-600">{sub.grade || 0}</p>
                                          </div>
                                          <button 
-                                            onClick={() => {
-                                               const avg = sub.grade || 0;
-                                               handleSaveGrade(sub.id, avg.toString(), sub.criteria_scores);
-                                               alert("Group Assessment Saved! 🛸");
-                                            }}
+                                            onClick={() => openBulkGradeSelector(sub)}
                                             className="w-full h-12 rounded-2xl bg-blue-600 text-white font-black text-[10px] uppercase shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
                                          >
                                             Apply Group Grade to All Members
@@ -2980,9 +3524,9 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">GIVE SCORE (0-100)</label>
                                             <input 
                                                type="number"
-                                               defaultValue={sub.grade}
+                                               defaultValue={sub.grade || 0}
                                                onChange={(e) => {
-                                                  setSubmissionsData(prev => prev.map(s => s.id === sub.id ? { ...s, grade: parseInt(e.target.value) } : s));
+                                                  setSubmissionsData(prev => prev.map(s => s.id === sub.id ? { ...s, grade: parseInt(e.target.value) || 0 } : s));
                                                }}
                                                placeholder="85"
                                                className="w-full h-16 rounded-3xl bg-white border border-slate-200 px-8 text-2xl font-black text-blue-600 focus:border-blue-500 focus:outline-none transition-all placeholder:text-slate-200"
@@ -3038,6 +3582,89 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                    )}
                 </div>
              </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* BULK GRADE SELECTION MODAL */}
+      <AnimatePresence>
+        {isBulkGradeModalOpen && bulkGradeData && (
+          <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="w-full max-w-lg bg-white rounded-[44px] shadow-3xl overflow-hidden flex flex-col"
+            >
+              <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-600/20">
+                    <UserCheck size={20}/>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-[#0F172A]">Apply Group Grade</h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Select members to receive the same grade</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsBulkGradeModalOpen(false)} className="p-3 bg-white border border-slate-200 rounded-xl text-slate-300 hover:text-rose-500 transition-all">
+                  <X size={18}/>
+                </button>
+              </div>
+
+              <div className="p-8 space-y-6">
+                <div className="p-6 rounded-3xl bg-blue-50/50 border border-blue-100/50 space-y-3">
+                   <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Source Submission</p>
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white border border-blue-100 flex items-center justify-center font-black text-xs text-blue-400 overflow-hidden">
+                         {bulkGradeData.sub.v2_profiles?.avatar_url ? (
+                            <img src={bulkGradeData.sub.v2_profiles.avatar_url} className="w-full h-full object-contain drop-shadow-sm"/>
+                         ) : (
+                            bulkGradeData.sub.v2_profiles?.full_name?.charAt(0)
+                         )}
+                      </div>
+                      <div>
+                         <p className="text-sm font-black text-slate-800">{bulkGradeData.sub.v2_profiles?.full_name}</p>
+                         <p className="text-[10px] font-bold text-blue-500">Score: {bulkGradeData.sub.grade || 0}</p>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Select Members to Grade</p>
+                   {bulkGradeData.members.map((m) => (
+                      <button 
+                        key={m.profile_id}
+                        onClick={() => toggleBulkGradeMember(m.profile_id)}
+                        className={`w-full p-4 rounded-2xl flex items-center justify-between border-2 transition-all ${m.selected ? 'bg-white border-blue-500 shadow-lg shadow-blue-500/5' : 'bg-slate-50 border-transparent opacity-60'}`}
+                      >
+                         <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-slate-200 flex items-center justify-center font-black text-xs text-slate-400 overflow-hidden">
+                               {m.v2_profiles?.avatar_url ? (
+                                  <img src={m.v2_profiles.avatar_url} className="w-full h-full object-contain drop-shadow-sm"/>
+                               ) : (
+                                  m.v2_profiles?.full_name?.charAt(0)
+                               )}
+                            </div>
+                            <span className={`text-sm font-bold ${m.selected ? 'text-slate-900' : 'text-slate-400'}`}>{m.v2_profiles?.full_name}</span>
+                         </div>
+                         <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${m.selected ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-300'}`}>
+                            <Check size={14} strokeWidth={4}/>
+                         </div>
+                      </button>
+                   ))}
+                </div>
+              </div>
+
+              <div className="p-8 bg-slate-50 border-t border-slate-100">
+                <Button 
+                   onClick={handleApplyBulkGrade}
+                   disabled={isLoading || bulkGradeData.members.filter(m => m.selected).length === 0}
+                   className="w-full h-14 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all text-xs tracking-widest uppercase"
+                >
+                  {isLoading ? 'Syncing...' : `Apply Grade to ${bulkGradeData.members.filter(m => m.selected).length} Selected Members`}
+                </Button>
+              </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>
@@ -3448,53 +4075,47 @@ export default function BatchContentDesktop({ id }: { id: string }) {
            
           //Analytics Component Reuse
            const tasks = curriculum.filter((c: any) => c.type !== 'material' && c.is_published !== false);
-           const studentSubmissions = allSubmissions.filter((s: any) => s.profile_id === mem.profile_id);
-           
-           let totalPT = 0, countPT = 0, totalGC = 0, countGC = 0, totalAssign = 0, countAssign = 0;
-           tasks.forEach((t: any) => {
-              const qr = studentSubmissions.find(si => si.curriculum_id === t.id && si.score !== undefined);
-              const sub = studentSubmissions.find(si => si.curriculum_id === t.id);
-              let scoreValue = 0;
-              if (t.type === 'post_test') scoreValue = qr?.score || 0;
-              else if (sub?.grade) {
-                 const gMap: any = { 'A+': 100, 'A': 90, 'B+': 80, 'B': 70, 'C': 60, 'D': 40 };
-                 scoreValue = gMap[sub.grade] || 0;
-              }
-              
-              const isAutoZero = (scoreValue === 0 && !studentSubmissions.find(s => s.curriculum_id === t.id));
-              const actualScore = isAutoZero ? 0 : scoreValue;
+            const studentSubmissions = allSubmissions.filter(s => s.profile_id === mem.v2_profiles?.id);
+            const tasksForAnalytics = curriculum.filter((t: any) => t.type !== 'material');
+            
+            let totalPT = 0, countPT = 0;
+            let totalAssign = 0, countAssign = 0;
+            let totalGC = 0, countGC = 0;
+            
+            tasksForAnalytics.forEach((t: any) => {
+               const res = studentSubmissions.find(s => s.curriculum_id === t.id);
+               const score = res ? (res.score || res.grade || 0) : 0;
+               if (t.type === 'post_test') { totalPT += score; countPT++; }
+               else if (t.type === 'individual_assignment' || t.type === 'assignment') { totalAssign += score; countAssign++; }
+               else if (t.type === 'challenge') { totalGC += score; countGC++; }
+            });
 
-              if (t.type === 'post_test') { totalPT += actualScore; countPT++; }
-              else if (t.type === 'challenge') { totalGC += actualScore; countGC++; }
-              else if (t.type === 'individual_assignment') { totalAssign += actualScore; countAssign++; }
-           });
+            const avgPT = totalPT / (tasksForAnalytics.filter(tr => tr.type === 'post_test').length || 1);
+            const avgAssign = totalAssign / (tasksForAnalytics.filter(tr => tr.type === 'individual_assignment' || tr.type === 'assignment').length || 1);
+            const avgGC = totalGC / (tasksForAnalytics.filter(tr => tr.type === 'challenge').length || 1);
+            
+            const attendList = Object.values(mem.attendance || {});
+            const attendCount = attendList.filter(v => v === 'P').length;
+            const totalSessions = batch?.schedules?.length || 0;
+            const attendScore = totalSessions > 0 ? (attendCount / totalSessions) * 100 : 0;
+            const plusPoints = (mem.plus_points || {}) as any;
+            const plusTotal = Object.values(plusPoints).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+            const participationScore = Object.keys(plusPoints).length > 0 ? Math.round(plusTotal / 4) : 0;
+            const finalKeaktifan = (attendScore * 0.5) + (participationScore * 0.5);
 
-           const avgPT = countPT > 0 ? totalPT/countPT : 0;
-           const avgAssign = countAssign > 0 ? totalAssign/countAssign : 0;
-           const avgGC = countGC > 0 ? totalGC/countGC : 0;
-           const attendCount = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
-           const modulesCount = curriculum.filter((c: any) => c.type === 'material').length;
-           const totalSessions = modulesCount + 2; 
-           const attendScore = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
-           const plusPointsTotal = Object.values(mem.plus_points || {}).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
-           const finalKeaktifan = Math.min(100, attendScore + plusPointsTotal);
+           // Unified Formula: (PT + Assign + GC + Keaktifan)/4
+           const finalAvg = (avgPT + avgAssign + avgGC + finalKeaktifan) / 4;
 
-           const finalAvg = (
-              (avgPT * gradingConfig.post_test_weight) +
-              (avgAssign * gradingConfig.assignment_weight) +
-              (avgGC * gradingConfig.challenge_weight) +
-              (finalKeaktifan * gradingConfig.attendance_weight)
-           )/(gradingConfig.post_test_weight + gradingConfig.assignment_weight + gradingConfig.challenge_weight + gradingConfig.attendance_weight);
-
-           const getGrading = (avg: number) => {
-              if (avg >= 90) return { label: 'A+ (Superstar)', color: 'text-purple-600 bg-purple-50' };
-              if (avg >= 85) return { label: 'A (Very Good)', color: 'text-indigo-600 bg-indigo-50' };
-              if (avg >= 80) return { label: 'B+ (Good)', color: 'text-blue-600 bg-blue-50' };
-              if (avg >= 70) return { label: 'B (Average)', color: 'text-amber-600 bg-amber-50' };
-              if (avg >= 60) return { label: 'C (Below Avg)', color: 'text-orange-600 bg-orange-50' };
+           const getGradingLabels = (avg: number) => {
+              const s = Math.round(avg);
+              if (s >= 90) return { label: 'A+ (Superstar)', color: 'text-purple-600 bg-purple-50' };
+              if (s >= 85) return { label: 'A (Very Good)', color: 'text-indigo-600 bg-indigo-50' };
+              if (s >= 80) return { label: 'B+ (Good)', color: 'text-blue-600 bg-blue-50' };
+              if (s >= 70) return { label: 'B (Average)', color: 'text-amber-600 bg-amber-50' };
+              if (s >= 60) return { label: 'C (Below Avg)', color: 'text-orange-600 bg-orange-50' };
               return { label: 'D (Very Poor)', color: 'text-rose-600 bg-rose-50' };
            };
-           const grade = getGrading(finalAvg);
+           const grade = getGradingLabels(finalAvg);
 
            return (
             <div className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-[#0F172A]/80 backdrop-blur-xl" onClick={() => setIsDetailModalOpen(false)}>
@@ -3608,7 +4229,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                   defaultValue={activeQuizReview.score}
                                   className="w-10 bg-transparent border-none text-xs font-black text-blue-700 focus:outline-none"
                                   onBlur={(e) => {
-                                     const newScore = parseInt(e.target.value);
+                                     const newScore = parseInt(e.target.value) || 0;
                                      if (!isNaN(newScore)) {
                                         supabase.from('v2_quiz_results').update({ score: newScore }).eq('id', activeQuizReview.id).then(() => {
                                            fetchAllSubmissions();
@@ -3753,7 +4374,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                         <div className="flex items-center gap-6 p-6 bg-slate-50 border border-slate-100 rounded-[32px]">
                            <div className="w-24 h-24 rounded-2xl bg-white border border-slate-100 overflow-hidden flex-shrink-0 relative group">
                               {annForm.image_url ? (
-                                 <img src={annForm.image_url} alt="Preview" className="w-full h-full object-cover"/>
+                                 <img src={annForm.image_url} alt="Preview" className="w-full h-full object-contain drop-shadow-sm"/>
                               ) : (
                                  <div className="w-full h-full flex items-center justify-center text-slate-200">
                                     <Camera size={30}/>
@@ -3814,7 +4435,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                        <div className="grid grid-cols-4 gap-3">
                           {(annForm.gallery_images || []).map((url: string, idx: number) => (
                              <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 group">
-                                <img src={url} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover"/>
+                                <img src={url} alt={`Gallery ${idx + 1}`} className="w-full h-full object-contain drop-shadow-sm"/>
                                 <button  
                                    onClick={() => setAnnForm((prev: any) => ({ ...prev, gallery_images: prev.gallery_images.filter((_: any, i: number) => i !== idx) }))}
                                    className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-all"
@@ -3989,7 +4610,79 @@ export default function BatchContentDesktop({ id }: { id: string }) {
              </motion.div>
            </motion.div>
          )}
-       </AnimatePresence>
+        </AnimatePresence>
+
+        {/* CREDENTIAL GENERATION CONFIRMATION MODAL */}
+        <AnimatePresence>
+          {isCredentialModalOpen && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+              <motion.div 
+                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                 animate={{ scale: 1, opacity: 1, y: 0 }}
+                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                 className="bg-white rounded-[44px] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-white/20"
+              >
+                 <div className="p-10 text-center space-y-6">
+                    <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                       <Award size={36}/>
+                    </div>
+                    <div className="space-y-2">
+                       <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Generate Credentials?</h3>
+                       <p className="text-slate-400 text-sm font-medium px-4 text-center">
+                          Sistem akan membuat nomor seri otomatis untuk seluruh siswa. Data yang sudah ada sebelumnya akan ditimpa.
+                       </p>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                       <Button 
+                          onClick={executeAutoGenerateCredentials}
+                          className="h-14 rounded-2xl bg-blue-600 text-white font-black text-sm shadow-xl shadow-blue-500/20 hover:scale-[1.02] transition-all"
+                       >
+                          Ya, Generate Sekarang
+                       </Button>
+                       <Button 
+                          onClick={() => setIsCredentialModalOpen(false)}
+                          className="h-14 rounded-2xl bg-slate-50 text-slate-400 font-bold text-sm hover:bg-slate-100 transition-all border-none"
+                       >
+                          Batalkan
+                       </Button>
+                    </div>
+                 </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* CREDENTIAL SUCCESS MODAL */}
+        <AnimatePresence>
+          {isCredentialSuccess && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
+              <motion.div 
+                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                 animate={{ scale: 1, opacity: 1, y: 0 }}
+                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                 className="bg-white rounded-[44px] shadow-2xl w-full max-w-md overflow-hidden flex flex-col border border-white/20"
+              >
+                 <div className="p-10 text-center space-y-6">
+                    <div className="w-20 h-20 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                       <CheckCircle2 size={36}/>
+                    </div>
+                    <div className="space-y-2">
+                       <h3 className="text-2xl font-black text-[#0F172A] tracking-tight">Kredensial Berhasil! 🎉</h3>
+                       <p className="text-slate-400 text-sm font-medium px-4 text-center">
+                          Nomor kredensial telah berhasil dihasilkan untuk semua siswa di batch ini. 🚀✨
+                       </p>
+                    </div>
+                    <Button 
+                       onClick={() => setIsCredentialSuccess(false)}
+                       className="h-14 rounded-2xl bg-slate-900 text-white font-black text-sm shadow-xl hover:scale-[1.02] transition-all"
+                    >
+                       Mantap, Tutup
+                    </Button>
+                 </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
     </div>
   );
