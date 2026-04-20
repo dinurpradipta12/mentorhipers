@@ -627,7 +627,6 @@ export default function AgencyContent({ id }: { id: string }) {
         title: "", description: "", platform: "tiktok", content_url: "", due_date: "",
         content_pillar: "", headline: "", script_url: "", result_url: "", published_url: ""
       });
-      fetchActivities();
       fetchContentPlans();
     } catch (err: any) {
       console.error("🛑 handleCreateTask Catch Block:", err);
