@@ -35,7 +35,7 @@ export default function V2MasterRouter({ params }: { params: Promise<{ slug?: st
     }
     
     if (slug[0] === "agency") {
-      if (slug[1]) return <AgencyContent id={slug[1]} />;
+      if (slug[1]) return <AgencyContent id={slug[1]} subTab={slug[2]} />;
       return <AgencyListContent />;
     }
 
