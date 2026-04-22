@@ -227,8 +227,13 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
         if (intelligenceId) {
            await supabase.from('v2_agency_intelligence').update(payload).eq('id', intelligenceId);
         } else {
-           await supabase.from('v2_agency_intelligence').insert([payload]);
+           const { data: inserted } = await supabase.from('v2_agency_intelligence').insert([payload]).select();
+           if (inserted && inserted[0]) setIntelligenceId(inserted[0].id);
         }
+        
+        // Optimistic Update
+        setIntelligenceWorkflow(nextWorkflow);
+        setIntelligenceScopes(nextScopes);
         setIsIntelligenceModalOpen(false);
      } catch (err: any) {
         alert("Gagal sinkronisasi ke server: " + err.message);
@@ -274,7 +279,15 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
         async () => {
            const nextScopes = [...intelligenceScopes];
            nextScopes[scopeIndex].tasks.splice(taskIndex, 1);
-           await supabase.from('v2_agency_intelligence').update({ scopes: nextScopes, updated_at: new Date().toISOString() }).eq('workspace_id', id);
+           
+           // Optimistic Update
+           setIntelligenceScopes(nextScopes);
+           
+           await supabase.from('v2_agency_intelligence').upsert({ 
+              workspace_id: id, 
+              scopes: nextScopes, 
+              updated_at: new Date().toISOString() 
+           }, { onConflict: 'workspace_id' });
         }
      );
   };
@@ -290,7 +303,15 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
               ...s,
               step: String(i + 1).padStart(2, '0')
            }));
-           await supabase.from('v2_agency_intelligence').update({ workflow: reindexed, updated_at: new Date().toISOString() }).eq('workspace_id', id);
+           
+           // Optimistic Update
+           setIntelligenceWorkflow(reindexed);
+           
+           await supabase.from('v2_agency_intelligence').upsert({ 
+              workspace_id: id, 
+              workflow: reindexed, 
+              updated_at: new Date().toISOString() 
+           }, { onConflict: 'workspace_id' });
         }
      );
   };
@@ -302,12 +323,18 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
          async () => {
             const nextScopes = [...intelligenceScopes];
             nextScopes.splice(index, 1);
-            await supabase.from('v2_agency_intelligence').update({ scopes: nextScopes, updated_at: new Date().toISOString() }).eq('workspace_id', id);
+            
+            // Optimistic Update
+            setIntelligenceScopes(nextScopes);
+            
+            await supabase.from('v2_agency_intelligence').upsert({ 
+               workspace_id: id, 
+               scopes: nextScopes, 
+               updated_at: new Date().toISOString() 
+            }, { onConflict: 'workspace_id' });
          }
       );
   };
-
-
 
   const [taskForm, setTaskForm] = useState({
     title: "",
