@@ -1340,7 +1340,9 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
     { id: "meetings", label: "Meeting Schedule", icon: <Video size={16}/> },
     { id: "analytics", label: "Performance", icon: <BarChart2 size={16}/> },
     { id: "intelligence", label: "Team Flow", icon: <Lightbulb size={16}/> },
-    ...(isAdmin ? [{ id: "members", label: "Manage Team", icon: <Users size={16}/> }] : [])
+    ...(isAdmin ? [
+      { id: "members", label: "Manage Team", icon: <Users size={16}/> }
+    ] : [])
   ];
 
   if (!isAuthorized) {
@@ -1662,12 +1664,14 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
                                 </div>
                              ))}
                           </div>
-                          <Button 
-                             onClick={() => setActiveTab('members')}
-                             className="w-full h-12 bg-slate-50 text-slate-500 hover:bg-emerald-500 hover:text-white rounded-xl text-[10px] font-black  tracking-widest transition-all"
-                          >
-                             Manage Workspace Team
-                          </Button>
+                          {isAdmin && (
+                             <Button 
+                                onClick={() => setActiveTab('members')}
+                                className="w-full h-12 bg-slate-50 text-slate-500 hover:bg-emerald-500 hover:text-white rounded-xl text-[10px] font-black  tracking-widest transition-all"
+                             >
+                                Manage Workspace Team
+                             </Button>
+                           )}
                        </Card>
 
                        {/* Strategic Progress Widget */}
@@ -1865,21 +1869,22 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
                                                  <span className="text-[10px] font-black  text-slate-400">{plan.platform}</span>
                                               </td>
                                               <td className="px-8 py-6">
-                                                  <select 
-                                                    value={plan.status} 
-                                                    onChange={(e) => handleUpdateTaskStatus(plan.id, e.target.value)} 
-                                                    className={`px-3 py-1.5 rounded-lg text-[9px] font-black  w-fit border outline-none cursor-pointer hover:scale-105 transition-all appearance-none text-center ${ 
-                                                      statusConfig[plan.status]?.bg || "bg-slate-50"
-                                                    } ${ 
-                                                      statusConfig[plan.status]?.color || "text-slate-600"
-                                                    } ${ 
-                                                      statusConfig[plan.status]?.border || "border-slate-100"
-                                                    }`} 
-                                                  > 
-                                                    {Object.entries(statusConfig).map(([key, config]) => (
-                                                      <option key={key} value={key}>{config.label}</option>
-                                                    ))}
-                                                  </select>
+                                                   
+                                                      <select 
+                                                        value={plan.status} 
+                                                        onChange={(e) => handleUpdateTaskStatus(plan.id, e.target.value)} 
+                                                        className={`px-3 py-1.5 rounded-lg text-[9px] font-black  w-fit border outline-none cursor-pointer hover:scale-105 transition-all appearance-none text-center ${ 
+                                                          statusConfig[plan.status]?.bg || "bg-slate-50"
+                                                        } ${ 
+                                                          statusConfig[plan.status]?.color || "text-slate-600"
+                                                        } ${ 
+                                                          statusConfig[plan.status]?.border || "border-slate-100"
+                                                        }`} 
+                                                      > 
+                                                        {Object.entries(statusConfig).map(([key, config]) => (
+                                                          <option key={key} value={key}>{config.label}</option>
+                                                        ))}
+                                                      </select>
                                               </td>
                                               <td className="px-8 py-6">
                                                   {(() => {
@@ -2147,16 +2152,18 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
                              Past Sync
                           </button>
                        </div>
-                       <Button 
-                          onClick={() => {
-                            setEditingMeeting(null);
-                            setMeetingForm({ title: "", description: "", start_time: "", end_time: "", meeting_link: "", category: "internal" });
-                            setIsMeetingModalOpen(true);
-                          }}
-                          className="h-14 px-8 rounded-2xl bg-slate-900 text-white font-black text-sm shadow-xl shadow-slate-900/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
-                       >
-                          <Video size={18}/> Schedule Sync
-                       </Button>
+                       {true && (
+                           <Button 
+                              onClick={() => {
+                                setEditingMeeting(null);
+                                setMeetingForm({ title: "", description: "", start_time: "", end_time: "", meeting_link: "", category: "internal" });
+                                setIsMeetingModalOpen(true);
+                              }}
+                              className="h-14 px-8 rounded-2xl bg-slate-900 text-white font-black text-sm shadow-xl shadow-slate-900/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-3"
+                           >
+                              <Video size={18}/> Schedule Sync
+                           </Button>
+                        )}
                     </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -2185,7 +2192,7 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
                                      {meeting.category === 'client' ? <Users size={24}/> : <Video size={24}/>}
                                   </div>
                                <div className="flex gap-4">
-                                  {isAdmin && (
+                                  {true && (
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                       <button 
                                         onClick={(e) => { e.stopPropagation(); openEditMeetingModal(meeting); }}
@@ -2371,7 +2378,7 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
               </div>
            )}
 
-          {activeTab === 'members' && (
+          {activeTab === 'members' && isAdmin && (
              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-1">
@@ -2856,13 +2863,15 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
                                      </td>
                                      <td className="py-6 text-right">
                                         <div className="flex items-center justify-end gap-3">
-                                           <button 
-                                              onClick={() => openMetricsModal(p)}
-                                              className="p-2.5 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-100 transition-all"
-                                              title="Update Performance Metrics"
-                                           >
-                                              <BarChart2 size={14}/>
-                                           </button>
+                                           {true && (
+                                              <button 
+                                                 onClick={() => openMetricsModal(p)}
+                                                 className="p-2.5 bg-purple-50 text-purple-600 rounded-xl hover:bg-purple-100 transition-all"
+                                                 title="Update Performance Metrics"
+                                              >
+                                                 <BarChart2 size={14}/>
+                                              </button>
+                                           )}
                                            <a href={p.published_url} target="_blank" rel="noopener noreferrer" className="p-3 bg-slate-900 text-white rounded-xl inline-flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg shadow-slate-900/10"><ExternalLink size={14}/></a>
                                         </div>
                                      </td>
@@ -3971,10 +3980,10 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
                                  <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
                                        <button 
-                                         onClick={() => handleToggleMilestone(m.id, !m.is_completed, selectedRoadmap.id)}
+                                         onClick={() => isAdmin && handleToggleMilestone(m.id, !m.is_completed, selectedRoadmap.id)}
                                          className={`w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all ${
                                            m.is_completed ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'border-slate-200 bg-white'
-                                         }`}
+                                         } ${!isAdmin ? 'cursor-default' : ''}`}
                                        >
                                           {m.is_completed && <Check size={16} strokeWidth={4}/>}
                                        </button>
