@@ -1,19 +1,14 @@
 "use client";
 
-
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-   Zap,
    ArrowRight,
    User,
    Lock,
    Sparkles,
    GraduationCap,
    ShieldCheck,
-   LayoutDashboard,
-   Box,
    ChevronRight
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -21,6 +16,7 @@ import { supabaseV2 as supabase } from "@/lib/supabase";
 import { invalidateSessionCache } from "@/lib/authCache";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import AvatarCreator from "./AvatarCreator";
 
 export default function LoginContentDesktop() {
    const router = useRouter();
@@ -29,6 +25,10 @@ export default function LoginContentDesktop() {
    const [password, setPassword] = useState("");
    const [error, setError] = useState("");
    const [cooldown, setCooldown] = useState(0);
+   const [showAvatarModal, setShowAvatarModal] = useState(false);
+   const [pendingRedirect, setPendingRedirect] = useState<string | null>(null);
+   const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
+   const [loggedInName, setLoggedInName] = useState<string>("");
 
   //Cooldown countdown timer
    React.useEffect(() => {
@@ -91,32 +91,45 @@ export default function LoginContentDesktop() {
          }
 
          if (data.user) {
-           //Invalidate cache so the new session is picked up immediately
             invalidateSessionCache();
-           //Intelligent Redirect
-            const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', data.user.id).maybeSingle();
-             if (profile && profile.role !== 'admin') {
-                const { data: memberships } = await supabase
-                  .from('v2_memberships')
-                  .select('workspace_id, v2_workspaces(type)')
-                  .eq('profile_id', data.user.id);
 
-                if (memberships && memberships.length > 0) {
-                   // Jika dia orang Agensi, langsung masukkan ke Workspace Agensi
-                   if (memberships.length === 1 && (memberships[0] as any).v2_workspaces?.type === 'agency') {
-                     router.push(`/ruang-sosmed/agency/${memberships[0].workspace_id}`);
-                     return;
-                   }
-                   // Selain Agensi (Batch Akademi), arahkan ke Academy Hub
-                   router.push('/ruang-sosmed');
-                   return;
-                } else {
+            // Fetch profile to check avatar & role
+            const { data: profile } = await supabase
+              .from('v2_profiles')
+              .select('role, avatar_url, full_name')
+              .eq('id', data.user.id)
+              .maybeSingle();
+
+            // Determine redirect destination
+            let redirectTo = '/ruang-sosmed';
+            if (profile && profile.role !== 'admin') {
+               const { data: memberships } = await supabase
+                 .from('v2_memberships')
+                 .select('workspace_id, v2_workspaces(type)')
+                 .eq('profile_id', data.user.id);
+
+               if (memberships && memberships.length > 0) {
+                  if (memberships.length === 1 && (memberships[0] as any).v2_workspaces?.type === 'agency') {
+                    redirectTo = `/ruang-sosmed/agency/${memberships[0].workspace_id}`;
+                  }
+               } else {
                   setError("Akun Anda belum terdaftar di Batch manapun. Admin belum memasukkan data Anda ke Project Baru ini.");
                   setLoading(false);
                   return;
                }
             }
-            router.push('/ruang-sosmed');
+
+            // If no avatar yet → show avatar picker first
+            if (!profile?.avatar_url) {
+               setLoggedInUserId(data.user.id);
+               setLoggedInName(profile?.full_name || '');
+               setPendingRedirect(redirectTo);
+               setShowAvatarModal(true);
+               setLoading(false);
+               return;
+            }
+
+            router.push(redirectTo);
          }
       } catch (err: any) {
          const isNetworkError = err?.message?.includes('fetch') || err?.message?.includes('network') || err instanceof TypeError;
@@ -132,6 +145,7 @@ export default function LoginContentDesktop() {
    };
 
    return (
+      <>
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden font-sans selection:bg-blue-500/30 selection:text-white">
          {/* Background Magic */}
          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,_#1e1b4b_0%,_transparent_50%),radial-gradient(circle_at_70%_80%,_#0f172a_0%,_transparent_50%)]"/>
@@ -266,5 +280,58 @@ export default function LoginContentDesktop() {
             V2 Portal Environment (BETA)
          </footer>
       </div>
+
+      {/* Avatar Selection Modal — shown for first-time users with no avatar */}
+      <AnimatePresence>
+        {showAvatarModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 20 }}
+              className="w-full max-w-5xl"
+            >
+               <div className="bg-slate-900 border border-white/10 rounded-[48px] p-10 lg:p-16 space-y-10 relative overflow-hidden">
+                 {/* Decorative background element */}
+                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none"/>
+                 
+                 <div className="text-center space-y-3 pb-4">
+                   <div className="inline-flex p-4 rounded-3xl bg-white/5 border border-white/10 mb-2">
+                     <Sparkles className="text-amber-400" size={32}/>
+                   </div>
+                   <h2 className="text-4xl font-black text-white tracking-tight">Pilih Avatar Kamu!</h2>
+                   <p className="text-slate-400 text-lg max-w-md mx-auto">
+                     Halo{loggedInName ? `, ${loggedInName.split(' ')[0]}` : ''}! Pilih avatar yang paling mewakili karakter kamu.
+                   </p>
+                 </div>
+                <AvatarCreator
+                  initialName={loggedInName}
+                  onSave={async (url) => {
+                    if (loggedInUserId) {
+                      await supabase
+                        .from('v2_profiles')
+                        .update({ avatar_url: url })
+                        .eq('id', loggedInUserId);
+                    }
+                    setShowAvatarModal(false);
+                    router.push(pendingRedirect || '/ruang-sosmed');
+                  }}
+                  onCancel={() => {
+                    setShowAvatarModal(false);
+                    router.push(pendingRedirect || '/ruang-sosmed');
+                  }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      </>
    );
 }

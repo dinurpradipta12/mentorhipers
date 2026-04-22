@@ -3448,7 +3448,7 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
               <div className="p-10 pt-8 space-y-3">
                 <Button 
                   onClick={() => {
-                    const message = `Halo ${successData.full_name},\n\nAkun Ruang Sosmed kamu sudah aktif!\nBerikut detail login kamu:\n\nUsername: ${successData.username}\nPassword: ${successData.password}\n\nSilakan login di https://ruangsosmed.com/login\n\nSelamat berkarya!`;
+                    const message = `Halo ${successData.full_name} 👋\n\nSelamat datang di Mentorhipers! Akun kamu sudah aktif dan siap digunakan.\n\nBerikut detail login kamu:\n🔑 Username: ${successData.username}\n🔒 Password: ${successData.password}\n\n🔗 Login di: https://mentorhipers.space/ruang-sosmed/login\n\nJangan lupa ganti password setelah login pertama ya!\n\nSelamat berkarya! 🚀`;
                     navigator.clipboard.writeText(message);
                     setCopying(true);
                     setTimeout(() => setCopying(false), 2000);
