@@ -1,0 +1,326 @@
+[
+  {
+    "id": "70f406c8-985c-4b16-af6d-68481e60bf32",
+    "full_name": "Dinur Pradipta",
+    "username": "dinurpradipta",
+    "avatar_url": "/avatars/avatar1.svg",
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+    "full_name": "Mei Indraningrum",
+    "username": "mei01",
+    "avatar_url": "/avatars/avatar3.svg?bg=%23FFCC80",
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+    "full_name": "Aimam Abdul Hamid",
+    "username": "abdulhamiid",
+    "avatar_url": "/avatars/avatar11.svg?bg=%2390CAF9",
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+    "full_name": "Nurul Fajriani",
+    "username": "meetnurul",
+    "avatar_url": "/avatars/avatar9.svg?bg=%2390CAF9",
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+    "full_name": "Jeffrey Budi Rahardjo",
+    "username": "jeffreyrahardjo",
+    "avatar_url": "/avatars/avatar11.svg?bg=%2390CAF9",
+    "role": "student",
+    "updated_at": "2026-04-08T15:07:45.220626+00:00",
+    "email": null
+  },
+  {
+    "id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+    "full_name": "Mia Jabeen",
+    "username": "miajabeen",
+    "avatar_url": "/avatars/avatar2.svg?bg=%23F4A7B9",
+    "role": "student",
+    "updated_at": "2026-04-08T15:26:54.316849+00:00",
+    "email": null
+  },
+  {
+    "id": "49f749b7-6973-463f-a122-22748aa7da8f",
+    "full_name": "Radi Jalaludin Akbar",
+    "username": "radiakbarr",
+    "avatar_url": "/avatars/avatar1.svg?bg=%2337474F",
+    "role": "student",
+    "updated_at": "2026-04-09T02:10:26.124689+00:00",
+    "email": null
+  },
+  {
+    "id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+    "full_name": "Muhammad Ihsan Aura Jiwa",
+    "username": "ihsanaura",
+    "avatar_url": "/avatars/avatar11.svg?bg=%2390CAF9",
+    "role": "student",
+    "updated_at": "2026-04-09T02:42:14.555138+00:00",
+    "email": null
+  },
+  {
+    "id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+    "full_name": "Pricillia Astrid Dwi Saputri ",
+    "username": "astridds19",
+    "avatar_url": "/avatars/avatar9.svg?bg=%235BC8AF",
+    "role": "student",
+    "updated_at": "2026-04-09T03:03:06.475252+00:00",
+    "email": null
+  },
+  {
+    "id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+    "full_name": "Aksamala Herianto",
+    "username": "askadibalik",
+    "avatar_url": "/avatars/avatar11.svg?bg=%23B39DDB",
+    "role": "student",
+    "updated_at": "2026-04-09T05:04:02.148501+00:00",
+    "email": null
+  },
+  {
+    "id": "7f569eac-1fb2-4c5a-9074-ca5fa50d3724",
+    "full_name": "Muhammad Iksan",
+    "username": "iksangopal03",
+    "avatar_url": "/avatars/avatar7.svg?bg=%2337474F",
+    "role": "student",
+    "updated_at": "2026-04-09T07:13:41.510451+00:00",
+    "email": null
+  },
+  {
+    "id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+    "full_name": "Nadhira Lina",
+    "username": "nadhira",
+    "avatar_url": "/avatars/avatar6.svg?bg=%23F4A7B9",
+    "role": "student",
+    "updated_at": "2026-04-09T07:24:31.289088+00:00",
+    "email": null
+  },
+  {
+    "id": "e6cc8572-9783-42bc-94bd-bdc32ccfbac8",
+    "full_name": "Millaty Ismail",
+    "username": "millaty",
+    "avatar_url": "/avatars/avatar2.svg?bg=%235BC8AF",
+    "role": "student",
+    "updated_at": "2026-04-09T15:17:10.362447+00:00",
+    "email": null
+  },
+  {
+    "id": "12089ea2-7925-4209-ba3a-d6b0976079b9",
+    "full_name": "Chintia hermana",
+    "username": "chintia.hermana",
+    "avatar_url": "/avatars/avatar2.svg?bg=%2337474F",
+    "role": "student",
+    "updated_at": "2026-04-10T00:07:53.125835+00:00",
+    "email": null
+  },
+  {
+    "id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+    "full_name": "Alfin Firmansyah",
+    "username": "alfinz4712",
+    "avatar_url": "/avatars/avatar1.svg?bg=%2390CAF9",
+    "role": "student",
+    "updated_at": "2026-04-10T00:21:05.66278+00:00",
+    "email": null
+  },
+  {
+    "id": "dcdd1ff2-fc86-4a07-9d88-74e8c21c8be2",
+    "full_name": "Shinta Nastiti",
+    "username": "shintanastiti",
+    "avatar_url": "/avatars/avatar2.svg?bg=%23F4A7B9",
+    "role": "student",
+    "updated_at": "2026-04-12T13:16:31.947277+00:00",
+    "email": null
+  },
+  {
+    "id": "03ab5ebc-36bf-4cf6-948c-4f86ffdbbde3",
+    "full_name": "Belanida Aldinisalma",
+    "username": "aldinisalma",
+    "avatar_url": "/avatars/avatar2.svg?bg=%2337474F",
+    "role": "student",
+    "updated_at": "2026-04-12T13:40:20.145327+00:00",
+    "email": null
+  },
+  {
+    "id": "a7794308-6fc6-44c6-8683-c85c342ebb6d",
+    "full_name": "Dinur Pradipta",
+    "username": null,
+    "avatar_url": null,
+    "role": "user",
+    "updated_at": "2026-04-19T10:16:30.130352+00:00",
+    "email": "dinurpradipta@ruangsosmed.v2.local"
+  },
+  {
+    "id": "88ad1ed5-503f-4c6d-b414-275ac8b33c7a",
+    "full_name": "Kharisma Hasna ",
+    "username": null,
+    "avatar_url": null,
+    "role": "user",
+    "updated_at": "2026-04-22T00:11:51.363207+00:00",
+    "email": "kharisma01@ruangsosmed.v2.local"
+  },
+  {
+    "id": "e7c2b805-9f70-4962-b728-52d10b2bf720",
+    "full_name": "Khansa Nabila",
+    "username": null,
+    "avatar_url": "/avatars/avatar2.svg?bg=%2390CAF9",
+    "role": "user",
+    "updated_at": "2026-04-22T02:37:17.687917+00:00",
+    "email": "khansa@ruangsosmed.v2.local"
+  },
+  {
+    "id": "6ad9103e-4a03-48aa-9e78-3d3d20a21c00",
+    "full_name": "allisha@mentorhipers.local",
+    "username": null,
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "161c689a-0a78-4be2-8c77-157d18276954",
+    "full_name": "fathyaa@mentorhipers.local",
+    "username": null,
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "2643c4ad-992b-4ad0-a325-df9ccc7f91f6",
+    "full_name": "shinyinterior@mentorhipers.local",
+    "username": null,
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "415bf887-40f4-464e-b7bd-20de942bedda",
+    "full_name": "admin@mentorhipers.local",
+    "username": null,
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "b96b7653-26a3-4cb4-a17a-4eebbad1342d",
+    "full_name": "fthyaa@mentorhipers.local",
+    "username": null,
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "dcbce075-1474-4774-8d5f-a954af2d525a",
+    "full_name": "Dinur",
+    "username": null,
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "afc33010-fcb8-4cf4-a75b-23bbb096f014",
+    "full_name": "Laras Hakim",
+    "username": "larsfhns",
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "165933d3-e8c0-45d5-818a-f348a4041bd3",
+    "full_name": "Nurul Ainun",
+    "username": "ainun01",
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "7d6ae7c5-e990-4f6d-839f-73495d65ca55",
+    "full_name": "Sarah Hasna Salsabila",
+    "username": "sarbil_bila",
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "ca5b9250-5867-4adf-a23b-120eec075fd0",
+    "full_name": "Frins Gunawan",
+    "username": "baitulquran",
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "03c2a3c3-197e-45a0-a67d-95fc4288d21b",
+    "full_name": "Admin Arunika",
+    "username": "arunika",
+    "avatar_url": null,
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+    "full_name": "Dewi Suryani",
+    "username": "dewisuryani",
+    "avatar_url": "/avatars/avatar2.svg?bg=%235BC8AF",
+    "role": "student",
+    "updated_at": "2026-04-08T00:30:03.343568+00:00",
+    "email": null
+  },
+  {
+    "id": "8bc0bda5-b788-476e-9966-31206b9fb38d",
+    "full_name": "Habibbah Nur Esa",
+    "username": "habibbah",
+    "avatar_url": "/avatars/avatar9.svg?bg=%23FFCC80",
+    "role": "student",
+    "updated_at": "2026-04-10T07:58:48.994802+00:00",
+    "email": null
+  },
+  {
+    "id": "15b5f6e8-c885-4179-8614-9f2e8a8b987f",
+    "full_name": "Allisha",
+    "username": null,
+    "avatar_url": "/avatars/avatar6.svg?bg=%2337474F",
+    "role": "user",
+    "updated_at": "2026-04-21T15:55:36.829402+00:00",
+    "email": "dinurmp12@ruangsosmed.v2.local"
+  },
+  {
+    "id": "540dea5f-fbfe-4b53-a2f9-ea33452ab92f",
+    "full_name": "Pillar Dilah Kedhaton",
+    "username": null,
+    "avatar_url": "/avatars/avatar4.svg?bg=%2337474F",
+    "role": "user",
+    "updated_at": "2026-04-22T02:28:56.356072+00:00",
+    "email": "dilah01@ruangsosmed.v2.local"
+  },
+  {
+    "id": "0f69ecc3-b917-4120-b78e-cbb1d2b6a7e5",
+    "full_name": "Kharisma Hasna",
+    "username": null,
+    "avatar_url": "/avatars/avatar9.svg?bg=%2390CAF9",
+    "role": "user",
+    "updated_at": "2026-04-23T02:35:19.791632+00:00",
+    "email": "kharisma1@ruangsosmed.v2.local"
+  }
+]
