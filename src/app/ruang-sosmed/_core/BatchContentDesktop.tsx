@@ -508,7 +508,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       const currentSchedules = batch?.schedules || [];
       const newSchedules = [...currentSchedules, newScheduleItem].sort((a,b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
 
-      const res = await fetch('/api/ruang-sosmed/update-schedules', {
+      const res = await fetch('/api/v2/update-schedules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspaceId: resolvedParams.id, schedules: newSchedules })
@@ -530,7 +530,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       const currentSchedules = batch?.schedules || [];
       const newSchedules = currentSchedules.filter((s:any) => s.id !== id);
 
-      const res = await fetch('/api/ruang-sosmed/update-schedules', {
+      const res = await fetch('/api/v2/update-schedules', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ workspaceId: resolvedParams.id, schedules: newSchedules })
@@ -559,7 +559,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
     try {
      //Call Edge API Route (replacing Server Action - Cloudflare Pages compatible)
-      const response = await fetch('/api/ruang-sosmed/register-student', {
+      const response = await fetch('/api/v2/register-student', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
