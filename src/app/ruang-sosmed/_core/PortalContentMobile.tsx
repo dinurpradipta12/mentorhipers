@@ -47,7 +47,9 @@ import {
   UserX,
   ShuffleIcon,
   ArrowRight,
-  LogOut
+  LogOut,
+  AlertCircle,
+  Crown
 } from "lucide-react";
 import { supabaseV2 as supabase } from "@/lib/supabase";
 import { getCachedSession, invalidateSessionCache } from "@/lib/authCache";
@@ -116,184 +118,125 @@ export default function PortalContentMobile({ id }: { id: string }) {
   const [isPhotoSetupOpen, setIsPhotoSetupOpen] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
 
-  const initMobile = async () => {
-    setIsLoading(true);
-   //Use cached session — avoids network call on every mount/refresh
-    const session = await getCachedSession();
-    const user = session?.user;
-    if (!user) {
-       router.push('/ruang-sosmed/login');
-       return;
-    }
-
-    const [bRes, cRes, pRes, mRes, qRes, sRes, allMemsRes, allQuizRes, allSubRes, customGrpRes, annRes] = await Promise.all([
-      supabase.from('v2_workspaces').select('id, name, description, type, start_date, end_date, max_members, status, settings, schedules, created_at').eq('id', id).single(),
-      supabase.from('v2_curriculums').select('id, title, type, module_name, description, due_date, video_url, quiz_data, assets_json, is_published, created_at').eq('workspace_id', id).order('created_at', { ascending: true }),
-      supabase.from('v2_profiles').select('id, full_name, username, role, avatar_url, updated_at').eq('id', user.id).single(),
-      supabase.from('v2_memberships').select('id, workspace_id, profile_id, group_name, group, group_wa_link, is_leader, attendance, plus_points, joined_at').eq('workspace_id', id).eq('profile_id', user.id).single(),
-      supabase.from('v2_quiz_results').select('curriculum_id, score, answers_json').eq('profile_id', user.id).eq('workspace_id', id),
-      supabase.from('v2_submissions').select('id, curriculum_id, file_link, status, grade, mentor_feedback, is_feedback_read, created_at, v2_curriculums(title)').eq('profile_id', user.id).eq('workspace_id', id),
-     //Leaderboard data
-      supabase.from('v2_memberships').select('*, v2_profiles:profile_id(full_name, avatar_url)').eq('workspace_id', id),
-      supabase.from('v2_quiz_results').select('profile_id, curriculum_id, score').eq('workspace_id', id),
-      supabase.from('v2_submissions').select('profile_id, curriculum_id, grade').eq('workspace_id', id),
-      supabase.from('v2_assignment_group_members').select('group_id, v2_assignment_groups(id, name)').eq('profile_id', user.id),
-      supabase.from('v2_announcements').select('*').eq('workspace_id', id).order('is_pinned', { ascending: false }).order('created_at', { ascending: false })
-    ]);
-
-    const batchData = bRes.data;
-    if (batchData && batchData.type === 'agency') {
-       router.push(`/ruang-sosmed/agency/${id}`);
-       return;
-    }
-    const curriculumData = cRes.data || [];
-    const profileData = pRes.data;
-    const membershipData = mRes.data;
-    const quizResults = qRes.data || [];
-    const assignmentSubmissions = sRes.data || [];
-    const allMems = allMemsRes.data || [];
-    const allQuizzes = allQuizRes.data || [];
-    const allSubs = allSubRes.data || [];
-
-    setBatch(batchData);
-    setCurriculum(curriculumData);
-    setCurrentUser(profileData);
-    setMembership(membershipData);
-    setMyQuizResults(quizResults);
-    setMyAssignments(assignmentSubmissions);
-    
-    if (customGrpRes.data) {
-        setMyCustomGroups(customGrpRes.data.map((g: any) => ({ 
-           id: g.v2_assignment_groups?.id, 
-           name: g.v2_assignment_groups?.name 
-        })));
-    }
-
-    if (annRes.data) {
-        setAnnouncements(annRes.data);
-    }
-
-    if (curriculumData.length > 0) {
-       setSelectedLesson(curriculumData.find((c: any) => c.type === 'material') || curriculumData[0]);
-    }
-
-   //Statistics Calculation
-    const tasks = curriculumData.filter((c: any) => c.type !== 'material' && c.is_published !== false);
-    let totalPT = 0, countPT = 0, totalGC = 0, countGC = 0, totalAssign = 0, countAssign = 0;
-    
-    tasks.forEach((t: any) => {
-       const qr = quizResults.find(si => si.curriculum_id === t.id);
-       const sub = assignmentSubmissions.find(si => si.curriculum_id === t.id);
-       let scoreValue = 0;
-       if (t.type === 'post_test') scoreValue = qr?.score || 0;
-       else if (sub?.grade) {
-          const gMap: any = { 'A+': 100, 'A': 90, 'B+': 80, 'B': 70, 'C': 60, 'D': 40 };
-          scoreValue = gMap[sub.grade] || 0;
-       }
-       if (t.type === 'post_test') { totalPT += scoreValue; countPT++; }
-       else if (t.type === 'challenge') { totalGC += scoreValue; countGC++; }
-       else if (t.type === 'individual_assignment') { totalAssign += scoreValue; countAssign++; }
-    });
-
-    const avgPT = countPT > 0 ? totalPT/countPT : 0;
-    const avgAssign = countAssign > 0 ? totalAssign/countAssign : 0;
-    const avgGC = countGC > 0 ? totalGC/countGC : 0;
-    const attendCount = Object.values(membershipData?.attendance || {}).filter(v => v === 'P').length;
-    const totalSessions = batchData?.schedules?.length || 0; 
-    const attendScore = totalSessions > 0 ? (attendCount/totalSessions) * 100 : 0;
-    const plusPoints = (membershipData?.plus_points || {}) as any;
-    const plusPointsTotal = Object.values(plusPoints).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
-    const participationScore = Object.keys(plusPoints).length > 0 ? Math.round(plusPointsTotal / 4) : 0;
-    const finalKeaktifan = (attendScore * 0.5) + (participationScore * 0.5);
-
-    // Unified Formula: (PT + Assign + GC + Keaktifan)/4
-    const finalAvg = (avgPT + avgAssign + avgGC + finalKeaktifan) / 4;
-
-    const now = new Date();
-    const schedules = (batchData?.schedules || []).map((s: any) => ({ ...s, dateObj: new Date(s.date) }));
-    const nextS = schedules.filter((s: any) => s.dateObj >= now).sort((a: any, b: any) => a.dateObj.getTime() - b.dateObj.getTime())[0];
-    const activeToday = schedules.find((s: any) => s.dateObj.toDateString() === now.toDateString());
-
-    setStats({
-       gpa: Math.round(finalAvg),
-       attendanceRate: Math.round(attendScore),
-       tasksDone: quizResults.length + assignmentSubmissions.length,
-       totalTasks: tasks.length,
-       plusPoints: plusPointsTotal,
-       nextSession: nextS || curriculumData.find((c: any) => c.type === 'material' && new Date(c.due_date || c.created_at) > now),
-       activeSessionToday: activeToday
-    });
-
-   //Leaderboard Calculation
-    const leaderboardData = allMems.map((mem: any) => {
-       let totalPT_L = 0, countPT_L = 0, totalGC_L = 0, countGC_L = 0, totalAssign_L = 0, countAssign_L = 0;
-       const memQuizzes = allQuizzes.filter((q: any) => q.profile_id === mem.profile_id);
-       const memSubs = allSubs.filter((s: any) => s.profile_id === mem.profile_id);
-
-       tasks.forEach((t: any) => {
-          const qr = memQuizzes.find(si => si.curriculum_id === t.id);
-          const sub = memSubs.find(si => si.curriculum_id === t.id);
-          let scoreValue = 0;
-          if (qr) scoreValue = qr.score;
-          else if (sub?.grade) {
-             const gMap: any = { 'A+': 100, 'A': 90, 'B+': 80, 'B': 70, 'C': 60, 'D': 40 };
-             scoreValue = gMap[sub.grade] || 0;
-          }
-          if (t.type === 'post_test') { totalPT_L += scoreValue; countPT_L++; }
-          else if (t.type === 'challenge') { totalGC_L += scoreValue; countGC_L++; }
-          else if (t.type === 'individual_assignment') { totalAssign_L += scoreValue; countAssign_L++; }
-       });
-
-       const avgPT_L = countPT_L > 0 ? totalPT_L/countPT_L : 0;
-       const avgAssign_L = countAssign_L > 0 ? totalAssign_L/countAssign_L : 0;
-       const avgGC_L = countGC_L > 0 ? totalGC_L/countGC_L : 0;
-       const attendCount_L = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
-       const attendScore_L = totalSessions > 0 ? (attendCount_L/totalSessions) * 100 : 0;
-
-       const plusPoints_L = (mem.plus_points || {}) as any;
-       const plusPointsTotal_L = Object.values(plusPoints_L).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
-       const participationScore_L = Object.keys(plusPoints_L).length > 0 ? Math.round(plusPointsTotal_L / 4) : 0;
-       const finalKeaktifan_L = (attendScore_L * 0.5) + (participationScore_L * 0.5);
-
-       const gpa_L = Math.round((avgPT_L + avgAssign_L + avgGC_L + finalKeaktifan_L) / 4);
-
-       return {
-          id: mem.id,
-          profile_id: mem.profile_id,
-          full_name: mem.v2_profiles?.full_name || 'Anonymous',
-          avatar_url: mem.v2_profiles?.avatar_url,
-          group_name: mem.group_name || mem.group || null,
-          gpa: gpa_L,
-          isMe: mem.profile_id === profileData?.id
-       };
-    });
-
-    leaderboardData.sort((a: any, b: any) => b.gpa - a.gpa);
-    setLeaderboard(leaderboardData);
-
-   //Fetch group members
-    const groupName = membershipData?.group_name || membershipData?.group;
-    if (groupName && groupName !== 'Unassigned') {
-      const { data: memWithProfs, error: joinErr } = await supabase
-        .from('v2_memberships')
-        .select(`
-          *,
-          v2_profiles:profile_id (
-            id,
-            full_name,
-            avatar_url
-          )
-        `)
-        .eq('workspace_id', id)
-        .or(`group_name.eq.${groupName},group.eq.${groupName}`);
-        
-      if (!joinErr) {
-        setGroupMembers(memWithProfs || []);
+   const initMobile = async () => {
+      setIsLoading(true);
+      const session = await getCachedSession();
+      const user = session?.user;
+      if (!user) {
+         router.push('/ruang-sosmed/login');
+         return;
       }
-    }
 
-    setIsLoading(false);
-  };
+      // 1. Fetch Batch & Profile (Parallel)
+      const [bRes, pRes] = await Promise.all([
+         supabase.from('v2_workspaces').select('*').eq('id', id).single(),
+         supabase.from('v2_profiles').select('id, full_name, username, role, avatar_url, updated_at').eq('id', user.id).single()
+      ]);
+
+      const batchData = bRes.data;
+      const profileData = pRes.data;
+      if (!batchData) {
+         setIsLoading(false);
+         return;
+      }
+      
+      const realId = batchData.id;
+      setBatch(batchData);
+      setCurrentUser(profileData);
+
+      // 2. Fetch All Memberships (Exactly like Desktop)
+      const { data: memData } = await supabase
+         .from('v2_memberships')
+         .select('*, v2_profiles:profile_id(full_name, avatar_url)')
+         .or(`workspace_id.eq.${realId},workspace_id.eq.${id}`); // Robust ID handling
+
+      const allMems = memData || [];
+      const myMembership = allMems.find(m => m.profile_id === profileData?.id);
+      setMembership(myMembership);
+
+      // 3. Fetch Related Data (Parallel)
+      const [qRes, sRes, allQRes, allSRes, customGrpRes, annRes] = await Promise.all([
+         supabase.from('v2_quiz_results').select('curriculum_id, score, answers_json').eq('profile_id', user.id).or(`workspace_id.eq.${realId},workspace_id.eq.${id}`),
+         supabase.from('v2_submissions').select('id, curriculum_id, file_link, status, grade, mentor_feedback, is_feedback_read, created_at, v2_curriculums(title)').eq('profile_id', user.id).or(`workspace_id.eq.${realId},workspace_id.eq.${id}`),
+         supabase.from('v2_quiz_results').select('profile_id, curriculum_id, score').or(`workspace_id.eq.${realId},workspace_id.eq.${id}`),
+         supabase.from('v2_submissions').select('profile_id, curriculum_id, grade').or(`workspace_id.eq.${realId},workspace_id.eq.${id}`),
+         supabase.from('v2_assignment_group_members').select('group_id, v2_assignment_groups(id, name)').eq('profile_id', user.id),
+         supabase.from('v2_announcements').select('*').or(`workspace_id.eq.${realId},workspace_id.eq.${id}`).order('is_pinned', { ascending: false }).order('created_at', { ascending: false }),
+         supabase.from('v2_curriculums').select('*').or(`workspace_id.eq.${realId},workspace_id.eq.${id}`).order('created_at', { ascending: true })
+      ]);
+
+      const curriculumData = (await supabase.from('v2_curriculums').select('*').or(`workspace_id.eq.${realId},workspace_id.eq.${id}`).order('created_at', { ascending: true })).data || [];
+      setCurriculum(curriculumData);
+      setMyQuizResults(qRes.data || []);
+      setMyAssignments(sRes.data || []);
+      setAnnouncements(annRes.data || []);
+      
+      if (customGrpRes.data) {
+          setMyCustomGroups(customGrpRes.data.map((g: any) => ({ id: g.v2_assignment_groups?.id, name: g.v2_assignment_groups?.name })));
+      }
+
+      if (curriculumData.length > 0) {
+         setSelectedLesson(curriculumData.find((c: any) => c.type === 'material') || curriculumData[0]);
+      }
+
+      // 4. Statistics & Leaderboard
+      const tasks = curriculumData.filter((c: any) => c.type !== 'material' && c.is_published !== false);
+      
+      // Leaderboard calculation
+      const leaderboardData = allMems.map((mem: any) => {
+         let tPT = 0, cPT = 0, tGC = 0, cGC = 0, tA = 0, cA = 0;
+         const mQ = (allQRes.data || []).filter((q: any) => q.profile_id === mem.profile_id);
+         const mS = (allSRes.data || []).filter((s: any) => s.profile_id === mem.profile_id);
+
+         tasks.forEach((t: any) => {
+            const qr = mQ.find(si => si.curriculum_id === t.id);
+            const sub = mS.find(si => si.curriculum_id === t.id);
+            let sc = 0;
+            if (qr) sc = qr.score;
+            else if (sub?.grade) {
+               const gMap: any = { 'A+': 100, 'A': 90, 'B+': 80, 'B': 70, 'C': 60, 'D': 40 };
+               sc = gMap[sub.grade] || 0;
+            }
+            if (t.type === 'post_test') { tPT += sc; cPT++; }
+            else if (t.type === 'challenge') { tGC += sc; cGC++; }
+            else if (t.type === 'individual_assignment') { tA += sc; cA++; }
+         });
+
+         const aPT = cPT > 0 ? tPT/cPT : 0, aA = cA > 0 ? tA/cA : 0, aGC = cGC > 0 ? tGC/cGC : 0;
+         const aCnt = Object.values(mem.attendance || {}).filter(v => v === 'P').length;
+         const tSess = batchData?.schedules?.length || 0;
+         const aSc = tSess > 0 ? (aCnt/tSess) * 100 : 0;
+         const pP = mem.plus_points || {};
+         const pPT = Object.values(pP).reduce((a: any, b: any) => (parseInt(a) || 0) + (parseInt(b) || 0), 0) as number;
+         const pSc = Object.keys(pP).length > 0 ? Math.round(pPT / 4) : 0;
+         const fK = (aSc * 0.5) + (pSc * 0.5);
+
+         return {
+            id: mem.id,
+            profile_id: mem.profile_id,
+            full_name: mem.v2_profiles?.full_name || 'Anonymous',
+            avatar_url: mem.v2_profiles?.avatar_url,
+            group_name: mem.group_name || mem.group || null,
+            gpa: Math.round((aPT + aA + aGC + fK) / 4),
+            isMe: mem.profile_id === profileData?.id
+         };
+      });
+
+      leaderboardData.sort((a: any, b: any) => b.gpa - a.gpa);
+      setLeaderboard(leaderboardData);
+
+      // Final stats for "ME"
+      const meL = leaderboardData.find(l => l.isMe);
+      if (meL) setStats(prev => ({ ...prev, gpa: meL.gpa }));
+
+      // Filter group members locally
+      const groupName = myMembership?.group_name || myMembership?.group;
+      if (groupName && groupName !== 'Unassigned') {
+         setGroupMembers(allMems.filter(m => m.group_name === groupName || m.group === groupName));
+      }
+
+      setIsLoading(false);
+   };
 
   useEffect(() => {
     if (initializedRef.current) return;
@@ -602,8 +545,60 @@ export default function PortalContentMobile({ id }: { id: string }) {
                      </motion.div>
                   )}
 
+                  {/* POST TEST REMINDER */}
+                  {(() => {
+                     const pendingQuizzes = curriculum.filter(c => 
+                        c.type === 'post_test' && 
+                        c.is_published !== false &&
+                        !myQuizResults.some(qr => qr.curriculum_id === c.id)
+                     );
+                     
+                     if (pendingQuizzes.length === 0) return null;
+                     
+                     return (
+                        <div className="space-y-4">
+                           <div className="px-2 flex items-center justify-between">
+                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pending Tasks ({pendingQuizzes.length})</h4>
+                              <Sparkles size={14} className="text-amber-400 animate-pulse"/>
+                           </div>
+                           <div className="flex overflow-x-auto gap-4 pb-4 no-scrollbar -mx-6 px-6">
+                              {pendingQuizzes.map((quiz, idx) => (
+                                 <div 
+                                    key={quiz.id}
+                                    onClick={() => {
+                                       setActiveQuiz(quiz);
+                                       setIsQuizModalOpen(true);
+                                    }}
+                                    className="min-w-[280px] p-6 bg-white border border-rose-100 rounded-[36px] shadow-lg shadow-rose-100/50 flex flex-col justify-between space-y-6 active:scale-95 transition-all"
+                                 >
+                                    <div className="flex items-start justify-between">
+                                       <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500">
+                                          <Target size={24}/>
+                                       </div>
+                                       <div className="px-3 py-1 rounded-full bg-rose-500 text-white text-[8px] font-black uppercase tracking-widest">Post Test</div>
+                                    </div>
+                                    <div className="space-y-1">
+                                       <h5 className="text-sm font-black text-slate-900 leading-tight">{quiz.title}</h5>
+                                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{quiz.module_name || 'Knowledge Check'}</p>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-2">
+                                       <div className="flex items-center gap-2">
+                                          <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping"/>
+                                          <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Action Needed</span>
+                                       </div>
+                                       <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center">
+                                          <Play size={12} fill="white"/>
+                                       </div>
+                                    </div>
+                                 </div>
+                              ))}
+                           </div>
+                        </div>
+                     );
+                  })()}
+
                   {/* JOURNEY CARD */}
-                  <div className={`p-8 bg-gradient-to-br ${isRuangSosmed ? 'from-[#0ea5e9] to-[#1e3a8a]' : 'from-[#0F172A] to-[#1E293B]'} rounded-[44px] text-white relative overflow-hidden shadow-2xl active:scale-[0.98] transition-all`}>
+                  <div className={`p-8 bg-gradient-to-br ${isRuangSosmed ? 'from-[#0ea5e9] to-[#1e3a8a]' : 'from-[#4F46E5] to-[#312E81]'} rounded-[44px] text-white relative overflow-hidden shadow-2xl active:scale-[0.98] transition-all`}>
                      <div className="relative z-10 space-y-6">
                         <div className="flex items-center justify-between">
                            <div className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[9px] font-black uppercase tracking-widest border border-white/20">Ongoing Journey</div>
@@ -621,6 +616,20 @@ export default function PortalContentMobile({ id }: { id: string }) {
                            <button onClick={() => setActiveTab('learning')} className="w-10 h-10 rounded-xl bg-white text-blue-900 flex items-center justify-center shadow-lg shadow-white/20"><PlayCircle size={20}/></button>
                         </div>
                      </div>
+                  </div>
+
+                  {/* REFRESH ACTION */}
+                  <div className="flex justify-center pt-2">
+                     <button 
+                       onClick={() => {
+                          invalidateSessionCache();
+                          initMobile();
+                       }}
+                       className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-white border border-slate-100 shadow-sm active:scale-95 transition-all group"
+                     >
+                        <RotateCcw size={14} className="text-blue-500 group-hover:rotate-180 transition-transform duration-500"/>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Refresh My Data</span>
+                     </button>
                   </div>
 
                   {/* TEAM/GROUP WIDGET */}
@@ -716,6 +725,157 @@ export default function PortalContentMobile({ id }: { id: string }) {
                </motion.div>
             </div>
          )}
+         {/* GROUP/TEAM TAB */}
+         {activeTab === 'group' && (() => {
+            const currentGroupName = membership?.group_name || membership?.group;
+            return (
+            <div className="px-6 py-8 space-y-10">
+               <div className="space-y-4 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                     <h3 className="text-2xl font-black text-slate-900 tracking-tighter">Your Squad</h3>
+                     <div className="px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 text-[10px] font-black uppercase tracking-widest">
+                        {currentGroupName || 'Individual'}
+                     </div>
+                  </div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-relaxed">Collaborate and conquer the challenge together.</p>
+               </div>
+
+               {/* REFRESH BUTTON FOR SYNC ISSUES */}
+               <div className="flex justify-center -mt-4">
+                  <button 
+                     onClick={async () => {
+                        setIsLoading(true);
+                        invalidateSessionCache();
+                        await initMobile();
+                        setIsLoading(false);
+                     }}
+                     className="flex items-center gap-2 px-5 py-2 rounded-xl bg-white border border-slate-100 shadow-sm active:scale-90 transition-all text-blue-500"
+                  >
+                     <RotateCcw size={12} strokeWidth={3}/>
+                     <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Sync My Group</span>
+                  </button>
+               </div>
+
+               {membership?.group_wa_link && (
+                  <a href={membership.group_wa_link} target="_blank" rel="noreferrer" className="flex items-center justify-between p-6 bg-emerald-50 border-2 border-emerald-100 rounded-[32px] group active:scale-95 transition-all shadow-lg shadow-emerald-100/20">
+                     <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-[#25D366] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-[#25D366]/20">
+                           <MessageSquare size={24} fill="white"/>
+                        </div>
+                        <div>
+                           <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Connect on WhatsApp</p>
+                           <h4 className="text-sm font-black text-emerald-900">Join Team Discussion</h4>
+                        </div>
+                     </div>
+                     <ArrowRight size={20} className="text-emerald-400 group-hover:translate-x-1 transition-transform"/>
+                  </a>
+               )}
+
+               <div className="space-y-6">
+                  <div className="flex items-center justify-between px-2">
+                     <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Team Members ({groupMembers.length})</h4>
+                     {groupMembers.length === 0 && currentGroupName && (
+                        <div className="text-[8px] font-black text-rose-500 uppercase flex items-center gap-1 animate-pulse">
+                           <AlertCircle size={10}/> Fetching...
+                        </div>
+                     )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-4">
+                     {groupMembers.length > 0 ? (
+                        groupMembers.sort((a: any, b: any) => (b.is_leader ? 1 : 0) - (a.is_leader ? 1 : 0)).map((m: any) => (
+                           <div 
+                              key={m.id} 
+                              className={`p-5 rounded-[32px] flex items-center justify-between shadow-sm transition-all active:scale-[0.98] border ${
+                                 m.is_leader 
+                                    ? 'bg-gradient-to-r from-amber-50 to-amber-100/30 border-amber-200' 
+                                    : m.profile_id === currentUser?.id 
+                                       ? 'bg-blue-50/50 border-blue-200' 
+                                       : 'bg-white border-slate-100'
+                              }`}
+                           >
+                              <div className="flex items-center gap-4">
+                                 <div 
+                                    className={`w-14 h-14 rounded-2xl overflow-hidden border-2 shadow-sm flex items-center justify-center relative ${
+                                       m.is_leader ? 'border-amber-400/50' : 'border-white'
+                                    }`}
+                                    style={{ backgroundColor: m.v2_profiles?.avatar_url?.includes('bg=') ? decodeURIComponent(m.v2_profiles.avatar_url.split('bg=')[1]) : '#f1f5f9' }}
+                                 >
+                                    {m.v2_profiles?.avatar_url ? (
+                                       <img src={m.v2_profiles.avatar_url} className="w-full h-full object-contain scale-[1.1] translate-y-0.5"/>
+                                    ) : (
+                                       <div className="w-full h-full flex items-center justify-center font-black text-slate-300">{m.v2_profiles?.full_name?.charAt(0)}</div>
+                                    )}
+                                    {m.is_leader && (
+                                       <div className="absolute -top-1 -left-1 w-6 h-6 bg-amber-500 text-white rounded-lg flex items-center justify-center border-2 border-white shadow-lg animate-bounce duration-1000">
+                                          <Crown size={10} fill="white"/>
+                                       </div>
+                                    )}
+                                 </div>
+                                 <div className="space-y-0.5">
+                                    <div className="flex items-center gap-1.5">
+                                       <h5 className={`text-sm font-black ${m.is_leader ? 'text-amber-900' : 'text-slate-800'}`}>{m.v2_profiles?.full_name}</h5>
+                                       {m.is_leader && <Crown size={12} className="text-amber-500"/>}
+                                    </div>
+                                    <p className={`text-[9px] font-bold uppercase tracking-widest ${m.is_leader ? 'text-amber-600' : 'text-slate-400'}`}>
+                                       {m.is_leader ? 'SQUAD LEADER' : 'SQUAD MEMBER'}
+                                    </p>
+                                 </div>
+                              </div>
+                              <div className="flex flex-col items-end gap-2">
+                                 {m.profile_id === currentUser?.id && (
+                                    <span className="px-3 py-1 bg-blue-600 text-white text-[8px] font-black uppercase rounded-lg shadow-md shadow-blue-200">YOU</span>
+                                 )}
+                                 {m.is_leader && (
+                                    <div className="px-2.5 py-1 bg-amber-500 text-white text-[8px] font-black uppercase rounded-full shadow-md shadow-amber-200 flex items-center gap-1">
+                                       <Star size={8} fill="white"/> LEADER
+                                    </div>
+                                 )}
+                              </div>
+                           </div>
+                        ))
+                     ) : (
+                        <div className="py-16 bg-slate-50/50 border-2 border-dashed border-slate-100 rounded-[40px] text-center space-y-4">
+                           <div className="w-16 h-16 bg-white rounded-3xl mx-auto flex items-center justify-center text-slate-200 shadow-inner">
+                              <Users size={32}/>
+                           </div>
+                           <div className="space-y-1">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No Batch Group Members</p>
+                              <p className="text-[8px] text-slate-300 font-bold px-10 leading-relaxed italic">If you have been assigned to a group, try syncing your data using the button above.</p>
+                           </div>
+                        </div>
+                     )}
+                  </div>
+               </div>
+
+               {/* CUSTOM ASSIGNMENT GROUPS (If any) */}
+               {myCustomGroups.length > 0 && (
+                  <div className="space-y-6 pt-6 border-t border-slate-100 pb-40">
+                     <div className="px-2 space-y-1">
+                        <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">Challenge Groups</h4>
+                        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Custom groups for specific assignments</p>
+                     </div>
+                     <div className="grid grid-cols-1 gap-4">
+                        {myCustomGroups.map((cg) => (
+                           <div key={cg.id} className="p-6 bg-gradient-to-br from-white to-indigo-50/30 border border-indigo-100 rounded-[36px] flex items-center justify-between shadow-sm">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-11 h-11 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center"><Zap size={20}/></div>
+                                 <div>
+                                    <h5 className="text-sm font-black text-slate-800">{cg.name}</h5>
+                                    <p className="text-[8px] font-bold text-indigo-500 uppercase tracking-widest mt-0.5">Custom Challenge Team</p>
+                                 </div>
+                              </div>
+                              <div className="w-8 h-8 rounded-full bg-white border border-indigo-50 flex items-center justify-center text-indigo-300">
+                                 <ArrowRight size={14}/>
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+               )}
+            </div>
+            );
+         })()}
 
          {activeTab === 'board' && (
             <div className="p-6 pb-32 space-y-10">
@@ -1372,13 +1532,14 @@ export default function PortalContentMobile({ id }: { id: string }) {
       </AnimatePresence>
 
       {/* 4. NATIVE BOTTOM NAV - LIGHT AMBIENT THEME */}
-      <nav className="fixed bottom-8 left-6 right-6 z-[100] h-20 bg-white/70 backdrop-blur-2xl rounded-2xl border border-white/40 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] flex items-center justify-around px-4">
+      <nav className="fixed bottom-8 left-6 right-6 z-[100] h-20 bg-white/70 backdrop-blur-2xl rounded-2xl border border-white/40 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.1)] flex items-center justify-around px-2">
          {[
-            { id: 'home', icon: <Home size={22} strokeWidth={2.5}/>, label: 'Home' },
-            { id: 'learning', icon: <PlayCircle size={22} strokeWidth={2.5}/>, label: 'Classes' },
-            { id: 'board', icon: <Layout size={22} strokeWidth={2.5}/>, label: 'Feed' },
-            { id: 'tasks', icon: <FileText size={22} strokeWidth={2.5}/>, label: 'Tasks' },
-            { id: 'profile', icon: <User size={22} strokeWidth={2.5}/>, label: 'Me' }
+            { id: 'home', icon: <Home size={20} strokeWidth={2.5}/>, label: 'Home' },
+            { id: 'learning', icon: <PlayCircle size={20} strokeWidth={2.5}/>, label: 'Classes' },
+            { id: 'group', icon: <Users size={20} strokeWidth={2.5}/>, label: 'Team' },
+            { id: 'tasks', icon: <FileText size={20} strokeWidth={2.5}/>, label: 'Tasks' },
+            { id: 'ranking', icon: <Trophy size={20} strokeWidth={2.5}/>, label: 'Rank' },
+            { id: 'profile', icon: <User size={20} strokeWidth={2.5}/>, label: 'Me' }
          ].map((t) => (
             <button key={t.id} onClick={() => setActiveTab(t.id)} className={`relative flex flex-col items-center justify-center gap-1 transition-all ${activeTab === t.id ? 'text-sky-600 scale-105 font-black' : 'text-slate-400 font-bold'}`}>
                {activeTab === t.id && <motion.div layoutId="navTab" className="absolute -top-5 w-5 h-1 bg-sky-500 rounded-full shadow-[0_0_15px_rgba(14,165,233,0.5)]"/>}
