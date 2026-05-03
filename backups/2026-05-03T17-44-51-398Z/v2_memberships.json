@@ -1,0 +1,1487 @@
+[
+  {
+    "id": "fbddf674-5591-4ea3-9e4f-c84c0d3e630c",
+    "profile_id": "ca5b9250-5867-4adf-a23b-120eec075fd0",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 4 - Yuwana",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        80,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "attendance": {},
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/7629"
+  },
+  {
+    "id": "7638274b-7e4e-4245-88d0-6ce4c645bd86",
+    "profile_id": "e6cc8572-9783-42bc-94bd-bdc32ccfbac8",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 1 - Elegi",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        0,
+        0,
+        0,
+        100,
+        90,
+        80
+      ]
+    },
+    "attendance": {
+      "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 80,
+      "Aktif Grup": 80,
+      "Presentation": 75,
+      "Challenge Presence": 85
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/3288"
+  },
+  {
+    "id": "a37ca0cd-f627-4682-8063-cac1fa7b33c6",
+    "profile_id": "f80c971a-5a82-4ced-83fb-1ee295a252b3",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 2 - Khandra",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        70,
+        90,
+        90,
+        90,
+        100,
+        80
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 95,
+      "Aktif Grup": 98,
+      "Presentation": 95,
+      "Challenge Presence": 85
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/8815"
+  },
+  {
+    "id": "f1c5d25b-460d-46e5-9f55-53b73bebf7e3",
+    "profile_id": "05c0c929-6752-4fdd-9b8d-ddf5f00a4f7e",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 4 - Genial",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        90,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-02T17:20:32.182497+00:00",
+    "group_wa_link": null,
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-02T17:20:32.182497+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/8802"
+  },
+  {
+    "id": "c3ce2e5a-c6a1-4169-8f0a-fb4132e64ffd",
+    "profile_id": "8bc0bda5-b788-476e-9966-31206b9fb38d",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 2 - Khandra",
+    "role": "student",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": null,
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 0,
+      "Aktif Grup": 0,
+      "Presentation": 0,
+      "Challenge Presence": 0
+    },
+    "joined_at": "2026-04-02T08:24:52.431329+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/1576"
+  },
+  {
+    "id": "55b0dbbc-b747-454d-97c7-b0590066f3bb",
+    "profile_id": "17640674-04f2-4b1c-b065-4b56a68e595b",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 1 - Elegi",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        90,
+        100,
+        90,
+        100,
+        100,
+        60
+      ]
+    },
+    "attendance": {
+      "s1": "-",
+      "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 80,
+      "Aktif Grup": 80,
+      "Presentation": 75,
+      "Challenge Presence": 85
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/4932"
+  },
+  {
+    "id": "148ae3b0-3bfd-4a2f-95de-014ae128f5ea",
+    "profile_id": "8bc43a7a-c98b-42c5-91ee-1e421c2aaf92",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 2 - Khandra",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        90,
+        80,
+        70,
+        90,
+        60,
+        0
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 0,
+      "Aktif Grup": 0,
+      "Challenge Presence": 0
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/3796"
+  },
+  {
+    "id": "1553ed3a-2067-43ea-9c23-dbca46bf8924",
+    "profile_id": "b6d69be7-f77a-4873-bd82-425ca563d6f1",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 3 - Mega",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        100,
+        80,
+        90,
+        0,
+        0,
+        100
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 80,
+      "Aktif Grup": 85,
+      "Presentation": 75,
+      "Challenge Presence": 80
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": "",
+    "credential_no": "RS-16/SMS-MB/5338"
+  },
+  {
+    "id": "3317a8a6-bb2b-4f00-b634-ad4c8ed0f516",
+    "profile_id": "03ab5ebc-36bf-4cf6-948c-4f86ffdbbde3",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 4 - Yuwana",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        90,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 30,
+      "Aktif Grup": 30,
+      "Presentation": 0,
+      "Challenge Presence": 30
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/7104"
+  },
+  {
+    "id": "2a5d3c8d-7013-46e6-a983-7442e4057f28",
+    "profile_id": "17134e12-9e41-4f23-87b1-aad86ff10ec0",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Unassigned",
+    "role": "student",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-05-01T16:15:03.247715+00:00",
+    "group_wa_link": null,
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T16:15:03.247715+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/7128"
+  },
+  {
+    "id": "59aedfd3-bd71-4829-be1e-b7fd96ebf246",
+    "profile_id": "608ac1b6-b06c-4acf-a5ce-c0d07fa7866e",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 5 - Litani",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-02T09:31:09.374293+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/C2fUc0bYlRZ7qHQyoDODct?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-02T09:31:09.374293+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/4812"
+  },
+  {
+    "id": "7fd8f84c-0913-4726-98f0-b5439e752453",
+    "profile_id": "165933d3-e8c0-45d5-818a-f348a4041bd3",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 3 - Mega",
+    "role": "student",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 0
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/5163"
+  },
+  {
+    "id": "66d86c2b-1b56-41ac-975e-da1d5bd1d055",
+    "profile_id": "82908858-79ee-47e6-81bf-404f2dcb5525",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 5 - Litani",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:15:06.353877+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/C2fUc0bYlRZ7qHQyoDODct?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:15:06.353877+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/8743"
+  },
+  {
+    "id": "6726673e-caaf-4741-bc2b-1a405fbf917b",
+    "profile_id": "c48ad28f-fee9-48e4-b17b-661a38853b84",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 1 - Baswara",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:23:48.968061+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IeyU9zE05Vz1p6At00ghxX?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:23:48.968061+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/9410"
+  },
+  {
+    "id": "4f2e6b76-3923-48af-a998-fe32545339b1",
+    "profile_id": "c1e782b5-8dfc-46e5-9a37-b42ff6e464f5",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 4 - Genial",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P"
+    },
+    "created_at": "2026-05-01T08:57:31.156922+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LUV9HBjV9sMI0zJ0i6z1pE?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:57:31.156922+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/2234"
+  },
+  {
+    "id": "bc9eb759-5d3c-4b75-9cf0-485d4773366e",
+    "profile_id": "525edc9b-a4fd-4f7c-8fb0-f618b6afed59",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 3 - Eunoia",
+    "role": "student",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-05-02T13:54:06.638729+00:00",
+    "group_wa_link": null,
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-02T13:54:06.638729+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/1420"
+  },
+  {
+    "id": "05b35998-3deb-4fac-8d45-c1d14d98e422",
+    "profile_id": "49f749b7-6973-463f-a122-22748aa7da8f",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 4 - Yuwana",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        90,
+        80,
+        70,
+        0,
+        0,
+        0
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "I",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "I",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+    "is_leader": true,
+    "plus_points": {
+      "Diskusi": 60,
+      "Aktif Grup": 60,
+      "Challenge Presence": 60
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/5523"
+  },
+  {
+    "id": "bae7712d-27c7-4b1e-bda1-aeba67a28d4d",
+    "profile_id": "4e949fa0-c160-4a4c-8e5b-dcb87426fddb",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 1 - Elegi",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        90,
+        90,
+        80,
+        0,
+        0,
+        90
+      ]
+    },
+    "attendance": {
+      "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+    "is_leader": true,
+    "plus_points": {
+      "Diskusi": 80,
+      "Aktif Grup": 80,
+      "Presentation": 75,
+      "Challenge Presence": 85
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/3236"
+  },
+  {
+    "id": "e014513b-f2f4-4bea-bff4-f7377cea9674",
+    "profile_id": "afc33010-fcb8-4cf4-a75b-23bbb096f014",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 4 - Yuwana",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        80,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 0
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/9799"
+  },
+  {
+    "id": "a7d95107-d364-4b8a-996f-7542a256ad8e",
+    "profile_id": "8aa115fc-cf9b-4f37-9498-70eba7c2b695",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 1 - Baswara",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:31:20.572865+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IeyU9zE05Vz1p6At00ghxX?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:31:20.572865+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/3136"
+  },
+  {
+    "id": "ca9bfaa8-3595-4257-b327-59b5ebd74559",
+    "profile_id": "7595ed54-ac98-4197-9dd0-5e8d9365e5e7",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 1 - Baswara",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T09:32:41.107823+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IeyU9zE05Vz1p6At00ghxX?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:32:41.107823+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/3979"
+  },
+  {
+    "id": "0cc8655f-f234-4e46-b81f-d5cf81c75719",
+    "profile_id": "97df8c7a-7240-4655-bf06-03d20f3fd4ee",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 3 - Eunoia",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        70,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T09:08:37.425836+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/EW1PIhq8NNF9UDOKGkh2yr?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:08:37.425836+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/8344"
+  },
+  {
+    "id": "c902085e-7db4-4e2e-93ed-afc974a4d129",
+    "profile_id": "9e557ae3-2517-43c7-80df-2700ec910ec5",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 3 - Mega",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        80,
+        90,
+        60,
+        0,
+        60,
+        80
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 85,
+      "Aktif Grup": 85,
+      "Presentation": 85,
+      "Challenge Presence": 85
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/8065"
+  },
+  {
+    "id": "d44a39b7-9821-4235-8385-0dd7a555e26e",
+    "profile_id": "ba6c9454-6854-4d68-9aa3-5b325544ebd3",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 3 - Eunoia",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:40:52.792674+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/EW1PIhq8NNF9UDOKGkh2yr?mode=gi_t",
+    "is_leader": true,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:40:52.792674+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/8271"
+  },
+  {
+    "id": "6514f7e1-d27f-4d77-815b-76639a530e6c",
+    "profile_id": "96ae0d10-51f5-4fda-a5c0-1a778a9ab46e",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 1 - Elegi",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "s1": "I",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 80,
+      "Aktif Grup": 70,
+      "Presentation": 80,
+      "Challenge Presence": 80
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/7138"
+  },
+  {
+    "id": "ac8be1ee-51c3-4ddc-91fd-4c74225cc06d",
+    "profile_id": "fb57eddf-483d-4829-bbe3-55fc6017b221",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 2 - Diranda",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P"
+    },
+    "created_at": "2026-05-01T08:17:17.957719+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/F8fczYU1GybDLxmXxCSaiB?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:17:17.957719+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/7329"
+  },
+  {
+    "id": "ff9b0174-af93-4dfc-88fe-7e1437b1e517",
+    "profile_id": "ae6391c5-281d-4d24-b400-14cac9be54ca",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 4 - Genial",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P"
+    },
+    "created_at": "2026-05-01T08:59:52.614622+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LUV9HBjV9sMI0zJ0i6z1pE?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:59:52.614622+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/7854"
+  },
+  {
+    "id": "18174d69-5f63-48a5-b1f5-364c491e4398",
+    "profile_id": "5e837182-beb9-47ad-9daa-109cac771f27",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 3 - Eunoia",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P"
+    },
+    "created_at": "2026-05-01T09:33:34.064711+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/EW1PIhq8NNF9UDOKGkh2yr?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:33:34.064711+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/1841"
+  },
+  {
+    "id": "f479cadc-b9a1-4fea-aa79-73dd44dc3c27",
+    "profile_id": "a79187e5-9a36-4014-84df-3e76d67cc634",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 1 - Baswara",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:25:10.781776+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IeyU9zE05Vz1p6At00ghxX?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:25:10.781776+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/5785"
+  },
+  {
+    "id": "350b3f8e-ac33-4c4c-8f1e-e01b1ce5de09",
+    "profile_id": "59e9c1fc-44aa-4e4b-9a58-7acf16feb64a",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 3 - Eunoia",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T09:11:11.680391+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/EW1PIhq8NNF9UDOKGkh2yr?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:11:11.680391+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/7670"
+  },
+  {
+    "id": "d15d251c-a0cd-46e8-93ae-0ef5c23a988a",
+    "profile_id": "f3c27e4e-db1a-478b-8f9f-f0e9fa742356",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 3 - Mega",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        90,
+        90,
+        80,
+        100,
+        70,
+        70
+      ]
+    },
+    "attendance": {
+      "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+    "is_leader": true,
+    "plus_points": {
+      "Diskusi": 90,
+      "Aktif Grup": 90,
+      "Presentation": 85,
+      "Challenge Presence": 90
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/3285"
+  },
+  {
+    "id": "7c6234df-4ac6-4dc0-be2f-9d36eb7686e8",
+    "profile_id": "15b5f6e8-c885-4179-8614-9f2e8a8b987f",
+    "workspace_id": "272ff65a-3f35-470b-9c31-6b22cdc69637",
+    "group_name": "Unassigned",
+    "role": "Socmed Leader",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-04-19T14:41:24.656922+00:00",
+    "group_wa_link": null,
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-04-19T14:41:24.656922+00:00",
+    "certificate_url": null,
+    "credential_no": null
+  },
+  {
+    "id": "1b73b312-909e-475a-aa05-937343369a81",
+    "profile_id": "f38c6106-b3c8-4f13-ab82-1092dda4a94d",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 2 - Diranda",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T09:11:53.273064+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/F8fczYU1GybDLxmXxCSaiB?mode=gi_t",
+    "is_leader": true,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:11:53.273064+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/5515"
+  },
+  {
+    "id": "430d33e3-c3b9-4dc0-886d-4da868db67c5",
+    "profile_id": "9482adc7-ae7c-45ff-ac53-dfcf56ae461e",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 1 - Baswara",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T09:05:04.160343+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IeyU9zE05Vz1p6At00ghxX?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:05:04.160343+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/7575"
+  },
+  {
+    "id": "56ab910a-3a1e-4c7f-a58d-2ec0142eb82c",
+    "profile_id": "b4f9a749-fecd-4e35-bb06-f3f20c3ffda5",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 2 - Diranda",
+    "role": "student",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-05-01T08:26:03.572649+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/F8fczYU1GybDLxmXxCSaiB?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:26:03.572649+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/2597"
+  },
+  {
+    "id": "82974c3e-558d-4b68-ae38-fa41c226109d",
+    "profile_id": "844e5740-d8ff-40ee-bee5-a239500d6722",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 2 - Diranda",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:18:34.167521+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/F8fczYU1GybDLxmXxCSaiB?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:18:34.167521+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/2433"
+  },
+  {
+    "id": "bf98a144-d7ad-4de3-95fe-4029af2a424a",
+    "profile_id": "5e427ab4-68f9-4c07-beb0-960d5b744739",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 2 - Diranda",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:48:48.161713+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/F8fczYU1GybDLxmXxCSaiB?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:48:48.161713+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/8338"
+  },
+  {
+    "id": "7e3e7062-2e3e-4416-89c7-482c22987c41",
+    "profile_id": "5240aafe-ff7c-4038-9970-4563f64928ec",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 2 - Khandra",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        100,
+        80,
+        60,
+        90,
+        80,
+        80
+      ]
+    },
+    "attendance": {
+      "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "I",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+    "is_leader": true,
+    "plus_points": {
+      "Diskusi": 95,
+      "Aktif Grup": 98,
+      "Presentation": 98,
+      "Challenge Presence": 85
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/1361"
+  },
+  {
+    "id": "1ca6121b-d47b-4387-883f-1fc44ca6eff2",
+    "profile_id": "865ba24f-d68a-471c-bb30-4b367e26e1db",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 3 - Eunoia",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        100,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T09:06:04.936854+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/EW1PIhq8NNF9UDOKGkh2yr?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:06:04.936854+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/1683"
+  },
+  {
+    "id": "2d22c8ad-f668-42f8-aeb1-53525ad4ac3f",
+    "profile_id": "738d4534-9e57-430c-b88f-2540f9d13a70",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 1 - Baswara",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:27:07.724153+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IeyU9zE05Vz1p6At00ghxX?mode=gi_t",
+    "is_leader": true,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:27:07.724153+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/4213"
+  },
+  {
+    "id": "dc695145-f760-4785-9b42-fc1f14a945d3",
+    "profile_id": "7f569eac-1fb2-4c5a-9074-ca5fa50d3724",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 2 - Khandra",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "2841e96c-f417-419e-bcf7-f75f8c68df43": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "-",
+      "62876293-e7be-43a6-8754-4728e53953d1": "-",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "-",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 75,
+      "Aktif Grup": 75,
+      "Presentation": 0,
+      "Challenge Presence": 75
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/6232"
+  },
+  {
+    "id": "bf1c5f1f-ec8a-41da-b0dd-a3bea52253ad",
+    "profile_id": "59528fbf-7da5-4b93-ac63-578c212f9849",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 2 - Khandra",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        80,
+        90,
+        60,
+        90,
+        80,
+        70
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "S",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LLKkn0lIcnrIDOF94X4Ubf?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 98,
+      "Aktif Grup": 98,
+      "Presentation": 98,
+      "Challenge Presence": 90
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/6132"
+  },
+  {
+    "id": "3122ca1d-27af-4e92-bfd7-37979c3adfb2",
+    "profile_id": "0f69ecc3-b917-4120-b78e-cbb1d2b6a7e5",
+    "workspace_id": "15eac862-c739-43a3-ae17-327d14dbbc82",
+    "group_name": "Unassigned",
+    "role": "Sosial Media Spesialis",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-04-22T00:46:01.260653+00:00",
+    "group_wa_link": null,
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-04-22T00:46:01.260653+00:00",
+    "certificate_url": null,
+    "credential_no": null
+  },
+  {
+    "id": "e51b215b-d4fd-4f61-830e-f3ed070bd222",
+    "profile_id": "7063202f-b243-4618-b834-8cf6e249aab0",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 5 - Litani",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:20:33.111613+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/C2fUc0bYlRZ7qHQyoDODct?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:20:33.111613+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/7660"
+  },
+  {
+    "id": "6984bfa0-7749-4b35-aa74-bf47a23babba",
+    "profile_id": "094038e8-bd7d-4a66-89f7-51d532fd0134",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 5 - Litani",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T09:26:07.811066+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/C2fUc0bYlRZ7qHQyoDODct?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:26:07.811066+00:00",
+    "certificate_url": "",
+    "credential_no": "RS-17/SMS-MB/7802"
+  },
+  {
+    "id": "7c2e8707-550a-4645-bf80-7338a7e2459d",
+    "profile_id": "92f44234-1ef0-49e3-b8c3-47581a7372e2",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 1 - Baswara",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:53:24.925767+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IeyU9zE05Vz1p6At00ghxX?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:53:24.925767+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/3612"
+  },
+  {
+    "id": "df45b043-4ef0-4e3c-9611-a9e0dd8280c6",
+    "profile_id": "7d6ae7c5-e990-4f6d-839f-73495d65ca55",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 4 - Yuwana",
+    "role": "student",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JN74PXBxgj138rmQFPYWsM?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 60,
+      "Aktif Grup": 60,
+      "Presentation": 0,
+      "Challenge Presence": 60
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/3465"
+  },
+  {
+    "id": "8a175c68-ace5-42d4-99e6-6d972ed94ed7",
+    "profile_id": "12089ea2-7925-4209-ba3a-d6b0976079b9",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 1 - Elegi",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        90,
+        80,
+        50,
+        0,
+        0,
+        0
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "I",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 80,
+      "Aktif Grup": 80,
+      "Presentation": 75,
+      "Challenge Presence": 75
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/4429"
+  },
+  {
+    "id": "f51c2562-0ca7-468d-8a0e-bb594b19a136",
+    "profile_id": "e7c2b805-9f70-4962-b728-52d10b2bf720",
+    "workspace_id": "15eac862-c739-43a3-ae17-327d14dbbc82",
+    "group_name": "Unassigned",
+    "role": "MMB Socmed Lead",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-04-22T00:47:33.905005+00:00",
+    "group_wa_link": null,
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-04-22T00:47:33.905005+00:00",
+    "certificate_url": null,
+    "credential_no": null
+  },
+  {
+    "id": "9bb7c750-fa19-4452-88fa-27556d5ce769",
+    "profile_id": "bdd9dc90-2e5f-417d-99df-2b5b57ed66f0",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 5 - Litani",
+    "role": "student",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-05-01T09:27:32.588209+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/C2fUc0bYlRZ7qHQyoDODct?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:27:32.588209+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/7513"
+  },
+  {
+    "id": "4afeebe5-0e70-481c-b5f2-65fee6f41a69",
+    "profile_id": "e829c99b-da04-4a75-9e27-01af89bcf05c",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 4 - Genial",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T09:07:02.594644+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LUV9HBjV9sMI0zJ0i6z1pE?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:07:02.594644+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/4148"
+  },
+  {
+    "id": "d1fceebf-21cd-465c-b695-a43d28f321b3",
+    "profile_id": "f4b45263-8a8c-4f65-a5a6-77775b1f3a89",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 4 - Genial",
+    "role": "student",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-05-01T08:21:41.384967+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LUV9HBjV9sMI0zJ0i6z1pE?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:21:41.384967+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/4537"
+  },
+  {
+    "id": "681db8f1-eba9-4943-aabc-9f4dcdb41373",
+    "profile_id": "683f7e56-b761-466c-868f-41888689ff69",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 4 - Genial",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:29:19.11332+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LUV9HBjV9sMI0zJ0i6z1pE?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:29:19.11332+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/2704"
+  },
+  {
+    "id": "cb36352f-55e2-4431-9703-81040c73100f",
+    "profile_id": "49b2bdb5-0cbd-4f8d-baa3-767dcb909958",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 2 - Diranda",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:55:02.84295+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/F8fczYU1GybDLxmXxCSaiB?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:55:02.84295+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/3520"
+  },
+  {
+    "id": "e0c14ad0-4aad-4a93-8753-ea4b7442eef4",
+    "profile_id": "237593b0-b857-4f0e-81fc-448f838e3ba6",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 3 - Mega",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        100,
+        80,
+        90,
+        100,
+        100,
+        100
+      ]
+    },
+    "attendance": {
+      "s1": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "P",
+      "c6fdb072-bed5-489d-a689-9960241c3023": "P",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "P",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "P"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/IdwQKroj331F5V6IRo3sNh?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 80,
+      "Aktif Grup": 80,
+      "Presentation": 80,
+      "Challenge Presence": 80
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/5864"
+  },
+  {
+    "id": "777bc184-a9a4-4e72-bb76-60ad26a08bd8",
+    "profile_id": "4314b682-f507-4c67-b66a-22ec6297f73e",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 5 - Litani",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P"
+    },
+    "created_at": "2026-05-01T09:31:50.506103+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/C2fUc0bYlRZ7qHQyoDODct?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:31:50.506103+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/3833"
+  },
+  {
+    "id": "cb93ab13-6829-4fa3-90db-f784d2e48c22",
+    "profile_id": "dcdd1ff2-fc86-4a07-9d88-74e8c21c8be2",
+    "workspace_id": "be0763e3-4df5-46ac-9f11-c80d007b1188",
+    "group_name": "Group 1 - Elegi",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "s1": "P",
+      "5a7e54ae-01dc-458b-9be6-bb6ab37c5871": "P",
+      "62876293-e7be-43a6-8754-4728e53953d1": "I",
+      "cb48e22a-652f-43d6-8cad-351e55b556e7": "P",
+      "e5ad3354-803c-4031-ade1-3dc05851acd2": "I",
+      "e60e601a-e9f0-4aa6-a73e-d2adc6d5ec98": "I"
+    },
+    "created_at": "2026-04-08T00:36:49.776034+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/JyLWw124g7I05dgyR46xVc?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {
+      "Diskusi": 50,
+      "Aktif Grup": 50,
+      "Presentation": 75,
+      "Challenge Presence": 50
+    },
+    "joined_at": "2026-03-29T05:24:40.013525+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-16/SMS-MB/4585"
+  },
+  {
+    "id": "37c570c3-f033-464d-b958-e12123e0c496",
+    "profile_id": "540dea5f-fbfe-4b53-a2f9-ea33452ab92f",
+    "workspace_id": "15eac862-c739-43a3-ae17-327d14dbbc82",
+    "group_name": "Unassigned",
+    "role": "Sosial Media Spesialis",
+    "grades": {},
+    "attendance": {},
+    "created_at": "2026-04-22T00:48:23.339948+00:00",
+    "group_wa_link": null,
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-04-22T00:48:23.339948+00:00",
+    "certificate_url": null,
+    "credential_no": null
+  },
+  {
+    "id": "c861c323-9513-48a2-ba4d-9aa9de9e104e",
+    "profile_id": "c049199f-37af-41c5-9cd1-f83eb1f3c207",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 4 - Genial",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:30:30.391494+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/LUV9HBjV9sMI0zJ0i6z1pE?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:30:30.391494+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/7621"
+  },
+  {
+    "id": "bd4ce010-cf77-4ec3-bed3-c789bc02c264",
+    "profile_id": "75e1dc55-15bd-42ac-b5ab-7b8ef795b867",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 2 - Diranda",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T09:07:53.448838+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/F8fczYU1GybDLxmXxCSaiB?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T09:07:53.448838+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/8546"
+  },
+  {
+    "id": "47965a70-6c27-44f9-9c24-d403c2b407b7",
+    "profile_id": "7c4a4628-74bb-481a-8d0b-03e1a420c5e4",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 5 - Litani",
+    "role": "student",
+    "grades": {},
+    "attendance": {
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:56:06.006904+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/C2fUc0bYlRZ7qHQyoDODct?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:56:06.006904+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/7550"
+  },
+  {
+    "id": "6ba2effe-8b77-4db6-a685-df248bc6a1bb",
+    "profile_id": "8035ee08-0cec-4037-8982-d5be5697d163",
+    "workspace_id": "eb065b6e-f5a6-48e6-a18f-3bdf8029f03b",
+    "group_name": "Group 3 - Eunoia",
+    "role": "student",
+    "grades": {
+      "post_tests": [
+        90,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "attendance": {
+      "958dcb5d-a3ba-46a8-8e9c-6e8c91724670": "P",
+      "f8214e12-ea4f-454e-a178-10bc3c9ef4a5": "P"
+    },
+    "created_at": "2026-05-01T08:22:41.491611+00:00",
+    "group_wa_link": "https://chat.whatsapp.com/EW1PIhq8NNF9UDOKGkh2yr?mode=gi_t",
+    "is_leader": false,
+    "plus_points": {},
+    "joined_at": "2026-05-01T08:22:41.491611+00:00",
+    "certificate_url": null,
+    "credential_no": "RS-17/SMS-MB/2604"
+  }
+]
