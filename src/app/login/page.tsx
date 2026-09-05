@@ -66,7 +66,7 @@ export default function LoginPage() {
       <div className="lg:col-span-5 flex flex-col items-center justify-center p-8 sm:p-20 relative z-10 bg-white">
         <div className="max-w-md w-full">
           <div className="flex items-center gap-2 mb-12">
-            <img src="/logo.png" alt="Mentorhipers Logo" className="h-20 w-auto object-contain" />
+            <img src="/logo_ruang_campus.svg" alt="Ruang Campus Logo" className="h-20 w-auto object-contain" />
           </div>
 
           <h2 className="text-4xl font-sans font-extrabold mb-2 leading-tight">
@@ -134,7 +134,7 @@ export default function LoginPage() {
 
           <p className="mt-12 text-center text-xs text-muted-foreground">
             Lupa password atau tidak punya akses? <br />
-            Silahkan hubungi <span className="text-accent font-bold cursor-pointer hover:underline">Admin Mentorhipers</span>
+            Silahkan hubungi <span className="text-accent font-bold cursor-pointer hover:underline">Admin Ruang Campus</span>
           </p>
         </div>
       </div>

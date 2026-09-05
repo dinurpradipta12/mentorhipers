@@ -6,6 +6,7 @@ import React, { useState, use, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { APP_FULL_NAME, APP_SHORT_NAME, resolveAppName } from "@/lib/brand";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import BoardMobileV1 from "./BoardMobileV1";
@@ -243,7 +244,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
       }
     ],
     app_settings: {
-      app_name: "Mentorhipers",
+      app_name: APP_FULL_NAME,
       app_logo: ""
     },
     enabled_features: {
@@ -312,7 +313,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
         setBoardData((prev: any) => ({
           ...prev,
           app_settings: {
-            app_name: settingsData.app_name || "Mentorhipers",
+            app_name: resolveAppName(settingsData.app_name),
             app_logo: settingsData.app_logo || ""
           }
         }));
@@ -452,7 +453,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
           setBoardData((prev: any) => ({
             ...prev,
             app_settings: {
-              app_name: settingsData.app_name || prev.app_settings?.app_name,
+              app_name: resolveAppName(settingsData.app_name || prev.app_settings?.app_name),
               app_logo: settingsData.app_logo || prev.app_settings?.app_logo
             }
           }));
@@ -679,7 +680,7 @@ export default function SharedBoardPage({ params }: { params: Promise<{ id: stri
                 <SectionLabel label="Setup Your Identity" className="mx-auto" />
                 <h2 className="text-4xl font-sans font-extrabold">Hello, <span className="italic text-accent">{boardData.name}</span></h2>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Selamat datang di portal eksklusif Mentorhipers. Sebelum memulai, silakan pasang foto profil terbaik Anda untuk mempersonalisasi pengalaman mentoring Anda.
+                  Selamat datang di portal eksklusif {APP_SHORT_NAME}. Sebelum memulai, silakan pasang foto profil terbaik Anda untuk mempersonalisasi pengalaman mentoring Anda.
                 </p>
               </div>
 
@@ -3779,5 +3780,3 @@ const GoalsRoadmapView = ({ clientId, isAdmin, paymentData, getPaymentStatus }: 
     </div>
   );
 };
-
-

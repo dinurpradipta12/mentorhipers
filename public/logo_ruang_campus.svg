@@ -1,0 +1,15 @@
+<svg width="800" height="240" viewBox="0 0 800 240" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Ruang Campus</title>
+  <desc id="desc">Logo Ruang Campus</desc>
+  <defs>
+    <linearGradient id="brand-gradient" x1="24" y1="18" x2="204" y2="222" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4880FF"/>
+      <stop offset="1" stop-color="#6D5DFB"/>
+    </linearGradient>
+  </defs>
+  <rect x="18" y="18" width="204" height="204" rx="58" fill="url(#brand-gradient)"/>
+  <path d="M71 154V87C71 77.059 79.059 69 89 69H122C145.748 69 165 88.252 165 112C165 135.748 145.748 155 122 155H71Z" fill="white"/>
+  <path d="M121 119L166 166" stroke="white" stroke-width="18" stroke-linecap="round"/>
+  <text x="258" y="112" fill="#315EDB" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800" letter-spacing="-3">Ruang</text>
+  <text x="258" y="190" fill="#6D5DFB" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="800" letter-spacing="-3">Campus</text>
+</svg>

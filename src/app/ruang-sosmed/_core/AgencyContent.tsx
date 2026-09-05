@@ -72,6 +72,7 @@ import {
 } from "recharts";
 import { supabaseV2 as supabase } from "@/lib/supabase";
 import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
+import { APP_SHORT_NAME } from "@/lib/brand";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -399,7 +400,7 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
     "Ada ide konten baru buat minggu depan? 💡",
     "Jangan lupa istirahat & ngopi ya, Boss ☕",
     "Cek analitik buat liat pertumbuhan terbaru 📊",
-    "Ready to Scale with Mentorhipers! ✨",
+    `Ready to Scale with ${APP_SHORT_NAME}! ✨`,
     "Waktunya update statistik performa hari ini? ✅",
     "Status: All systems growing! 🌿"
   ];
@@ -3484,7 +3485,8 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
               <div className="p-10 pt-8 space-y-3">
                 <Button 
                   onClick={() => {
-                    const message = `Halo ${successData.full_name} 👋\n\nSelamat datang di Mentorhipers! Akun kamu sudah aktif dan siap digunakan.\n\nBerikut detail login kamu:\n🔑 Username: ${successData.username}\n🔒 Password: ${successData.password}\n\n🔗 Login di: https://mentorhipers.space/ruang-sosmed/login\n\nJangan lupa ganti password setelah login pertama ya!\n\nSelamat berkarya! 🚀`;
+                    const loginUrl = `${window.location.origin}/ruang-sosmed/login`;
+                    const message = `Halo ${successData.full_name} 👋\n\nSelamat datang di ${APP_SHORT_NAME}! Akun kamu sudah aktif dan siap digunakan.\n\nBerikut detail login kamu:\n🔑 Username: ${successData.username}\n🔒 Password: ${successData.password}\n\n🔗 Login di: ${loginUrl}\n\nJangan lupa ganti password setelah login pertama ya!\n\nSelamat berkarya! 🚀`;
                     navigator.clipboard.writeText(message);
                     setCopying(true);
                     setTimeout(() => setCopying(false), 2000);
@@ -4782,4 +4784,3 @@ export default function AgencyContent({ id, subTab }: { id: string, subTab?: str
     </div>
   );
 }
-

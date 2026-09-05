@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { resolveAppName } from "@/lib/brand";
 
 export const AppGlobalConfig = () => {
   useEffect(() => {
@@ -13,10 +14,9 @@ export const AppGlobalConfig = () => {
 
       if (settingsRes.data) {
         const data = settingsRes.data;
-        if (data.app_name) {
-          document.title = data.app_name;
-          localStorage.setItem('app_name', data.app_name);
-        }
+        const appName = resolveAppName(data.app_name);
+        document.title = appName;
+        localStorage.setItem('app_name', appName);
         if (data.app_logo) localStorage.setItem('app_logo', data.app_logo);
         if (data.app_favicon) {
           localStorage.setItem('app_favicon', data.app_favicon);
@@ -54,8 +54,9 @@ export const AppGlobalConfig = () => {
         table: 'app_settings' 
       }, (payload: { new: { app_name?: string, app_logo?: string, app_favicon?: string, tablet_zoom?: string } }) => {
         if (payload.new.app_name) {
-          document.title = payload.new.app_name;
-          localStorage.setItem('app_name', payload.new.app_name);
+          const appName = resolveAppName(payload.new.app_name);
+          document.title = appName;
+          localStorage.setItem('app_name', appName);
         }
         if (payload.new.app_logo) localStorage.setItem('app_logo', payload.new.app_logo);
         if (payload.new.tablet_zoom) {

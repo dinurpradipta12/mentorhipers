@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import NotificationCenterAdmin from "@/components/layout/NotificationCenterAdmin";
 import { supabase } from "@/lib/supabase";
+import { APP_FULL_NAME, resolveAppName } from "@/lib/brand";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/layout/AdminHeader";
@@ -48,7 +49,7 @@ export default function MentorProfileCMS() {
          instagram: "dinur_pradipta",
          linkedin: "dinurpradipta",
          twitter: "dinurpradipta",
-         website: "mentorhipers.com"
+         website: ""
       },
       booking_settings: {
          start_hour: 9,
@@ -58,7 +59,7 @@ export default function MentorProfileCMS() {
    });
 
    const [appSettings, setAppSettings] = useState({
-    app_name: "Mentorhipers",
+    app_name: APP_FULL_NAME,
     app_logo: "",
     app_favicon: ""
   });
@@ -99,11 +100,11 @@ export default function MentorProfileCMS() {
          const { data: settingsData } = await supabase.from('app_settings').select('*').eq('id', 1).single();
          if (settingsData) {
             setAppSettings({
-               app_name: settingsData.app_name || "Mentorhipers",
+               app_name: resolveAppName(settingsData.app_name),
                app_logo: settingsData.app_logo || "",
                app_favicon: settingsData.app_favicon || "",
             });
-            localStorage.setItem('app_name', settingsData.app_name || "Mentorhipers");
+            localStorage.setItem('app_name', resolveAppName(settingsData.app_name));
             localStorage.setItem('app_logo', settingsData.app_logo || "");
             localStorage.setItem('app_favicon', settingsData.app_favicon || "");
          }

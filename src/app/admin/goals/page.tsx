@@ -29,6 +29,7 @@ import {
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
+import { APP_FULL_NAME, resolveAppName } from "@/lib/brand";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/layout/AdminHeader";
@@ -66,7 +67,7 @@ export default function AdminGoalsPage() {
    const [isAddingTask, setIsAddingTask] = useState(false);
    const [isLoading, setIsLoading] = useState(false);
    const [appSettings, setAppSettings] = useState({
-    app_name: "Mentorhipers",
+    app_name: APP_FULL_NAME,
     app_logo: "",
     app_favicon: ""
   });
@@ -105,11 +106,11 @@ export default function AdminGoalsPage() {
       const { data } = await supabase.from('app_settings').select('*').eq('id', 1).single();
       if (data) {
          setAppSettings({
-            app_name: data.app_name || "Mentorhipers",
+            app_name: resolveAppName(data.app_name),
             app_logo: data.app_logo || "",
             app_favicon: data.app_favicon || "",
          });
-         localStorage.setItem('app_name', data.app_name || "Mentorhipers");
+         localStorage.setItem('app_name', resolveAppName(data.app_name));
          localStorage.setItem('app_logo', data.app_logo || "");
          localStorage.setItem('app_favicon', data.app_favicon || "");
       }

@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { resolveAppName } from "@/lib/brand";
 
 interface AdminSidebarProps {
   isSidebarOpen: boolean;
@@ -32,6 +33,7 @@ const AdminNavItem = ({ label, icon, active = false, href = "#", collapsed = fal
 
 export default function AdminSidebar({ isSidebarOpen, appSettings }: AdminSidebarProps) {
   const pathname = usePathname();
+  const appName = resolveAppName(appSettings.app_name);
 
   return (
     <motion.aside 
@@ -47,7 +49,7 @@ export default function AdminSidebar({ isSidebarOpen, appSettings }: AdminSideba
                 <img src={appSettings.app_logo} className="w-[180px] h-full max-h-[64px] object-contain" alt="Admin Logo" />
               ) : (
                 <h1 className="text-[20px] font-extrabold text-[#202224] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis flex items-center">
-                   Admin<span className="text-[#4880FF]">Stack</span>
+                   {resolveAppName(appSettings.app_name)}
                 </h1>
               )}
            </div>
@@ -56,7 +58,7 @@ export default function AdminSidebar({ isSidebarOpen, appSettings }: AdminSideba
               {appSettings.app_favicon ? (
                 <img src={appSettings.app_favicon} className="w-full h-full object-contain p-1" alt="Favicon" />
               ) : (
-                <span className="text-white font-black text-xl">{appSettings.app_name ? appSettings.app_name.charAt(0).toUpperCase() : "A"}</span>
+                <span className="text-white font-black text-xl">{appName.charAt(0).toUpperCase()}</span>
               )}
            </div>
          )}

@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/Button";
 import { SectionLabel } from "@/components/ui/Badge";
 import NotificationCenterAdmin from "@/components/layout/NotificationCenterAdmin";
 import { supabase } from "@/lib/supabase";
+import { APP_FULL_NAME, resolveAppName } from "@/lib/brand";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/layout/AdminHeader";
@@ -101,7 +102,7 @@ export default function AdminDashboardV2() {
    const [isLoading, setIsLoading] = useState(true);
    const [editingClientId, setEditingClientId] = useState<string | null>(null);
    const [appSettings, setAppSettings] = useState({
-      app_name: "Mentorhipers",
+      app_name: APP_FULL_NAME,
       app_logo: "",
       app_favicon: ""
    });
@@ -176,11 +177,11 @@ export default function AdminDashboardV2() {
       const { data: settingsData } = await supabase.from('app_settings').select('*').eq('id', 1).single();
       if (settingsData) {
          setAppSettings({
-            app_name: settingsData.app_name || "Mentorhipers",
+            app_name: resolveAppName(settingsData.app_name),
             app_logo: settingsData.app_logo || "",
             app_favicon: settingsData.app_favicon || ""
          });
-         localStorage.setItem('app_name', settingsData.app_name || "Mentorhipers");
+         localStorage.setItem('app_name', resolveAppName(settingsData.app_name));
          localStorage.setItem('app_logo', settingsData.app_logo || "");
          localStorage.setItem('app_favicon', settingsData.app_favicon || "");
       }
@@ -218,7 +219,7 @@ export default function AdminDashboardV2() {
 
       if (cachedName || cachedLogo || cachedFavicon) {
          setAppSettings({
-            app_name: cachedName || "Mentorhipers",
+            app_name: resolveAppName(cachedName),
             app_logo: cachedLogo || "",
             app_favicon: cachedFavicon || ""
          });
