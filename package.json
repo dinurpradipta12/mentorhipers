@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build && node scripts/update-app-version.mjs",
+    "cloudflare:build": "opennextjs-cloudflare build",
+    "cloudflare:deploy": "opennextjs-cloudflare deploy",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",

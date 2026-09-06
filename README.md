@@ -39,13 +39,17 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 This is a full-stack Next.js app with server-rendered routes and API routes, so deploy it as a Cloudflare Worker rather than a static Cloudflare Pages site.
 
-The repository uses OpenNext and Wrangler. For a Git-connected Cloudflare Workers build, use:
+The repository uses OpenNext and Wrangler. For Cloudflare Workers Builds, configure the two commands separately:
 
 ```bash
-npm run deploy
+# Build command
+npm run cloudflare:build
+
+# Deploy command
+npm run cloudflare:deploy
 ```
 
-Wrangler reads `wrangler.jsonc`; no separate build output directory is needed. For local Workers-runtime verification, use:
+Wrangler reads `wrangler.jsonc`; no separate build output directory is needed. Do not use `npm run deploy` as the Build command because it also invokes the deploy step. For local Workers-runtime verification, use:
 
 ```bash
 npm run preview
