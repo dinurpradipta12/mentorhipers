@@ -1,36 +1,21 @@
-import { createClient } from '@supabase/supabase-js';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { assertCurrentAdmin } from '@/lib/auth/context';
+import { BootcampInputError, BootcampNotFoundError, updateBootcampSchedules } from '@/lib/bootcamp/mutations';
 
-export const runtime = 'edge';
+function responseForError(error: unknown) {
+  if (error instanceof BootcampInputError) return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+  if (error instanceof BootcampNotFoundError) return NextResponse.json({ success: false, error: 'Batch Bootcamp tidak ditemukan.' }, { status: 404 });
+  if (error instanceof Error && error.message === 'FORBIDDEN') return NextResponse.json({ success: false, error: 'Akses administrator diperlukan.' }, { status: 403 });
+  return NextResponse.json({ success: false, error: 'Jadwal tidak dapat diperbarui.' }, { status: 500 });
+}
 
-export async function POST(req: NextRequest) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_V2_URL || '';
-  const supabaseServiceKey = process.env.SUPABASE_V2_SERVICE_ROLE_KEY || '';
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    return NextResponse.json({ success: false, error: 'SUPABASE_V2_SERVICE_ROLE_KEY is missing.' }, { status: 500 });
-  }
-
-  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { persistSession: false }
-  });
-
+export async function POST(request: Request) {
   try {
-    const { workspaceId, schedules } = await req.json();
-
-    if (!workspaceId || !schedules) {
-      return NextResponse.json({ success: false, error: 'Missing required fields.' }, { status: 400 });
-    }
-
-    const { error } = await supabaseAdmin
-      .from('v2_workspaces')
-      .update({ schedules })
-      .eq('id', workspaceId);
-
-    if (error) return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message || 'Unknown error.' }, { status: 500 });
+    await assertCurrentAdmin();
+    const payload = await request.json() as { workspaceId?: unknown; schedules?: unknown };
+    const schedules = await updateBootcampSchedules(payload.workspaceId, payload.schedules);
+    return NextResponse.json({ success: true, schedules });
+  } catch (error) {
+    return responseForError(error);
   }
 }

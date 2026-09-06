@@ -61,9 +61,9 @@ export function invalidateSessionCache(): void {
 }
 
 /**
- * Check if user is a legacy admin (no auth request needed).
+ * Kept only so legacy components compile during the staged rebuild. A browser
+ * cache must never grant administrator access.
  */
-export function isLegacyAdmin(): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem('v2_legacy_admin') === 'true';
+export function isLegacyAdmin(): false {
+  return false;
 }

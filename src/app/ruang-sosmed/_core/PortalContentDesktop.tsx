@@ -384,7 +384,7 @@ export default function PortalContentDesktop({ id }: { id: string }) {
       const { data } = await supabase.from('v2_workspaces').select('id, name, description, type, start_date, end_date, max_members, status, settings, schedules, created_at').eq('id', resolvedParams.id).single();
       if (data) {
          if (data.type === 'agency') {
-            window.location.href = `/ruang-sosmed/agency/${resolvedParams.id}`;
+            window.location.href = '/ruang-sosmed/agency';
             return;
          }
          setBatch(data);

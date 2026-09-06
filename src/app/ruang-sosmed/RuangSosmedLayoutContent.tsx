@@ -9,7 +9,6 @@ import { supabase, supabaseV2 } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import AvatarCreator from "./_core/AvatarCreator";
 import NotificationBell from "./_core/NotificationBell";
-import { isLegacyAdmin } from "@/lib/authCache";
 
 export default function RuangSosmedLayoutContent({
   children,
@@ -42,17 +41,13 @@ export default function RuangSosmedLayoutContent({
       const { data: profile } = await supabaseV2.from('v2_profiles').select('*').eq('id', user.id).single();
       if (profile) {
         setUserProfile(profile);
-        if (profile.role === 'admin' || isLegacyAdmin()) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-          if (!profile.avatar_url) {
-            setShowOnboarding(true);
-          }
+        // This legacy client shell is not part of the active route graph. If
+        // it is mounted by an old entry point, it must still never infer an
+        // administrator role from a profile field or browser state.
+        setIsAdmin(false);
+        if (!profile.avatar_url) {
+          setShowOnboarding(true);
         }
-      } else if (isLegacyAdmin()) {
-        setIsAdmin(true);
-        setUserProfile({ full_name: 'Admin Arunika', role: 'admin' });
       }
     } else {
       setIsAdmin(false);

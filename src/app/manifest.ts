@@ -1,14 +1,14 @@
-import { MetadataRoute } from 'next'
- 
+import { MetadataRoute } from 'next';
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Mentorhipers',
-    short_name: 'Mentorhipers',
-    description: 'Personal branding and social media mentoring platform.',
-    start_url: '/',
+    name: 'Ruang Campus — Platform Edukasi LMS Sosmed',
+    short_name: 'Ruang Campus',
+    description: 'Platform pembelajaran Bootcamp dan Webinar LMS publik Ruang Campus.',
+    start_url: '/ruang-sosmed',
     display: 'standalone',
-    background_color: '#FAFAFA',
-    theme_color: '#4880FF',
+    background_color: '#f7fafc',
+    theme_color: '#0f766e',
     icons: [
       {
         src: '/favicon.png',
@@ -16,5 +16,5 @@ export default function manifest(): MetadataRoute.Manifest {
         type: 'image/png',
       },
     ],
-  }
+  };
 }

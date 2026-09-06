@@ -12,8 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabaseV2 as supabase } from "@/lib/supabase";
-import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
+import { getCachedSession } from "@/lib/authCache";
 
 export default function SelectionContent() {
   const [roleChecked, setRoleChecked] = useState(false);
@@ -21,58 +20,24 @@ export default function SelectionContent() {
 
   useEffect(() => {
     const handleRoute = async () => {
-     //1. Check Legacy Admin — no network call needed
-      if (isLegacyAdmin()) {
-         setRoleChecked(true);
-         return; 
-      }
-      
-     //Use cached session — avoids network call on every mount
       const session = await getCachedSession();
-      
-     //If no session, redirect to login
       if (!session) {
         router.push('/ruang-sosmed/login');
         return;
       }
-
-      const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session.user.id).single();
-      
-      if (profile) {
-        if (profile.role === 'admin') {
-         //User is admin, show the selection screen
-          setRoleChecked(true);
-        } else {
-         //User is student, find their membership and redirect them
-          const { data: membership } = await supabase.from('v2_memberships')
-            .select('workspace_id, v2_workspaces(type)')
-            .eq('profile_id', session.user.id)
-            .maybeSingle();
-
-          if (membership?.workspace_id) {
-            const type = (membership as any).v2_workspaces?.type;
-            if (type === 'agency') {
-              router.push(`/ruang-sosmed/agency/${membership.workspace_id}`);
-            } else {
-              router.push(`/ruang-sosmed/${membership.workspace_id}`);
-            }
-          } else {
-            router.push('/ruang-sosmed/login');
-          }
-        }
-      } else {
-       //No profile found? Likely not a V2 user.
-        router.push('/ruang-sosmed/login');
-      }
+      // The secured server route owns role resolution and workspace choice.
+      // This legacy client entry point must never inspect profile.role or
+      // expose a privileged route based on browser-visible data.
+      router.push('/ruang-sosmed');
     };
     handleRoute();
   }, [router]);
 
   const OPTIONS = [
     {
-      id: "school",
-      title: "School/Bootcamp Mode",
-      type: "SCHEME A",
+      id: "bootcamp",
+      title: "Bootcamp Workspace",
+      type: "WORKSPACE 01",
       description: "LMS for batch classes. Manage up to 50 students, assignments, attendance, and 12+ grading points.",
       icon: <img src="/logo_rs.png" className="w-24 h-24 object-contain" alt="School Logo"/>,
       color: "from-blue-600 to-indigo-700",
@@ -81,15 +46,15 @@ export default function SelectionContent() {
       link: "/ruang-sosmed/batch"
     },
     {
-      id: "agency",
-      title: "Agency/Team Mode",
-      type: "SCHEME B",
-      description: "Collaborative B2B Workspace. Shared roadmap, content plans, and tasks for teams up to 10 members.",
-      icon: <img src="/logo.png" className="w-24 h-24 object-contain" alt="Agency Logo"/>,
-      color: "from-emerald-600 to-teal-700",
-      accent: "bg-emerald-500",
-      features: ["10 Members Max", "Shared Dashboard", "Real-time Roadmap", "Cross-Team Content"],
-      link: "/ruang-sosmed/agency"
+      id: "webinar",
+      title: "Webinar LMS",
+      type: "WORKSPACE 02",
+      description: "Susun pembelajaran publik dengan section, lesson, video, resource, preview, dan link pendek yang stabil.",
+      icon: <img src="/logo.png" className="w-24 h-24 object-contain" alt="Webinar LMS"/>,
+      color: "from-violet-600 to-indigo-700",
+      accent: "bg-violet-500",
+      features: ["Draft & Publish", "Video Lessons", "Public Link", "Resource Library"],
+      link: "/admin/webinars"
     }
   ];
 
@@ -98,7 +63,7 @@ export default function SelectionContent() {
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center space-y-4">
         <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"/>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
-          Verifying Identity...
+          Membuka Ruang Campus...
         </p>
       </div>
     );
@@ -136,7 +101,7 @@ export default function SelectionContent() {
             Level up your <span className="text-blue-600 italic">mentoring</span> experience.
           </h1>
           <p className="mt-6 text-slate-500 font-medium text-base sm:text-lg leading-relaxed max-w-xl">
-            Pilih ekosistem yang sesuai dengan strategi bisnis Anda saat ini. Kami memisahkan arsitektur LMS Kelas dengan Kolaborasi Agensi.
+            Pilih ruang belajar yang sesuai. Bootcamp terhubung ke data batch lama, sementara Webinar LMS memiliki konten publik yang terpisah.
           </p>
         </div>
 
@@ -177,8 +142,8 @@ export default function SelectionContent() {
 
                   <div className="pt-4 sm:pt-6">
                     <div className="flex items-center gap-4 group-hover:gap-6 transition-all duration-300">
-                      <span className={`text-xs sm:text-sm font-black ${opt.id === 'school' ? 'text-blue-600' : 'text-emerald-600'}`}>Setup Workspace</span>
-                      <ArrowRight size={18} className={opt.id === 'school' ? 'text-blue-600' : 'text-emerald-600'}/>
+                      <span className={`text-xs sm:text-sm font-black ${opt.id === 'bootcamp' ? 'text-blue-600' : 'text-violet-600'}`}>Buka ruang</span>
+                      <ArrowRight size={18} className={opt.id === 'bootcamp' ? 'text-blue-600' : 'text-violet-600'}/>
                     </div>
                   </div>
                 </div>

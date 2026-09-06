@@ -11,8 +11,6 @@ const SelectionContent = dynamic(() => import("@/app/ruang-sosmed/_core/Selectio
 const LoginContent = dynamic(() => import("@/app/ruang-sosmed/_core/LoginContent"), { ssr: false });
 const BatchListContent = dynamic(() => import("@/app/ruang-sosmed/_core/BatchListContent"), { ssr: false });
 const BatchContent = dynamic(() => import("@/app/ruang-sosmed/_core/BatchContent"), { ssr: false });
-const AgencyListContent = dynamic(() => import("@/app/ruang-sosmed/_core/AgencyListContent"), { ssr: false });
-const AgencyContent = dynamic(() => import("@/app/ruang-sosmed/_core/AgencyContent"), { ssr: false });
 const PortalContent = dynamic(() => import("@/app/ruang-sosmed/_core/PortalContent"), { ssr: false });
 const NotFoundContent = dynamic(() => import("@/app/ruang-sosmed/_core/NotFoundContent"), { ssr: false });
 const QuizTemplatesContent = dynamic(() => import("@/app/ruang-sosmed/_core/QuizTemplatesContent"), { ssr: false });
@@ -27,11 +25,10 @@ export default function V2MasterRouterClient({ slug = [] }: { slug?: string[] })
       if (slug[1]) return <BatchContent id={slug[1]} />;
       return <BatchListContent />;
     }
-    
-    if (slug[0] === "agency") {
-      if (slug[1]) return <AgencyContent id={slug[1]} subTab={slug[2]} />;
-      return <AgencyListContent />;
-    }
+
+    // Kept only for staged-reference imports. The live server router presents
+    // the clearer retired-feature page; neither router may mount Agency UI.
+    if (slug[0] === "agency") return <NotFoundContent />;
 
     if (slug[0] === "admin") {
       if (slug[1] === "templates") return <QuizTemplatesContent />;

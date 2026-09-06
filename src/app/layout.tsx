@@ -1,63 +1,37 @@
-import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
-import { AppUpdateNotifier } from "@/components/layout/AppUpdateNotifier";
-import { AppGlobalConfig } from "@/components/layout/AppGlobalConfig";
-import { TabletZoomOptimizer } from "@/components/layout/TabletZoomOptimizer";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
-  subsets: ["latin"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-});
+import type { Metadata, Viewport } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Mentorhipers | Mentoring & Content Planning",
-  description: "Personal branding and social media mentoring platform.",
+  title: {
+    default: 'Ruang Campus — Platform Edukasi LMS Sosmed',
+    template: '%s | Ruang Campus',
+  },
+  description: 'Platform pembelajaran untuk Bootcamp dan Webinar LMS publik Ruang Campus.',
+  applicationName: 'Ruang Campus',
+  keywords: ['Ruang Campus', 'LMS', 'Bootcamp', 'Webinar', 'Edukasi'],
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Mentorhipers',
+    statusBarStyle: 'default',
+    title: 'Ruang Campus',
   },
   icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 };
 
 export const viewport: Viewport = {
-  width: "device-width",
+  width: 'device-width',
   initialScale: 1,
-  viewportFit: "cover",
+  viewportFit: 'cover',
+  themeColor: '#0f766e',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full antialiased font-sans`}
-      suppressHydrationWarning
-    >
-      <body className="min-h-full flex flex-col bg-[#FAFAFA] text-[#0F172A]" suppressHydrationWarning>
-        {children}
-        <AppGlobalConfig />
-        <AppUpdateNotifier />
-        <TabletZoomOptimizer />
-      </body>
+    <html lang="id">
+      <body>{children}</body>
     </html>
   );
 }

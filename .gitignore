@@ -32,6 +32,17 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# Live-data snapshots are local recovery artifacts, never source-controlled.
+.local-backups/
+/backups/
+/auth_dump.sql
+/public_dump.sql
+/full_backup.sql
+/dump.sql
+/auth_inserts_only.sql
+/public_inserts_only.sql
 
 # vercel
 .vercel

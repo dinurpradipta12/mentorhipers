@@ -1,0 +1,3 @@
+export default function PublicWebinarLoading() {
+  return <main className="min-h-dvh bg-slate-50 px-4 py-8 sm:px-6"><div className="mx-auto max-w-7xl animate-pulse space-y-7"><div className="h-16 rounded-2xl bg-white" /><div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_22rem]"><div className="space-y-4 py-7"><div className="h-4 w-24 rounded bg-teal-100" /><div className="h-11 max-w-xl rounded bg-slate-200" /><div className="h-20 max-w-3xl rounded bg-slate-200" /></div><div className="aspect-video rounded-2xl bg-slate-200" /></div><div className="grid gap-7 lg:grid-cols-[20rem_minmax(0,1fr)]"><div className="h-72 rounded-2xl bg-white" /><div className="aspect-video rounded-2xl bg-slate-200" /></div></div></main>;
+}

@@ -260,7 +260,7 @@ export default function DashboardMobileV1({
             {activeTab === 'settings' && <motion.div layoutId="m-nav-dot" className="absolute -bottom-2 w-5 h-1 bg-blue-600 rounded-full"/>}
          </button>
          <button 
-           onClick={() => { localStorage.removeItem("mh_session"); window.location.href = "/login"; }}
+           onClick={() => { window.location.href = "/ruang-sosmed/login"; }}
            className="relative flex flex-col items-center justify-center gap-1 text-rose-400 font-bold"
          >
             <LogOut size={20}/>
