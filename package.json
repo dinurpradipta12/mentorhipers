@@ -1,15 +1,10 @@
 {
-  "name": "ruang-campus",
+  "name": "mentorhipers",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build && node scripts/update-app-version.mjs",
-    "cloudflare:build": "next-on-pages",
-    "cloudflare:deploy": "next-on-pages",
-    "preview": "next-on-pages && wrangler pages dev .vercel/output/static",
-    "deploy": "next-on-pages",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "start": "next start",
     "lint": "eslint"
   },
@@ -21,27 +16,21 @@
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.577.0",
-    "next": "15.5.25",
+    "next": "16.2.0",
     "pg": "^8.20.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-is": "19.2.4",
     "recharts": "^3.8.0",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "3.3.5",
-    "@cloudflare/next-on-pages": "1.13.16",
-    "@cloudflare/workers-types": "4.20260702.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.25",
+    "eslint-config-next": "16.2.0",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "vercel": "47.0.4",
-    "wrangler": "3.114.17"
+    "typescript": "^5"
   }
 }

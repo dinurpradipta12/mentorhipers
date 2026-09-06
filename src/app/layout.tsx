@@ -4,7 +4,6 @@ import "./globals.css";
 import { AppUpdateNotifier } from "@/components/layout/AppUpdateNotifier";
 import { AppGlobalConfig } from "@/components/layout/AppGlobalConfig";
 import { TabletZoomOptimizer } from "@/components/layout/TabletZoomOptimizer";
-import { APP_DESCRIPTION, APP_FULL_NAME, APP_SHORT_NAME } from "@/lib/brand";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,18 +21,17 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: APP_FULL_NAME,
-  applicationName: APP_SHORT_NAME,
-  description: APP_DESCRIPTION,
+  title: "Mentorhipers | Mentoring & Content Planning",
+  description: "Personal branding and social media mentoring platform.",
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: APP_SHORT_NAME,
+    title: 'Mentorhipers',
   },
   icons: {
-    icon: "/favicon_ruang_campus.svg",
-    shortcut: "/favicon_ruang_campus.svg",
-    apple: "/favicon_ruang_campus.svg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 

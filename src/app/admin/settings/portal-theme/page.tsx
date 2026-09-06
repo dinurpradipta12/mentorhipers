@@ -8,7 +8,6 @@ import {
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { supabaseV2 as supabase } from "@/lib/supabase";
-import { APP_FULL_NAME, resolveAppName } from "@/lib/brand";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/layout/AdminHeader";
 import AdminSidebar from "@/components/layout/AdminSidebar";
@@ -38,7 +37,7 @@ export default function PortalThemeCMS() {
    const [isSaving, setIsSaving] = useState(false);
    const [editTheme, setEditTheme] = useState<PortalTheme | null>(null);
    const [appSettings, setAppSettings] = useState({
-      app_name: APP_FULL_NAME,
+      app_name: "Mentorhipers",
       app_logo: "",
       app_favicon: ""
    });
@@ -72,7 +71,7 @@ export default function PortalThemeCMS() {
            const { data: settingsData } = await (supabase as any).from('app_settings').select('*').eq('id', 1).single();
            if (settingsData) {
                setAppSettings({
-                   app_name: resolveAppName(settingsData.app_name),
+                   app_name: settingsData.app_name || "Mentorhipers",
                    app_logo: settingsData.app_logo || "",
                    app_favicon: settingsData.app_favicon || ""
                });

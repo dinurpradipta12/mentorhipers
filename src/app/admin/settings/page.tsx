@@ -8,7 +8,6 @@ import {
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { supabase } from "@/lib/supabase";
-import { APP_FULL_NAME, resolveAppName } from "@/lib/brand";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/layout/AdminHeader";
@@ -36,7 +35,7 @@ export default function AppSettingsCMS() {
 
    // Start with empty defaults — same on server AND client to avoid hydration mismatch
    const [settings, setSettings] = useState({
-      app_name: APP_FULL_NAME,
+      app_name: "Mentorhipers",
       app_logo: "",
       app_favicon: "",
       tablet_zoom: "0.8"
@@ -56,7 +55,7 @@ export default function AppSettingsCMS() {
          const { data } = await supabase.from('app_settings').select('*').eq('id', 1).single();
          if (data) {
             setSettings({
-               app_name: resolveAppName(data.app_name),
+               app_name: data.app_name || "Mentorhipers",
                app_logo: data.app_logo || "",
                app_favicon: data.app_favicon || "",
                tablet_zoom: localStorage.getItem('tablet_zoom_value') || "0.8",
@@ -88,14 +87,9 @@ export default function AppSettingsCMS() {
 
    const handleSave = async () => {
       setIsSaving(true);
-      const normalizedSettings = {
-         ...settings,
-         app_name: resolveAppName(settings.app_name),
-      };
-      setSettings(normalizedSettings);
       const { error } = await supabase
          .from('app_settings')
-         .update(normalizedSettings)
+         .update(settings)
          .eq('id', 1);
 
       setTimeout(() => {
@@ -141,7 +135,7 @@ export default function AppSettingsCMS() {
                          </div>
                          <div>
                             <h3 className="text-xl font-extrabold text-slate-800">Application Preferences</h3>
-                            <p className="text-[13px] font-bold text-slate-400 mt-2 leading-relaxed">Sesuaikan identitas utama sistem Ruang Campus.</p>
+                            <p className="text-[13px] font-bold text-slate-400 mt-2 leading-relaxed">Sesuaikan identitas utama sistem The Mentorhipers.</p>
                          </div>
                      </div>
                      <Button onClick={handleSave} disabled={isSaving} className="bg-[#4880FF] text-white px-8 h-[56px] rounded-2xl font-extrabold flex items-center gap-3 shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
@@ -158,7 +152,7 @@ export default function AppSettingsCMS() {
                            value={settings.app_name}
                            onChange={(e) => setSettings({ ...settings, app_name: e.target.value })}
                            className="w-full h-14 bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-2xl px-6 outline-none focus:ring-2 ring-accent/20 transition-all placeholder:text-slate-300"
-                           placeholder={APP_FULL_NAME}
+                           placeholder="Misal: Mentorhipers Academy"
                         />
                         <p className="text-[10px] font-bold text-slate-400 ml-1">Ini akan mengubah otomatis tag judul (Tab Browser) Mentee dan default avatar Sidebar Admin.</p>
                      </div>

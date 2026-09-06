@@ -1,9 +1,19 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import BatchContentDesktop from "./BatchContentDesktop";
-import BatchContentMobile from "./BatchContentMobile";
+
+//Dynamic imports to ensure we only load what's needed for the device
+const BatchContentDesktop = dynamic(() => import("./BatchContentDesktop"), { 
+  loading: () => <div className="min-h-screen flex items-center justify-center font-black text-slate-400">Loading Desktop View...</div>,
+  ssr: false 
+});
+
+const BatchContentMobile = dynamic(() => import("./BatchContentMobile"), { 
+  loading: () => <div className="min-h-screen flex items-center justify-center font-black text-slate-400">Loading Mobile Experience...</div>,
+  ssr: false 
+});
 
 export default function BatchContent({ id }: { id: string }) {
   const isMobile = useIsMobile();

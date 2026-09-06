@@ -56,8 +56,14 @@ import { getCachedSession, invalidateSessionCache } from "@/lib/authCache";
 import { useRouter } from "next/navigation";
 import { getYouTubeEmbedUrl } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import AvatarCreator from "./AvatarCreator";
-import IdCardContent from "./IdCardContent";
+import dynamic from "next/dynamic";
+
+//Dynamic Import for IdCard
+const AvatarCreator = dynamic(() => import("./AvatarCreator"), { ssr: false });
+const IdCardContent = dynamic(() => import("./IdCardContent"), {
+   loading: () => <div className="h-64 flex items-center justify-center text-white/20">Loading Identity...</div>,
+   ssr: false
+});
 
 export default function PortalContentMobile({ id }: { id: string }) {
    const router = useRouter();

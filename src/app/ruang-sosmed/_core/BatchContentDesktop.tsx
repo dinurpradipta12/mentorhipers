@@ -61,7 +61,12 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { getYouTubeEmbedUrl, compressImage } from "@/lib/utils";
 //Server Actions replaced with fetch calls to Edge-compatible API routes
-import IdCardContent from "./IdCardContent";
+
+import dynamic from "next/dynamic";
+const IdCardContent = dynamic(() => import("./IdCardContent"), {
+  loading: () => <div className="h-64 flex items-center justify-center text-slate-200">Loading Student Identity...</div>,
+  ssr: false
+});
 
  function Countdown({ targetDate }: { targetDate: string }) {
    const [timeLeft, setTimeLeft] = useState<{ d: number, h: number, m: number, s: number } | null>(null);

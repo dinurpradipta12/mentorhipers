@@ -23,7 +23,6 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import NotificationCenterAdmin from "@/components/layout/NotificationCenterAdmin";
 import { supabase } from "@/lib/supabase";
-import { APP_FULL_NAME, resolveAppName } from "@/lib/brand";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AdminHeader from "@/components/layout/AdminHeader";
@@ -86,7 +85,7 @@ export default function AdminCalendarPage() {
   const [clients, setClients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [appSettings, setAppSettings] = useState({
-    app_name: APP_FULL_NAME,
+    app_name: "Mentorhipers",
     app_logo: "",
     app_favicon: ""
   });
@@ -138,7 +137,7 @@ export default function AdminCalendarPage() {
 
     if (cachedName || cachedLogo || cachedFavicon) { // Updated condition
       setAppSettings({
-        app_name: resolveAppName(cachedName),
+        app_name: cachedName || "Mentorhipers",
         app_logo: cachedLogo || "",
         app_favicon: cachedFavicon || "" // Added favicon to state
       });
@@ -156,11 +155,11 @@ export default function AdminCalendarPage() {
       const { data: settingsData } = await supabase.from('app_settings').select('*').eq('id', 1).single();
       if (settingsData) {
         setAppSettings({
-          app_name: resolveAppName(settingsData.app_name),
+          app_name: settingsData.app_name || "Mentorhipers",
           app_logo: settingsData.app_logo || "",
           app_favicon: settingsData.app_favicon || "", // Added favicon to state
         });
-        localStorage.setItem('app_name', resolveAppName(settingsData.app_name));
+        localStorage.setItem('app_name', settingsData.app_name || "");
         localStorage.setItem('app_logo', settingsData.app_logo || "");
         localStorage.setItem('app_favicon', settingsData.app_favicon || ""); // Cache favicon
       }

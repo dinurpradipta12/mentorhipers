@@ -119,9 +119,9 @@ export default function RuangSosmedLayoutContent({
         <nav className="fixed top-0 left-0 right-0 h-24 bg-white border-b border-slate-100 z-50 flex items-center justify-between px-10 shadow-sm transition-all duration-300">
           <Link href="/ruang-sosmed" className="flex items-center group">
             <img
-              src={pathname.startsWith('/ruang-sosmed/batch') ? '/logo_rs.png' : '/logo_ruang_campus.svg'}
+              src={pathname.startsWith('/ruang-sosmed/batch') ? '/logo_rs.png' : '/logo.png'}
               className="h-14 w-auto object-contain transition-all group-hover:scale-105"
-              alt="Ruang Campus Logo"
+              alt="Workspace Logo"
             />
           </Link>
 

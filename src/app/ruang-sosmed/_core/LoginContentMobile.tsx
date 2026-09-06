@@ -57,7 +57,7 @@ export default function LoginContentMobile() {
             password
          });
 
-         // FALLBACK CHAIN: Try the current and legacy local email domains.
+         // FALLBACK CHAIN: Try @ruangsosmed.local then @mentorhipers.local
          if (authError && email && !email.includes('@')) {
             const domains = ['@ruangsosmed.local', '@mentorhipers.local'];
             for (const domain of domains) {
@@ -134,7 +134,7 @@ export default function LoginContentMobile() {
          {/* Top Branding Section */}
          <div className="pt-12 pb-16 space-y-8 animate-in fade-in slide-in-from-top-4 duration-1000">
             <div className="flex items-center gap-4">
-               <img src="/logo_ruang_campus.svg" className="h-10 w-auto" alt="Ruang Campus Logo"/>
+               <img src="/logo.png" className="h-10 w-auto brightness-0 invert" alt="Logo"/>
                <div className="h-4 w-[1px] bg-white/20"/>
                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500">Student Portal</p>
             </div>

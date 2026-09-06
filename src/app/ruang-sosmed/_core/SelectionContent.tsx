@@ -85,7 +85,7 @@ export default function SelectionContent() {
       title: "Agency/Team Mode",
       type: "SCHEME B",
       description: "Collaborative B2B Workspace. Shared roadmap, content plans, and tasks for teams up to 10 members.",
-      icon: <img src="/logo_ruang_campus.svg" className="w-24 h-24 object-contain" alt="Ruang Campus Logo"/>,
+      icon: <img src="/logo.png" className="w-24 h-24 object-contain" alt="Agency Logo"/>,
       color: "from-emerald-600 to-teal-700",
       accent: "bg-emerald-500",
       features: ["10 Members Max", "Shared Dashboard", "Real-time Roadmap", "Cross-Team Content"],

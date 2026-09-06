@@ -65,7 +65,7 @@ export default function LoginContentDesktop() {
             password
          });
 
-         // FALLBACK CHAIN: Try the current and legacy local email domains.
+         // FALLBACK CHAIN: Try @ruangsosmed.local then @mentorhipers.local
          if (authError && email && !email.includes('@')) {
             const domains = ['@ruangsosmed.local', '@mentorhipers.local'];
             for (const domain of domains) {
@@ -165,9 +165,9 @@ export default function LoginContentDesktop() {
             >
                <div className="flex items-center gap-5">
                   <img
-                     src="/logo_ruang_campus.svg"
-                     className="h-20 w-auto object-contain transition-all hover:scale-105"
-                     alt="Ruang Campus Logo"
+                     src="/logo.png"
+                     className="h-20 w-auto object-contain transition-all hover:scale-105 brightness-0 invert"
+                     alt="Ruang Sosmed Logo"
                  />
                </div>
 

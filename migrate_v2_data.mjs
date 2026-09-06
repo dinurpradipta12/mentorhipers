@@ -123,7 +123,7 @@ async function checkV1Connection() {
 
 async function main() {
   console.log('='.repeat(60));
-  console.log('  RUANG CAMPUS V2 DATA MIGRATION');
+  console.log('  MENTORHIPERS V2 DATA MIGRATION');
   console.log(`  V1: ${V1_URL}`);
   console.log(`  V2: ${V2_URL}`);
   console.log('='.repeat(60));
