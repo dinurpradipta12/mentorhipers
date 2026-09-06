@@ -35,10 +35,10 @@ characters, unique, and protected by a database trigger against later changes.
 ## RLS status and migration boundary
 
 The live Bootcamp schema had incomplete RLS at audit time: RLS is enabled only
-on a subset of `v2_*` tables and several old policies are overly broad. This
-rebuild does **not** blindly enable or replace those policies during the Webinar
-migration because doing so could block existing students or alter production
-behavior.
+on a subset of `v2_*` tables and several old policies are overly broad. The
+staged `20260906121500_bootcamp_rls_hardening.sql` replaces those policies only
+after a backup, dry run, and explicit approval. It changes authorization
+behavior but does not modify historical rows.
 
 Before a Bootcamp RLS-hardening migration is approved, it must be tested using
 three real contexts:
@@ -49,14 +49,16 @@ three real contexts:
 | Student | Can read only own profile/membership and permitted batch content; cannot read peers' grades or write grades. |
 | Admin | Can manage only after a database role assignment; no browser-only bypass works. |
 
-The new Webinar migration uses no `USING (true)` policy for internal tables.
-It uses a `SECURITY DEFINER` helper only for role checks and pins its
+The new Webinar and Bootcamp hardening migrations use no `USING (true)` policy
+for internal tables. They use `SECURITY DEFINER` helpers only for role and
+membership checks and pin their
 `search_path` to `pg_catalog, public, auth`.
 
 Explicit Bootcamp grading is also gated by a server-validated admin/mentor
 role. Its separate migration locks the target submission, writes a before/after
-audit row, and updates the grade in one database transaction. The application
-does not fall back to an unaudited direct update if that migration is missing.
+audit row, and updates the grade in one database transaction. Quiz scores use a
+server-side auto-grading RPC and one-attempt unique index. The application does
+not fall back to an unaudited direct update if those migrations are missing.
 
 ## Storage and content safety
 

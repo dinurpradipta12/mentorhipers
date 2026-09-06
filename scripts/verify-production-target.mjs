@@ -77,6 +77,16 @@ async function main() {
         'webinar_lessons', to_regclass('public.webinar_lessons') is not null,
         'webinar_resources', to_regclass('public.webinar_resources') is not null,
         'webinar_audit_logs', to_regclass('public.webinar_audit_logs') is not null,
+        'bootcamp_rls_hardening_helper', exists (
+          select 1 from pg_proc
+          where pronamespace = 'public'::regnamespace
+            and proname = 'has_bootcamp_staff_role'
+        ),
+        'quiz_rpc', exists (
+          select 1 from pg_proc
+          where pronamespace = 'public'::regnamespace
+            and proname = 'submit_bootcamp_quiz_result'
+        ),
         'grade_rpc', exists (
           select 1 from pg_proc
           where pronamespace = 'public'::regnamespace

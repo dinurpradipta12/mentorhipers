@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { BootcampInputError, parseSubmissionGradeUpdate } from './grade-input';
 
 export { BootcampInputError, isBootcampUuid, parseSubmissionGradeUpdate } from './grade-input';
@@ -205,6 +206,82 @@ export class BootcampGradeAuditUnavailableError extends Error {
     super('BOOTCAMP_GRADE_AUDIT_UNAVAILABLE');
     this.name = 'BootcampGradeAuditUnavailableError';
   }
+}
+
+export class BootcampQuizWorkflowUnavailableError extends Error {
+  constructor() {
+    super('BOOTCAMP_QUIZ_WORKFLOW_UNAVAILABLE');
+    this.name = 'BootcampQuizWorkflowUnavailableError';
+  }
+}
+
+function isMissingQuizWorkflow(error: { code?: string; message?: string } | null): boolean {
+  return error?.code === 'PGRST202' || error?.code === 'PGRST205' || error?.code === '42P01' || error?.code === '42883' || /submit_bootcamp_quiz_result|relation .*v2_quiz_results.*does not exist/i.test(error?.message ?? '');
+}
+
+type QuizSubmission = {
+  workspaceId: string;
+  curriculumId: string;
+  answers: Record<string, string | number | boolean | null>;
+};
+
+function parseQuizAnswers(value: unknown): Record<string, string | number | boolean | null> {
+  const answers = record(value);
+  const entries = Object.entries(answers);
+  if (entries.length > 200) throw new BootcampInputError('Jawaban quiz terlalu banyak.');
+
+  const normalized: Record<string, string | number | boolean | null> = {};
+  for (const [key, answer] of entries) {
+    if (!/^\d{1,3}$/.test(key)) throw new BootcampInputError('Format jawaban quiz tidak valid.');
+    if (answer === null || typeof answer === 'boolean') {
+      normalized[key] = answer;
+      continue;
+    }
+    if (typeof answer === 'number') {
+      if (!Number.isInteger(answer) || !Number.isSafeInteger(answer)) throw new BootcampInputError('Nilai jawaban quiz tidak valid.');
+      normalized[key] = answer;
+      continue;
+    }
+    if (typeof answer !== 'string' || answer.length > 10_000) throw new BootcampInputError('Jawaban quiz terlalu panjang.');
+    normalized[key] = answer;
+  }
+  return normalized;
+}
+
+function parseQuizSubmission(value: unknown): QuizSubmission {
+  const input = record(value);
+  return {
+    workspaceId: uuid(input.workspaceId, 'Batch'),
+    curriculumId: uuid(input.curriculumId, 'Quiz'),
+    answers: parseQuizAnswers(input.answers),
+  };
+}
+
+/**
+ * Submit a quiz through the authenticated Supabase SSR client. The database
+ * function owns the answer key, one-attempt rule, score calculation, and
+ * post-test grading-matrix sync; the browser can never provide a score.
+ */
+export async function submitBootcampQuizResult(value: unknown): Promise<{ resultId: string; score: number }> {
+  const parsed = parseQuizSubmission(value);
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase.rpc('submit_bootcamp_quiz_result', {
+    p_workspace_id: parsed.workspaceId,
+    p_curriculum_id: parsed.curriculumId,
+    p_answers: parsed.answers,
+  });
+  if (error) {
+    if (isMissingQuizWorkflow(error)) throw new BootcampQuizWorkflowUnavailableError();
+    if (/already been submitted|already submitted/i.test(error.message)) throw new BootcampInputError('Quiz ini sudah pernah dikumpulkan.');
+    if (/membership|published quiz|Authenticated student/i.test(error.message)) throw new BootcampInputError('Quiz tidak tersedia untuk akun atau batch ini.');
+    throw new Error('Unable to submit Bootcamp quiz.');
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row || typeof row !== 'object') throw new Error('Unable to read Bootcamp quiz result.');
+  const resultId = (row as Record<string, unknown>).result_id;
+  const score = (row as Record<string, unknown>).score;
+  if (typeof resultId !== 'string' || typeof score !== 'number') throw new Error('Unable to read Bootcamp quiz result.');
+  return { resultId, score };
 }
 
 function isMissingGradeAudit(error: { code?: string; message?: string } | null): boolean {

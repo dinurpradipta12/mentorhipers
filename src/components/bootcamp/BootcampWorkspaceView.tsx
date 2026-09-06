@@ -3,6 +3,7 @@ import { Award, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, ClipboardL
 import { EmptyState } from '@/components/app/EmptyState';
 import { PageHeader } from '@/components/app/PageHeader';
 import { StatusBadge } from '@/components/app/StatusBadge';
+import { QuizAttemptForm } from '@/components/bootcamp/QuizAttemptForm';
 import { SubmissionGradeEditor } from '@/components/bootcamp/SubmissionGradeEditor';
 import type { Viewer } from '@/lib/auth/context';
 import { normalizeSchedules, type BootcampBatch, type BootcampMembership } from '@/lib/bootcamp/queries';
@@ -133,6 +134,14 @@ export function BootcampWorkspaceView({ viewer, data }: { viewer: Viewer; data: 
             </section>
           </div>
         </section>
+      )}
+
+      {!viewer.isAdmin && (
+        <QuizAttemptForm
+          workspaceId={data.batch.id}
+          curriculum={data.curriculum}
+          completedCurriculumIds={data.quizResults.map((result) => String(result.curriculum_id))}
+        />
       )}
 
 

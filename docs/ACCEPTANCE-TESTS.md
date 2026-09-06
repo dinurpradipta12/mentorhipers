@@ -8,7 +8,8 @@ passed by local build success.
 ## Preconditions
 
 - Full backup and score/attendance snapshots are complete.
-- Platform role, Bootcamp grade audit, and Webinar migrations are applied.
+- Platform role, Bootcamp grade audit, Webinar, and rehearsed Bootcamp RLS
+  hardening migrations are applied.
 - One real Auth user has an explicit admin role assignment.
 - One pre-existing student Auth user is available; do not create a duplicate.
 - One Webinar exists in draft state, and one published Webinar has at least one

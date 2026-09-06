@@ -69,8 +69,7 @@ anonymous REST status without returning row contents.
 6. Identify one existing Supabase Auth account, by its confirmed UUID, to be
    the first administrator. No role is granted automatically by any staged
    migration.
-7. Obtain explicit approval to apply the three staged additive migrations, in
-   order.
+7. Obtain explicit approval to apply the four staged migrations, in order.
 
 The Supabase CLI's Docker workflow is not available on this host, but the
 PostgreSQL client fallback produced the verified local dump above. The
@@ -101,10 +100,17 @@ After the preflight and approval:
    audited submission grading only; it does not change a historical row during
    migration.
 6. Apply `20260906121000_webinar_lms.sql`.
-7. Run the access and data-integrity checks below before publishing any Webinar
+7. Rehearse and apply `20260906121500_bootcamp_rls_hardening.sql` only after
+   the policy dry run has passed for anon, student, and the explicitly assigned
+   admin/mentor. It enables RLS on every preserved Bootcamp table, removes
+   ineffective legacy policies, adds write-guard triggers, and never
+   recalculates historic grades or attendance.
+8. Run the access and data-integrity checks below before publishing any Webinar
    or changing a submission grade.
 
-All three staged migrations are additive. They do not alter historical Bootcamp grades,
+The first three migrations add isolated role/audit/Webinar objects. The fourth
+changes only policy/trigger behavior on existing Bootcamp tables; none of the
+migrations renames, truncates, copies, or deletes historical Bootcamp grades,
 attendance, memberships, submissions, quiz results, or Agency archive rows.
 
 ## Integrity verification

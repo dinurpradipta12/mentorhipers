@@ -27,13 +27,15 @@ operator decides how to retain them.
 4. Preserve logs and snapshots for investigation, without exporting student
    data into source control.
 
-## If the Webinar migration needs to be disabled
+## If the Webinar or RLS migration needs to be disabled
 
 The Webinar and Bootcamp grade-audit migrations have no destructive rollback
 SQL by design. Dropping Webinar tables could delete newly created Webinar
 content, resources, and audit logs; dropping the grade-audit table would erase
 the before/after history needed to investigate an approved grading change.
-Instead:
+The RLS hardening migration also has no automatic policy rollback: restoring
+the old broad policies would recreate the data exposure it is intended to
+remove. Instead:
 
 1. Roll back the application deployment so routes no longer write to the new
    tables.
@@ -42,6 +44,12 @@ Instead:
 3. Set affected Webinar records to `archived` through an authenticated admin
    operation if public access must stop.
 4. Export and review Webinar data before any future approved table removal.
+
+If the RLS hardening blocks an approved workflow, keep the database backup and
+the hardened policy definitions, pause the affected write path, and prepare a
+separately reviewed corrective policy/RPC migration. Do not re-enable
+`USING (true)` policies or disable RLS as an emergency workaround. Any policy
+change must be rehearsed with anon, student, and admin/mentor contexts first.
 
 Only after written approval confirms that the new Webinar records can be
 discarded may an operator prepare a separately reviewed destructive migration.

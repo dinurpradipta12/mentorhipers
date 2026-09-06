@@ -164,5 +164,9 @@ private `webinar-media` Storage, and RLS. It will not use `v2_workspaces`,
 `20260906120000_platform_roles.sql` adds a separate database-backed role
 assignment table. The staged `20260906120500_bootcamp_grade_audit.sql` adds
 `bootcamp_grade_audit_logs` and an audited grading RPC; it does not modify any
-existing grade until an authorized mentor/admin explicitly uses it. None of
-these migrations has been applied to the live project.
+existing grade until an authorized mentor/admin explicitly uses it. The staged
+`20260906121500_bootcamp_rls_hardening.sql` replaces the ineffective legacy
+Bootcamp policies, enables RLS on every preserved Bootcamp table, adds safe
+membership helpers and write guards, and provides a one-attempt server-side
+quiz submission RPC. It does not recalculate existing values. None of these
+migrations has been applied to the live project.

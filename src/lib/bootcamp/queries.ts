@@ -2,6 +2,7 @@ import 'server-only';
 
 import type { Viewer } from '@/lib/auth/context';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
+import { sanitizeQuizDataForStudent } from './quiz';
 
 export type BootcampBatch = {
   id: string;
@@ -176,7 +177,8 @@ export async function getBootcampWorkspace(viewer: Viewer, workspaceId: string) 
   throwIfError(quizResult.error, 'Loading quiz results');
 
   const curriculum = ((curriculumResult.data ?? []) as Array<Record<string, unknown>>)
-    .filter((item) => viewer.isAdmin || isPublished(item.is_published));
+    .filter((item) => viewer.isAdmin || isPublished(item.is_published))
+    .map((item) => viewer.isAdmin ? item : { ...item, quiz_data: sanitizeQuizDataForStudent(item.quiz_data) });
 
   let students: Array<Record<string, unknown>> = [];
   if (viewer.isAdmin) {

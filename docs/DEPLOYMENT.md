@@ -83,8 +83,9 @@ Choose an approved hosting/runtime plan with the project owner.
 Production release requires all of the following:
 
 - Full backup and restoration plan verified.
-- Correct Supabase project confirmed and the three staged additive migrations
-  applied in order: platform roles, Bootcamp grade audit, then Webinar LMS.
+- Correct Supabase project confirmed and the four staged migrations applied in
+  order: platform roles, Bootcamp grade audit, Webinar LMS, then the rehearsed
+  Bootcamp RLS hardening.
 - Explicit first admin assignment linked to an existing Auth/profile UUID.
 - Anonymous, student, and admin RLS tests passed against the target.
 - `npm run lint`, `npm test`, `npx tsc --noEmit`, and `npm run build` passed.
