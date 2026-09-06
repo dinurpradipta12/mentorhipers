@@ -34,3 +34,25 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Deploy to Cloudflare Workers
+
+This is a full-stack Next.js app with server-rendered routes and API routes, so deploy it as a Cloudflare Worker rather than a static Cloudflare Pages site.
+
+The repository uses OpenNext and Wrangler. For a Git-connected Cloudflare Workers build, use:
+
+```bash
+npm run deploy
+```
+
+Wrangler reads `wrangler.jsonc`; no separate build output directory is needed. For local Workers-runtime verification, use:
+
+```bash
+npm run preview
+```
+
+Configure these variables in the Cloudflare Workers build settings/secrets:
+
+- `NEXT_PUBLIC_SUPABASE_V2_URL`
+- `NEXT_PUBLIC_SUPABASE_V2_ANON_KEY`
+- `SUPABASE_V2_SERVICE_ROLE_KEY` for the protected V2 API routes
