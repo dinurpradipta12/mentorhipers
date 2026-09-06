@@ -12,6 +12,7 @@ npm test
 npx tsc --noEmit
 npm run build
 npm run start -- --port 3001
+node scripts/verify-production-target.mjs
 ~~~
 
 Copy [`.env.example`](.env.example) to `.env.local` and fill it with values

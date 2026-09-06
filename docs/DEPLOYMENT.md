@@ -2,9 +2,10 @@
 
 ## Current deployment status
 
-The local production build succeeds, but this application is **not yet marked
-production-ready**. No live migration, Cloudflare Pages deployment preview, or
-target-project RLS/Auth acceptance test has been performed.
+The local production build and a full logical backup checkpoint succeed, but
+this application is **not yet marked production-ready**. No live migration,
+Cloudflare Pages deployment preview, or target-project RLS/Auth acceptance test
+has been performed.
 
 No Cloudflare Pages configuration, Wrangler file, or existing Pages project
 identifier is present in this checkout. Do not create a new project or Worker.
@@ -37,6 +38,7 @@ npm test
 npx tsc --noEmit
 npm run build
 npm run start -- --port 3001
+node scripts/verify-production-target.mjs
 ~~~
 
 Before deployment, verify from a fresh browser session:

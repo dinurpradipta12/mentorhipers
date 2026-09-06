@@ -25,6 +25,22 @@ The local read-only audit recorded the following baseline counts on 2026-09-06:
 These are verification baselines, not a reason to rewrite data. The detailed
 schema contract is in [SUPABASE-SCHEMA.md](SUPABASE-SCHEMA.md).
 
+## Backup checkpoint
+
+A full logical custom-format dump was completed locally on 2026-09-07 before
+any live DDL. The ignored artifact is
+`.local-backups/20260907-production-preflight/ruang-campus-target.dump`;
+`pg_restore --list` reports 589 manifest entries (including Auth and
+`v2_profiles`). Its SHA-256 is
+`e7d0391737f1b778b22c46561fbe9787f7d125523114eb00b289750295676142`.
+The dump has not yet been restored to a separate environment, so a tested
+restore and provider-managed backup/PITR reference remain release gates.
+
+The repeatable read-only target audit is `node
+scripts/verify-production-target.mjs`. It reports aggregate counts, Auth/profile
+parity, staged-object presence, RLS flags, Storage bucket visibility, and
+anonymous REST status without returning row contents.
+
 ## Data boundaries
 
 | Area | Source of truth | Rebuild action |
@@ -56,9 +72,9 @@ schema contract is in [SUPABASE-SCHEMA.md](SUPABASE-SCHEMA.md).
 7. Obtain explicit approval to apply the three staged additive migrations, in
    order.
 
-The Supabase CLI requires Docker for the local dump workflow used during the
-audit. Docker Desktop was not running when the full dump was attempted, so a
-verifiable full dump is still a release blocker.
+The Supabase CLI's Docker workflow is not available on this host, but the
+PostgreSQL client fallback produced the verified local dump above. The
+restoration test and an external copy of that artifact are still required.
 
 ## Apply sequence
 
