@@ -92,8 +92,9 @@ blockers: a tested full backup, a confirmed initial admin Auth UUID, real RLS
 tests for anonymous/student/admin, a migration dry run on a safe environment,
 and a Cloudflare preview browser test.
 
-The latest dependency install also reported 10 npm audit findings (including
-high-severity findings). No automatic `npm audit fix` was run, because an
-unreviewed dependency upgrade could change the production runtime. Review and
-remediate the findings in a separately tested dependency-update change before
-release.
+Next.js and `eslint-config-next` are pinned to the patched `16.3.4` release.
+`npm audit --omit=dev --audit-level=high` currently reports zero production
+dependency vulnerabilities. A full audit still reports six development-only
+transitive findings (one low, one moderate, and four high); review those in a
+separately tested tooling update before treating the repository-wide audit as
+clean. No broad automatic `npm audit fix` was run.

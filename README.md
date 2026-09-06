@@ -13,6 +13,7 @@ npx tsc --noEmit
 npm run build
 npm run start -- --port 3001
 node scripts/verify-production-target.mjs
+npm audit --omit=dev --audit-level=high
 ~~~
 
 Copy [`.env.example`](.env.example) to `.env.local` and fill it with values

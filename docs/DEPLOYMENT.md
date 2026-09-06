@@ -39,6 +39,7 @@ npx tsc --noEmit
 npm run build
 npm run start -- --port 3001
 node scripts/verify-production-target.mjs
+npm audit --omit=dev --audit-level=high
 ~~~
 
 Before deployment, verify from a fresh browser session:
@@ -87,6 +88,8 @@ Production release requires all of the following:
 - Explicit first admin assignment linked to an existing Auth/profile UUID.
 - Anonymous, student, and admin RLS tests passed against the target.
 - `npm run lint`, `npm test`, `npx tsc --noEmit`, and `npm run build` passed.
+- `npm audit --omit=dev --audit-level=high` reports zero production dependency
+  vulnerabilities after the targeted Next.js security update.
 - Cloudflare preview build/browser checks passed, including direct refresh of
   `/w/[publicCode]`.
 - Service-role/database credentials rotated if previously exposed and secrets
