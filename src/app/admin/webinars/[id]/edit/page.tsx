@@ -23,8 +23,9 @@ async function loadEditor(id: string): Promise<EditorLoadResult> {
 
 export default async function EditWebinarPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [viewer, result] = await Promise.all([getCurrentViewer(), loadEditor(id)]);
-  if (!viewer) return null;
+  const viewer = await getCurrentViewer();
+  if (!viewer?.isAdmin) return null;
+  const result = await loadEditor(id);
   if (result.kind === 'not-found') notFound();
   if (result.kind === 'schema-unavailable') {
     return <AppShell viewer={viewer} active="webinars"><section className="rc-card p-7"><p className="rc-eyebrow">Migrasi diperlukan</p><h1 className="mt-2 text-2xl font-extrabold text-slate-950">Webinar LMS belum tersedia di database</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Schema Webinar LMS belum diterapkan pada project Supabase target. Terapkan migrasi setelah backup database penuh diverifikasi; jangan membuat project Supabase baru.</p></section></AppShell>;

@@ -88,12 +88,19 @@ export async function getBootcampOverview(viewer: Viewer) {
   throwIfError(membershipError, 'Loading Bootcamp memberships');
 
   const memberships = (membershipRows ?? []) as BootcampMembership[];
+  // A student must never receive the names, schedule metadata, or status of
+  // batches they do not belong to. The service-role repository performs the
+  // membership check server-side, and this filter keeps the serialized
+  // Server Component props equally narrow.
+  const visibleBatches = viewer.isAdmin
+    ? batches
+    : batches.filter((batch) => memberships.some((membership) => membership.workspace_id === batch.id));
   const studentCounts = new Map<string, number>();
   for (const membership of memberships) {
     studentCounts.set(membership.workspace_id, (studentCounts.get(membership.workspace_id) ?? 0) + 1);
   }
 
-  return { batches, memberships, studentCounts };
+  return { batches: visibleBatches, memberships, studentCounts };
 }
 
 export async function getBootcampWorkspace(viewer: Viewer, workspaceId: string) {

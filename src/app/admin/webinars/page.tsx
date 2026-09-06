@@ -6,7 +6,8 @@ import { getCurrentViewer } from '@/lib/auth/context';
 import { listAdminWebinars } from '@/lib/webinars/repository';
 
 export default async function WebinarsPage() {
-  const [viewer, webinars] = await Promise.all([getCurrentViewer(), listAdminWebinars()]);
-  if (!viewer) return null;
+  const viewer = await getCurrentViewer();
+  if (!viewer?.isAdmin) return null;
+  const webinars = await listAdminWebinars();
   return <AppShell viewer={viewer} active="webinars"><WebinarAdminList webinars={webinars} /></AppShell>;
 }
