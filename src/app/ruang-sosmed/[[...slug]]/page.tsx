@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 import React from "react";
 import V2MasterRouterClient from "@/app/ruang-sosmed/[[...slug]]/V2MasterRouterClient";

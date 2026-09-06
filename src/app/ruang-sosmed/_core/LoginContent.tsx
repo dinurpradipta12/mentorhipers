@@ -1,18 +1,9 @@
 "use client";
 
 import React from "react";
-import dynamic from "next/dynamic";
 import { useIsMobile } from "@/hooks/useIsMobile";
-
-const LoginContentDesktop = dynamic(() => import("./LoginContentDesktop"), { 
-  loading: () => <div className="min-h-screen flex items-center justify-center font-black text-slate-700 uppercase tracking-widest text-[10px]">Portal Desktop Loading...</div>,
-  ssr: false 
-});
-
-const LoginContentMobile = dynamic(() => import("./LoginContentMobile"), { 
-  loading: () => <div className="min-h-screen flex items-center justify-center font-black text-slate-700 uppercase tracking-widest text-[10px]">Portal Mobile Loading...</div>,
-  ssr: false 
-});
+import LoginContentDesktop from "./LoginContentDesktop";
+import LoginContentMobile from "./LoginContentMobile";
 
 export default function LoginContent() {
   const isMobile = useIsMobile();

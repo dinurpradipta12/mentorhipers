@@ -1,22 +1,20 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import React from "react";
+import SelectionContent from "@/app/ruang-sosmed/_core/SelectionContent";
+import LoginContent from "@/app/ruang-sosmed/_core/LoginContent";
+import BatchListContent from "@/app/ruang-sosmed/_core/BatchListContent";
+import BatchContent from "@/app/ruang-sosmed/_core/BatchContent";
+import AgencyListContent from "@/app/ruang-sosmed/_core/AgencyListContent";
+import AgencyContent from "@/app/ruang-sosmed/_core/AgencyContent";
+import PortalContent from "@/app/ruang-sosmed/_core/PortalContent";
+import NotFoundContent from "@/app/ruang-sosmed/_core/NotFoundContent";
+import QuizTemplatesContent from "@/app/ruang-sosmed/_core/QuizTemplatesContent";
+import ArticleContent from "@/app/ruang-sosmed/_core/ArticleContent";
 
 //THIS IS THE UNIVERSAL V2 CATCH-ALL ROUTER (Client-side version)
-//Moved to 'use client' to allow 'ssr: false' on dynamic imports, which is required
-//for stabilizing the Edge bundle size while avoiding Server Component restrictions.
-
-const SelectionContent = dynamic(() => import("@/app/ruang-sosmed/_core/SelectionContent"), { ssr: false });
-const LoginContent = dynamic(() => import("@/app/ruang-sosmed/_core/LoginContent"), { ssr: false });
-const BatchListContent = dynamic(() => import("@/app/ruang-sosmed/_core/BatchListContent"), { ssr: false });
-const BatchContent = dynamic(() => import("@/app/ruang-sosmed/_core/BatchContent"), { ssr: false });
-const AgencyListContent = dynamic(() => import("@/app/ruang-sosmed/_core/AgencyListContent"), { ssr: false });
-const AgencyContent = dynamic(() => import("@/app/ruang-sosmed/_core/AgencyContent"), { ssr: false });
-const PortalContent = dynamic(() => import("@/app/ruang-sosmed/_core/PortalContent"), { ssr: false });
-const NotFoundContent = dynamic(() => import("@/app/ruang-sosmed/_core/NotFoundContent"), { ssr: false });
-const QuizTemplatesContent = dynamic(() => import("@/app/ruang-sosmed/_core/QuizTemplatesContent"), { ssr: false });
-const ArticleContent = dynamic(() => import("@/app/ruang-sosmed/_core/ArticleContent"), { ssr: false });
+//Keep the route components as static client imports so the Pages Edge bundle
+//does not reference async chunks that are unavailable at runtime.
 
 export default function V2MasterRouterClient({ slug = [] }: { slug?: string[] }) {
   const renderContent = () => {

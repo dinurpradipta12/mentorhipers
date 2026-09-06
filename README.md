@@ -35,27 +35,30 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-## Deploy to Cloudflare Workers
+## Deploy to the existing Cloudflare Pages project
 
-This is a full-stack Next.js app with server-rendered routes and API routes, so deploy it as a Cloudflare Worker rather than a static Cloudflare Pages site.
-
-The repository uses OpenNext and Wrangler. For Cloudflare Workers Builds, configure the two commands separately:
+This repository is configured for the existing Cloudflare Pages project using the Pages adapter. It does not create or deploy a separate Worker. The Pages adapter is deprecated by Cloudflare, but is kept here specifically to preserve this existing Pages project.
 
 ```bash
-# Build command
+# Cloudflare Pages build command
 npm run cloudflare:build
-
-# Deploy command
-npm run cloudflare:deploy
 ```
 
-Wrangler reads `wrangler.jsonc`; no separate build output directory is needed. Do not use `npm run deploy` as the Build command because it also invokes the deploy step. For local Workers-runtime verification, use:
+Set the Cloudflare Pages build output directory to:
+
+```text
+.vercel/output/static
+```
+
+The repository pins Next.js to the latest patched 15.5 release that still builds with this adapter. `.npmrc` enables the legacy peer resolver because the adapter's published peer range has not been updated for that patch release.
+
+The existing `npm run deploy` script is kept as a build-only compatibility alias for an older Pages setting; Pages performs the deployment after the build finishes. For local Pages-runtime verification, use:
 
 ```bash
 npm run preview
 ```
 
-Configure these variables in the Cloudflare Workers build settings/secrets:
+Configure these variables in the existing Cloudflare Pages project under Settings > Environment variables (for both Production and Preview):
 
 - `NEXT_PUBLIC_SUPABASE_V2_URL`
 - `NEXT_PUBLIC_SUPABASE_V2_ANON_KEY`

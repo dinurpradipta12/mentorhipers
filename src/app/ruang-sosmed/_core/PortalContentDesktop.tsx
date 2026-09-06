@@ -4,13 +4,7 @@
 
 import React, { useState, useEffect, use, useRef, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import dynamic from "next/dynamic";
-
-//Dynamic Imports for size optimization
-const IdCardContent = dynamic(() => import("./IdCardContent"), {
-   loading: () => <div className="h-64 flex items-center justify-center text-white/20">Loading Identity...</div>,
-   ssr: false
-});
+import IdCardContent from "./IdCardContent";
 import AvatarCreator from "./AvatarCreator";
 import {
    PlayCircle,
