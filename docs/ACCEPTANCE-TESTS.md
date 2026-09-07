@@ -26,6 +26,13 @@ passed by local build success.
 | Set a browser localStorage admin marker then open admin route | Student/anonymous | Still denied; role is not read from browser storage. |
 | Log in as explicit role-assigned admin | Admin | Bootcamp admin area and Webinar administration open. |
 | Remove/revoke the role assignment then refresh | Former admin | Admin route is denied after a fresh server-side identity check. |
+| Submit an HTTPS assignment link as an existing student | Existing student | Submission is stored for that profile and batch; a configured group assignment creates server-side copies only for validated group members. |
+| Submit an `http:`/credential-bearing assignment link | Student | Request is rejected; no submission row is written. |
+| Soft-revoke a student's batch access | Admin | Membership role becomes `removed`; Auth account and historical grade/attendance data remain, and the student cannot open the batch. |
+
+| Manage assignment groups | Admin | Manual group changes and random distribution affect only active batch roster mappings; scores, attendance, and submissions remain unchanged. |
+| Manage batch announcements | Admin | Announcement CRUD is scoped to the selected batch; unsafe image/gallery URLs are rejected and students see only their batch announcements. |
+| Manage quiz templates | Admin | Template CRUD and duplication use server-side Auth/RLS authorization; answer keys never enter student props until they are sanitized. |
 
 ## Webinar public boundary
 

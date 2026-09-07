@@ -3,8 +3,9 @@ import { ArrowRight, BookOpen, CalendarDays, GraduationCap, Users, Video } from 
 import { EmptyState } from '@/components/app/EmptyState';
 import { PageHeader } from '@/components/app/PageHeader';
 import { StatusBadge } from '@/components/app/StatusBadge';
+import { BootcampAdminManager } from '@/components/bootcamp/BootcampAdminManager';
 import type { Viewer } from '@/lib/auth/context';
-import type { BootcampBatch, BootcampMembership } from '@/lib/bootcamp/queries';
+import type { BootcampBatch, BootcampMembership } from '@/lib/bootcamp/types';
 
 function formatDate(value: string | null) {
   if (!value) return null;
@@ -102,7 +103,7 @@ export function BootcampDashboard({
       </div>
 
       {visibleBatches.length === 0 ? (
-        <EmptyState icon={<BookOpen size={28} />} title={viewer.isAdmin ? 'Belum ada batch Bootcamp' : 'Anda belum terdaftar di batch'} description={viewer.isAdmin ? 'Buat batch melalui menu Bootcamp setelah migrasi keamanan diterapkan.' : 'Hubungi admin jika Anda seharusnya sudah terdaftar pada batch tertentu.'} />
+        <EmptyState icon={<BookOpen size={28} />} title={viewer.isAdmin ? 'Belum ada batch Bootcamp' : 'Anda belum terdaftar di batch'} description={viewer.isAdmin ? 'Gunakan panel administrasi di bawah untuk membuat batch pertama.' : 'Hubungi admin jika Anda seharusnya sudah terdaftar pada batch tertentu.'} />
       ) : (
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           {visibleBatches.map((batch) => (
@@ -116,6 +117,8 @@ export function BootcampDashboard({
           ))}
         </div>
       )}
+
+      {viewer.isAdmin && <BootcampAdminManager batches={batches} />}
     </section>
   );
 }

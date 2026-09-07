@@ -3,32 +3,9 @@ import 'server-only';
 import type { Viewer } from '@/lib/auth/context';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import { sanitizeQuizDataForStudent } from './quiz';
-
-export type BootcampBatch = {
-  id: string;
-  name: string;
-  description: string | null;
-  status: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  max_members: string | null;
-  schedules: unknown;
-  created_at: string | null;
-};
-
-export type BootcampMembership = {
-  id: string;
-  workspace_id: string;
-  profile_id: string;
-  group_name: string | null;
-  group_wa_link: string | null;
-  is_leader: boolean | null;
-  attendance: Record<string, unknown> | null;
-  plus_points: Record<string, unknown> | null;
-  credential_no: string | null;
-  certificate_url: string | null;
-  role: string | null;
-};
+import type { BootcampAssignmentGroup, BootcampBatch, BootcampMembership } from './types';
+export { normalizeSchedules } from './schedules';
+export type { BootcampBatch, BootcampMembership } from './types';
 
 function throwIfError(error: { message: string } | null, operation: string) {
   if (error) {
@@ -38,25 +15,6 @@ function throwIfError(error: { message: string } | null, operation: string) {
 
 function isPublished(value: unknown): boolean {
   return ['true', 't', '1', 'yes'].includes(String(value ?? '').toLowerCase());
-}
-
-export function normalizeSchedules(value: unknown): Array<{
-  title: string;
-  date: string | null;
-  time: string | null;
-  meet_link: string | null;
-}> {
-  if (!Array.isArray(value)) return [];
-
-  return value.map((item) => {
-    const schedule = item && typeof item === 'object' ? item as Record<string, unknown> : {};
-    return {
-      title: typeof schedule.title === 'string' ? schedule.title : 'Kelas',
-      date: typeof schedule.date === 'string' ? schedule.date : null,
-      time: typeof schedule.time === 'string' ? schedule.time : null,
-      meet_link: typeof schedule.meet_link === 'string' ? schedule.meet_link : null,
-    };
-  });
 }
 
 export async function getBootcampOverview(viewer: Viewer) {
@@ -88,7 +46,7 @@ export async function getBootcampOverview(viewer: Viewer) {
   const { data: membershipRows, error: membershipError } = await membershipQuery;
   throwIfError(membershipError, 'Loading Bootcamp memberships');
 
-  const memberships = (membershipRows ?? []) as BootcampMembership[];
+  const memberships = ((membershipRows ?? []) as BootcampMembership[]).filter((membership) => viewer.isAdmin || membership.role !== 'removed');
   // A student must never receive the names, schedule metadata, or status of
   // batches they do not belong to. The service-role repository performs the
   // membership check server-side, and this filter keeps the serialized
@@ -115,7 +73,7 @@ export async function getBootcampWorkspace(viewer: Viewer, workspaceId: string) 
   throwIfError(workspaceError, 'Loading Bootcamp workspace');
   if (!workspace) return null;
 
-  const { data: membership, error: membershipError } = await admin
+  const { data: membershipRow, error: membershipError } = await admin
     .from('v2_memberships')
     .select('id, workspace_id, profile_id, group_name, group_wa_link, is_leader, attendance, plus_points, credential_no, certificate_url, role')
     .eq('workspace_id', workspaceId)
@@ -123,11 +81,13 @@ export async function getBootcampWorkspace(viewer: Viewer, workspaceId: string) 
     .maybeSingle();
   throwIfError(membershipError, 'Checking Bootcamp membership');
 
+  const membership = viewer.isAdmin || membershipRow?.role !== 'removed' ? membershipRow : null;
+
   if (!viewer.isAdmin && !membership) return null;
 
   const curriculumRequest = admin
     .from('v2_curriculums')
-    .select('id, title, description, content_rich, type, module_name, due_date, video_url, assets_json, is_published, points_weight, grading_mode, created_at, assignment_group_id')
+    .select('id, title, description, content_rich, type, module_name, due_date, video_url, quiz_data, assets_json, is_published, points_weight, grading_mode, created_at, assignment_group_id')
     .eq('workspace_id', workspaceId)
     .order('created_at', { ascending: true });
   const announcementsRequest = admin
@@ -165,16 +125,26 @@ export async function getBootcampWorkspace(viewer: Viewer, workspaceId: string) 
       .eq('profile_id', viewer.id)
       .order('created_at', { ascending: false });
 
-  const [curriculumResult, announcementsResult, submissionsResult, quizResult] = await Promise.all([
+  const assignmentGroupsRequest = viewer.isAdmin
+    ? admin
+      .from('v2_assignment_groups')
+      .select('id, workspace_id, name, description, created_by, created_at')
+      .eq('workspace_id', workspaceId)
+      .order('created_at', { ascending: true })
+    : Promise.resolve({ data: [], error: null });
+
+  const [curriculumResult, announcementsResult, submissionsResult, quizResult, assignmentGroupsResult] = await Promise.all([
     curriculumRequest,
     announcementsRequest,
     submissionRequest,
     quizRequest,
+    assignmentGroupsRequest,
   ]);
   throwIfError(curriculumResult.error, 'Loading curriculum');
   throwIfError(announcementsResult.error, 'Loading announcements');
   throwIfError(submissionsResult.error, 'Loading submissions');
   throwIfError(quizResult.error, 'Loading quiz results');
+  throwIfError(assignmentGroupsResult.error, 'Loading assignment groups');
 
   const curriculum = ((curriculumResult.data ?? []) as Array<Record<string, unknown>>)
     .filter((item) => viewer.isAdmin || isPublished(item.is_published))
@@ -184,11 +154,42 @@ export async function getBootcampWorkspace(viewer: Viewer, workspaceId: string) 
   if (viewer.isAdmin) {
     const { data: studentRows, error: studentError } = await admin
       .from('v2_memberships')
-      .select('id, profile_id, group_name, is_leader, credential_no, attendance, plus_points, v2_profiles(full_name, username, avatar_url, email)')
+      .select('id, profile_id, group_name, group_wa_link, is_leader, credential_no, attendance, plus_points, certificate_url, role, v2_profiles(full_name, username, avatar_url, email)')
       .eq('workspace_id', workspaceId)
       .order('created_at', { ascending: true });
     throwIfError(studentError, 'Loading students');
     students = (studentRows ?? []) as Array<Record<string, unknown>>;
+  }
+
+  let assignmentGroups: BootcampAssignmentGroup[] = [];
+  if (viewer.isAdmin) {
+    const groupRows = (assignmentGroupsResult.data ?? []) as Array<Record<string, unknown>>;
+    const groupIds = groupRows
+      .map((group) => group.id)
+      .filter((id): id is string => typeof id === 'string');
+    const { data: groupMemberRows, error: groupMemberError } = groupIds.length === 0
+      ? { data: [], error: null }
+      : await admin
+        .from('v2_assignment_group_members')
+        .select('group_id, profile_id')
+        .in('group_id', groupIds);
+    throwIfError(groupMemberError, 'Loading assignment group members');
+    const membersByGroup = new Map<string, Array<{ profile_id: string }>>();
+    for (const row of groupMemberRows ?? []) {
+      if (typeof row.group_id !== 'string' || typeof row.profile_id !== 'string') continue;
+      const members = membersByGroup.get(row.group_id) ?? [];
+      members.push({ profile_id: row.profile_id });
+      membersByGroup.set(row.group_id, members);
+    }
+    assignmentGroups = groupRows.map((group) => ({
+      id: String(group.id),
+      workspace_id: String(group.workspace_id),
+      name: String(group.name ?? 'Grup'),
+      description: typeof group.description === 'string' ? group.description : null,
+      created_by: typeof group.created_by === 'string' ? group.created_by : null,
+      created_at: typeof group.created_at === 'string' ? group.created_at : null,
+      members: membersByGroup.get(String(group.id)) ?? [],
+    }));
   }
 
   return {
@@ -199,6 +200,7 @@ export async function getBootcampWorkspace(viewer: Viewer, workspaceId: string) 
     submissions: (submissionsResult.data ?? []) as Array<Record<string, unknown>>,
     quizResults: (quizResult.data ?? []) as Array<Record<string, unknown>>,
     students,
+    assignmentGroups,
   };
 }
 

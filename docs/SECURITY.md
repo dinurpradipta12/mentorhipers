@@ -13,6 +13,20 @@
 - A username login maps a confirmed `v2_profiles.username` to an existing Auth
   account on the server, then performs a normal Supabase Auth sign-in. It does
   not guess email domains or use a fallback password.
+- Assignment submission links are accepted only over HTTPS. Student submission
+  and feedback-read mutations are scoped to the authenticated profile and an
+  active batch membership; group-copy inserts are created server-side only
+  after the student's own submission is accepted.
+- Removing a student from a batch is a soft revoke (`v2_memberships.role =
+  'removed'`). Queries and the staged RLS helper exclude that role from active
+  access, while the membership row, grades, attendance, and Auth profile stay
+  available for audit or later restoration.
+
+Group CRUD and random distribution are admin-only server operations. Moving a
+student changes the assignment-group mapping and display group_name; it does
+not delete the profile, Auth user, grades, attendance, or submissions.
+Announcement CRUD is admin-only and batch-scoped. Image and gallery sources
+must be HTTPS URLs; the Bootcamp UI renders announcement content as text.
 
 ## Webinar isolation and public delivery
 

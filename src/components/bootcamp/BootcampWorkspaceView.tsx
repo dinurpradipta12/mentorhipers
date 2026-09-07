@@ -3,10 +3,16 @@ import { Award, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, ClipboardL
 import { EmptyState } from '@/components/app/EmptyState';
 import { PageHeader } from '@/components/app/PageHeader';
 import { StatusBadge } from '@/components/app/StatusBadge';
+import { AssignmentSubmissionForm } from '@/components/bootcamp/AssignmentSubmissionForm';
+import { BootcampAnnouncementManager } from '@/components/bootcamp/BootcampAnnouncementManager';
+import { BootcampCurriculumManager } from '@/components/bootcamp/BootcampCurriculumManager';
+import { BootcampGroupManager } from '@/components/bootcamp/BootcampGroupManager';
+import { BootcampMembershipManager } from '@/components/bootcamp/BootcampMembershipManager';
 import { QuizAttemptForm } from '@/components/bootcamp/QuizAttemptForm';
 import { SubmissionGradeEditor } from '@/components/bootcamp/SubmissionGradeEditor';
 import type { Viewer } from '@/lib/auth/context';
-import { normalizeSchedules, type BootcampBatch, type BootcampMembership } from '@/lib/bootcamp/queries';
+import { normalizeSchedules } from '@/lib/bootcamp/schedules';
+import type { BootcampAssignmentGroup, BootcampBatch, BootcampMembership } from '@/lib/bootcamp/types';
 
 type WorkspaceData = {
   batch: BootcampBatch;
@@ -16,6 +22,7 @@ type WorkspaceData = {
   submissions: Array<Record<string, unknown>>;
   quizResults: Array<Record<string, unknown>>;
   students: Array<Record<string, unknown>>;
+  assignmentGroups: BootcampAssignmentGroup[];
 };
 
 function formatDate(value: unknown) {
@@ -54,6 +61,7 @@ function recordEntries(value: unknown): Array<[string, unknown]> {
 
 export function BootcampWorkspaceView({ viewer, data }: { viewer: Viewer; data: WorkspaceData }) {
   const schedules = normalizeSchedules(data.batch.schedules);
+  const activeStudents = data.students.filter((student) => student.role !== 'removed');
   const lessonCount = data.curriculum.filter((item) => item.type === 'material').length;
   const assessmentCount = data.curriculum.length - lessonCount;
   const completedCount = data.submissions.filter((item) => item.status === 'completed').length + data.quizResults.length;
@@ -71,7 +79,7 @@ export function BootcampWorkspaceView({ viewer, data }: { viewer: Viewer; data: 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rc-stat-card"><span className="rc-stat-icon bg-teal-50 text-teal-700"><BookOpen size={20} /></span><div><p>Materi</p><strong>{lessonCount}</strong></div></div>
         <div className="rc-stat-card"><span className="rc-stat-icon bg-violet-50 text-violet-700"><ClipboardList size={20} /></span><div><p>Assessment</p><strong>{assessmentCount}</strong></div></div>
-        <div className="rc-stat-card"><span className="rc-stat-icon bg-amber-50 text-amber-700"><CheckCircle2 size={20} /></span><div><p>{viewer.isAdmin ? 'Peserta' : 'Selesai'}</p><strong>{viewer.isAdmin ? data.students.length : completedCount}</strong></div></div>
+        <div className="rc-stat-card"><span className="rc-stat-icon bg-amber-50 text-amber-700"><CheckCircle2 size={20} /></span><div><p>{viewer.isAdmin ? 'Peserta aktif' : 'Selesai'}</p><strong>{viewer.isAdmin ? activeStudents.length : completedCount}</strong></div></div>
         <div className="rc-stat-card"><span className="rc-stat-icon bg-rose-50 text-rose-700"><CalendarDays size={20} /></span><div><p>{viewer.isAdmin ? 'Jadwal' : 'Kehadiran'}</p><strong>{viewer.isAdmin ? schedules.length : attendanceCount}</strong></div></div>
       </div>
 
@@ -115,7 +123,7 @@ export function BootcampWorkspaceView({ viewer, data }: { viewer: Viewer; data: 
           </div>
           <div className="grid gap-6 p-5 lg:grid-cols-2 sm:p-6">
             <section>
-              <h3 className="text-sm font-extrabold text-slate-950">Tugas & feedback mentor</h3>
+              <h3 className="text-sm font-extrabold text-slate-950">Submission tersimpan</h3>
               <div className="mt-3 space-y-3">{data.submissions.length === 0 ? <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">Belum ada submission yang tersimpan.</p> : data.submissions.map((submission) => {
                 const curriculum = data.curriculum.find((item) => String(item.id) === String(submission.curriculum_id));
                 const fileUrl = safeExternalUrl(submission.file_link);
@@ -134,6 +142,14 @@ export function BootcampWorkspaceView({ viewer, data }: { viewer: Viewer; data: 
             </section>
           </div>
         </section>
+      )}
+
+      {!viewer.isAdmin && (
+        <AssignmentSubmissionForm
+          workspaceId={data.batch.id}
+          curriculum={data.curriculum}
+          submissions={data.submissions}
+        />
       )}
 
       {!viewer.isAdmin && (
@@ -166,6 +182,13 @@ export function BootcampWorkspaceView({ viewer, data }: { viewer: Viewer; data: 
 
       {viewer.isAdmin && <SubmissionGradeEditor workspaceId={data.batch.id} submissions={data.submissions} curriculum={data.curriculum} />}
 
+      {viewer.isAdmin && <BootcampCurriculumManager workspaceId={data.batch.id} curriculum={data.curriculum} />}
+
+      {viewer.isAdmin && <BootcampGroupManager workspaceId={data.batch.id} groups={data.assignmentGroups} students={data.students} />}
+
+      {viewer.isAdmin && <BootcampAnnouncementManager workspaceId={data.batch.id} announcements={data.announcements} />}
+
+      {viewer.isAdmin && <BootcampMembershipManager workspaceId={data.batch.id} students={data.students} />}
 
       {viewer.isAdmin && <section className="rc-card overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6"><div><h2 className="font-extrabold text-slate-950">Daftar siswa</h2><p className="mt-1 text-sm text-slate-500">Akun dan profile siswa tetap terhubung ke Auth yang ada.</p></div><Link href="/ruang-sosmed/batch" className="text-sm font-bold text-teal-700">Kelola batch</Link></div>{data.students.length === 0 ? <EmptyState icon={<Users size={27} />} title="Belum ada siswa" description="Pendaftaran siswa akan memakai akun Auth yang telah ada atau dibuat server-side." /> : <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-left text-sm"><thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-6 py-4">Siswa</th><th className="px-6 py-4">Grup</th><th className="px-6 py-4">Credential</th><th className="px-6 py-4">Status</th></tr></thead><tbody className="divide-y divide-slate-100">{data.students.map((student) => { const profile = student.v2_profiles as { full_name?: string; username?: string } | null; return <tr key={String(student.id)}><td className="px-6 py-4"><p className="font-bold text-slate-800">{profile?.full_name || 'Profil tanpa nama'}</p><p className="mt-1 text-xs text-slate-500">{profile?.username || '—'}</p></td><td className="px-6 py-4 text-slate-600">{String(student.group_name ?? 'Belum dikelompokkan')}</td><td className="px-6 py-4 text-slate-600">{String(student.credential_no ?? '—')}</td><td className="px-6 py-4"><span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700"><Trophy size={14} /> Terdaftar</span></td></tr>; })}</tbody></table></div>}</section>}
     </section>

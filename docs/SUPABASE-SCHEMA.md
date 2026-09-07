@@ -44,7 +44,7 @@ noted otherwise.
 | Table | Purpose | Live columns |
 | --- | --- | --- |
 | `v2_profiles` | One profile per Supabase Auth user. | `id` (PK, FK to `auth.users`), `full_name`, `username` (unique), `avatar_url`, `role`, `updated_at`, `email` |
-| `v2_memberships` | A student's preserved enrollment in a batch. | `id` (PK), `profile_id` (FK), `workspace_id` (FK), `group_name`, `role`, `grades` (JSONB), `attendance` (JSONB), `created_at`, `group_wa_link`, `is_leader`, `plus_points` (JSONB), `joined_at`, `certificate_url`, `credential_no` |
+| `v2_memberships` | A student's preserved enrollment in a batch. | `id` (PK), `profile_id` (FK), `workspace_id` (FK), `group_name`, `role` (`member`/legacy values; rebuilt access revocation uses `removed`), `grades` (JSONB), `attendance` (JSONB), `created_at`, `group_wa_link`, `is_leader`, `plus_points` (JSONB), `joined_at`, `certificate_url`, `credential_no` |
 | `v2_workspaces` | Batch / legacy workspace. Webinar LMS must not use this table. | `id` (PK), `name`, `description`, `type`, `status`, `logo_url`, `max_members` (text), `start_date` (date), `end_date` (date), `settings` (JSONB), `schedules` (JSONB), `created_at`, `updated_at` |
 
 The membership uniqueness contract is `UNIQUE (profile_id, workspace_id)`.
@@ -59,6 +59,10 @@ The membership uniqueness contract is `UNIQUE (profile_id, workspace_id)`.
 | `v2_quiz_templates` | Reusable quiz templates. | `id` (PK), `title`, `description`, `category`, `questions_json` (JSONB), `created_at`, `updated_at` |
 
 ### Groups, announcements, and notifications
+
+The rebuilt admin routes use the existing group and announcement tables
+through server-side mutations. Group roster changes update only active
+membership mappings; announcement content remains scoped to its batch.
 
 | Table | Purpose | Live columns |
 | --- | --- | --- |

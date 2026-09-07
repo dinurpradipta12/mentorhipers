@@ -51,6 +51,12 @@ anonymous REST status without returning row contents.
 | Webinar LMS | `public_webinars`, `webinar_sections`, `webinar_lessons`, `webinar_resources`, `webinar_audit_logs` | Add only after the preflight below succeeds. |
 | Platform authorization | `platform_role_assignments` | Additive role mapping; it does not create or duplicate Auth users. |
 
+Student access removal is intentionally non-destructive: the application marks
+the existing membership `role` as `removed` instead of deleting the row. This
+keeps membership-scoped attendance, grades, plus points, credentials, and group
+history available to the administrator. Re-registering the same profile can
+restore the row to `member` without creating another Auth user.
+
 ## Required preflight before any live DDL
 
 1. Confirm the Supabase project URL in `.env.local` is the project holding the

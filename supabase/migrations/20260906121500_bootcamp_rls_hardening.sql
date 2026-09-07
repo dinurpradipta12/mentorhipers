@@ -49,6 +49,7 @@ as $is_bootcamp_member$
     from public.v2_memberships membership
     where membership.workspace_id = p_workspace_id
       and membership.profile_id = coalesce(p_profile_id, (select auth.uid()))
+      and coalesce(membership.role, 'member') <> 'removed'
   )
 $is_bootcamp_member$;
 
@@ -71,6 +72,7 @@ as $can_submit_bootcamp_curriculum$
      and curriculum.workspace_id = membership.workspace_id
     where membership.workspace_id = p_workspace_id
       and membership.profile_id = coalesce(p_profile_id, (select auth.uid()))
+      and lower(coalesce(curriculum.type, '')) in ('post_test', 'quiz')
       and lower(coalesce(curriculum.is_published, '')) in ('true', 't', '1', 'yes')
   )
 $can_submit_bootcamp_curriculum$;
@@ -177,7 +179,7 @@ create policy v2_profiles_update_self_or_staff on public.v2_profiles
 -- group credentials. They are never directly writable by students.
 create policy v2_memberships_select_self_or_staff on public.v2_memberships
   for select to authenticated
-  using (profile_id = (select auth.uid()) or (select public.has_bootcamp_staff_role()));
+  using ((profile_id = (select auth.uid()) and coalesce(role, 'member') <> 'removed') or (select public.has_bootcamp_staff_role()));
 
 create policy v2_memberships_insert_admin on public.v2_memberships
   for insert to authenticated
@@ -251,9 +253,37 @@ create policy v2_curriculums_delete_admin on public.v2_curriculums
   for delete to authenticated
   using ((select public.has_bootcamp_admin_role()));
 
+-- Curriculum rows with student work are historical parents. Keep them in place
+-- and require an administrator to unpublish instead of deleting the row.
+create or replace function public.guard_v2_curriculum_delete()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public, auth
+as $guard_v2_curriculum_delete$
+begin
+  if exists (select 1 from public.v2_submissions where curriculum_id = old.id)
+    or exists (select 1 from public.v2_quiz_results where curriculum_id = old.id) then
+    raise exception 'Curriculum with student history cannot be deleted';
+  end if;
+  return old;
+end;
+$guard_v2_curriculum_delete$;
+
+drop trigger if exists guard_v2_curriculum_delete on public.v2_curriculums;
+create trigger guard_v2_curriculum_delete
+before delete on public.v2_curriculums
+for each row execute function public.guard_v2_curriculum_delete();
+
 create policy v2_submissions_select_scope on public.v2_submissions
   for select to authenticated
-  using (profile_id = (select auth.uid()) or (select public.has_bootcamp_staff_role()));
+  using (
+    (select public.has_bootcamp_staff_role())
+    or (
+      profile_id = (select auth.uid())
+      and (select public.is_bootcamp_member(workspace_id))
+    )
+  );
 
 create policy v2_submissions_insert_member on public.v2_submissions
   for insert to authenticated
@@ -266,8 +296,20 @@ create policy v2_submissions_insert_member on public.v2_submissions
 -- below blocks ownership, status, grade, and mentor fields for every JWT user.
 create policy v2_submissions_update_owner_or_staff on public.v2_submissions
   for update to authenticated
-  using (profile_id = (select auth.uid()) or (select public.has_bootcamp_staff_role()))
-  with check (profile_id = (select auth.uid()) or (select public.has_bootcamp_staff_role()));
+  using (
+    (select public.has_bootcamp_staff_role())
+    or (
+      profile_id = (select auth.uid())
+      and (select public.is_bootcamp_member(workspace_id))
+    )
+  )
+  with check (
+    (select public.has_bootcamp_staff_role())
+    or (
+      profile_id = (select auth.uid())
+      and (select public.is_bootcamp_member(workspace_id))
+    )
+  );
 
 create policy v2_submissions_delete_admin on public.v2_submissions
   for delete to authenticated
@@ -275,7 +317,13 @@ create policy v2_submissions_delete_admin on public.v2_submissions
 
 create policy v2_quiz_results_select_scope on public.v2_quiz_results
   for select to authenticated
-  using (profile_id = (select auth.uid()) or (select public.has_bootcamp_staff_role()));
+  using (
+    (select public.has_bootcamp_staff_role())
+    or (
+      profile_id = (select auth.uid())
+      and (select public.is_bootcamp_member(workspace_id))
+    )
+  );
 
 -- Quiz scores are assigned by the secure submission RPC below. Students may
 -- submit answers only for a published curriculum in their own batch.
@@ -332,7 +380,13 @@ create policy v2_assignment_groups_insert_admin on public.v2_assignment_groups
 create policy v2_assignment_groups_update_admin on public.v2_assignment_groups
   for update to authenticated
   using ((select public.has_bootcamp_admin_role()))
-  with check ((select public.has_bootcamp_admin_role()));
+  with check (
+    (select public.has_bootcamp_admin_role())
+    and exists (
+      select 1 from public.v2_workspaces workspace
+      where workspace.id = workspace_id and workspace.type = 'batch'
+    )
+  );
 
 create policy v2_assignment_groups_delete_admin on public.v2_assignment_groups
   for delete to authenticated
@@ -341,8 +395,18 @@ create policy v2_assignment_groups_delete_admin on public.v2_assignment_groups
 create policy v2_assignment_group_members_select_scope on public.v2_assignment_group_members
   for select to authenticated
   using (
-    profile_id = (select auth.uid())
-    or (select public.has_bootcamp_staff_role())
+    (select public.has_bootcamp_staff_role())
+    or (
+      profile_id = (select auth.uid())
+      and exists (
+        select 1
+        from public.v2_memberships membership
+        join public.v2_assignment_groups assignment_group on assignment_group.id = group_id
+        where membership.workspace_id = assignment_group.workspace_id
+          and membership.profile_id = (select auth.uid())
+          and coalesce(membership.role, 'member') <> 'removed'
+      )
+    )
     or exists (
       select 1
       from public.v2_assignment_groups assignment_group
@@ -353,12 +417,34 @@ create policy v2_assignment_group_members_select_scope on public.v2_assignment_g
 
 create policy v2_assignment_group_members_insert_admin on public.v2_assignment_group_members
   for insert to authenticated
-  with check ((select public.has_bootcamp_admin_role()));
+  with check (
+    (select public.has_bootcamp_admin_role())
+    and exists (
+      select 1
+      from public.v2_assignment_groups assignment_group
+      join public.v2_memberships membership
+        on membership.workspace_id = assignment_group.workspace_id
+       and membership.profile_id = public.v2_assignment_group_members.profile_id
+       and coalesce(membership.role, 'member') <> 'removed'
+      where assignment_group.id = public.v2_assignment_group_members.group_id
+    )
+  );
 
 create policy v2_assignment_group_members_update_admin on public.v2_assignment_group_members
   for update to authenticated
   using ((select public.has_bootcamp_admin_role()))
-  with check ((select public.has_bootcamp_admin_role()));
+  with check (
+    (select public.has_bootcamp_admin_role())
+    and exists (
+      select 1
+      from public.v2_assignment_groups assignment_group
+      join public.v2_memberships membership
+        on membership.workspace_id = assignment_group.workspace_id
+       and membership.profile_id = public.v2_assignment_group_members.profile_id
+       and coalesce(membership.role, 'member') <> 'removed'
+      where assignment_group.id = public.v2_assignment_group_members.group_id
+    )
+  );
 
 create policy v2_assignment_group_members_delete_admin on public.v2_assignment_group_members
   for delete to authenticated
@@ -435,6 +521,38 @@ create trigger guard_v2_profile_identity
 before update on public.v2_profiles
 for each row execute function public.guard_v2_profile_identity();
 
+-- Membership identity and the historical grade payload are immutable from a
+-- JWT-backed direct update. Server mutations may still change roster metadata,
+-- attendance, plus points, certificates, and the soft-revoke role.
+create or replace function public.guard_v2_membership_identity()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public, auth
+as $guard_v2_membership_identity$
+begin
+  if (select auth.uid()) is not null then
+    if new.id is distinct from old.id
+      or new.workspace_id is distinct from old.workspace_id
+      or new.profile_id is distinct from old.profile_id
+      or new.grades is distinct from old.grades
+      or new.created_at is distinct from old.created_at
+      or new.joined_at is distinct from old.joined_at then
+      raise exception 'Membership identity and historical grades can only be changed by the server';
+    end if;
+  end if;
+  if new.role is not null and new.role not in ('member', 'student', 'removed') then
+    raise exception 'Membership role is invalid';
+  end if;
+  return new;
+end;
+$guard_v2_membership_identity$;
+
+drop trigger if exists guard_v2_membership_identity on public.v2_memberships;
+create trigger guard_v2_membership_identity
+before update on public.v2_memberships
+for each row execute function public.guard_v2_membership_identity();
+
 -- Grade/status/mentor fields are accepted only by the audited service-role RPC.
 -- A student can still create/update their own file submission and mark feedback
 -- read, but cannot forge a score, status, owner, or criteria JSON.
@@ -454,6 +572,7 @@ begin
       or new.curriculum_id is distinct from old.curriculum_id
       or new.profile_id is distinct from old.profile_id
       or new.workspace_id is distinct from old.workspace_id
+      or new.created_at is distinct from old.created_at
       or new.status is distinct from old.status
       or new.grade is distinct from old.grade
       or new.mentor_feedback is distinct from old.mentor_feedback
@@ -465,7 +584,23 @@ begin
       or new.assignment_group_id is distinct from old.assignment_group_id then
       raise exception 'Use the audited Bootcamp grading workflow for protected submission fields';
     end if;
+    if new.file_link is distinct from old.file_link
+      and (new.file_link is null or new.file_link !~ '^https://[^[:space:]]+$') then
+      raise exception 'Submission link must be an HTTPS URL';
+    end if;
   elsif tg_op = 'INSERT' then
+    if new.file_link is null or new.file_link !~ '^https://[^[:space:]]+$' then
+      raise exception 'Submission link must be an HTTPS URL';
+    end if;
+    if not exists (
+      select 1
+      from public.v2_curriculums curriculum
+      where curriculum.id = new.curriculum_id
+        and curriculum.workspace_id = new.workspace_id
+        and curriculum.assignment_group_id is not distinct from new.assignment_group_id
+    ) then
+      raise exception 'Submission assignment group does not match the curriculum';
+    end if;
     if new.status is not null
       or new.grade is not null
       or new.mentor_feedback is not null
@@ -480,8 +615,15 @@ begin
       and not exists (
         select 1
         from public.v2_assignment_group_members group_member
+        join public.v2_assignment_groups assignment_group
+          on assignment_group.id = group_member.group_id
+         join public.v2_curriculums curriculum
+           on curriculum.id = new.curriculum_id
         where group_member.group_id = new.assignment_group_id
           and group_member.profile_id = new.profile_id
+          and assignment_group.workspace_id = new.workspace_id
+          and curriculum.workspace_id = new.workspace_id
+          and curriculum.assignment_group_id = new.assignment_group_id
       ) then
       raise exception 'Student is not a member of the submission group';
     end if;
@@ -571,6 +713,9 @@ begin
   if p_answers is null or jsonb_typeof(p_answers) <> 'object' then
     raise exception 'Quiz answers must be a JSON object';
   end if;
+  if (select count(*) from jsonb_object_keys(p_answers)) > 200 then
+    raise exception 'Quiz answers contain too many fields';
+  end if;
 
   select curriculum.*
   into curriculum_row
@@ -581,6 +726,9 @@ begin
 
   if not found or not (select public.is_bootcamp_member(p_workspace_id, actor_id)) then
     raise exception 'Published quiz or Bootcamp membership not found';
+  end if;
+  if lower(coalesce(curriculum_row.type, '')) not in ('post_test', 'quiz') then
+    raise exception 'Curriculum is not a quiz';
   end if;
 
   for question in
