@@ -102,10 +102,10 @@ with the project owner.
 
 ## Validation completed and remaining release checks
 
-The target migration, `arunika` admin assignment, and anonymous/student/admin
-RLS harness have passed. The remaining release checks are a tested restore of
-the backup, provider-managed PITR confirmation, and a Cloudflare Pages preview
-browser test.
+The target migration, `arunika` admin assignment, anonymous/student/admin RLS
+harness, and isolated application-schema restore have passed. The remaining
+release checks are provider-managed PITR/full-restore confirmation and a
+Cloudflare Pages preview browser test.
 
 Next.js and `eslint-config-next` are pinned to the patched `16.3.4` release.
 `npm audit --omit=dev --audit-level=high` currently reports zero production

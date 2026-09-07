@@ -38,8 +38,13 @@ the live DDL. The latest ignored artifact is
 `pg_restore --list` reports 589 manifest entries (including Auth and
 `v2_profiles`). Its SHA-256 is
 `17d4c27c72e86ab5be317eacdf22fc1e2e5b5a16fd0c6e2eb67563837a5ac1c4`.
-The dump has not yet been restored to a separate environment, so a tested
-restore and provider-managed backup/PITR reference remain release gates.
+An isolated PostgreSQL 18 restore of the application schemas completed with
+exit code 0 and preserved the key counts (`v2_profiles` 104,
+`v2_memberships` 92, `v2_submissions` 206, `v2_quiz_results` 378). This
+validates the application-schema dump, not a provider-complete Supabase
+restore: the local host does not provide the provider-only `supabase_vault`
+extension. A provider-managed backup/PITR reference and, if required, a
+provider-run full restore rehearsal remain release gates.
 
 The repeatable read-only target audit is `node
 scripts/verify-production-target.mjs`. It reports aggregate counts, Auth/profile
@@ -83,9 +88,10 @@ restore the row to `member` without creating another Auth user.
 7. The four migrations were applied in order and are present in the remote
    migration history table.
 
-The Supabase CLI's Docker workflow is not available on this host, but the
-PostgreSQL client fallback produced the verified local dump above. The
-restoration test and an external copy of that artifact are still required.
+The Supabase CLI's Docker workflow is not available on this host. The
+PostgreSQL client fallback produced the verified dump above, and the isolated
+application-schema restore passed. Keep an external copy of the artifact and
+obtain provider-managed PITR/restore evidence before release.
 
 ## Apply sequence
 

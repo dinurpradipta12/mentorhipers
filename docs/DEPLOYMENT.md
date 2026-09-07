@@ -2,10 +2,11 @@
 
 ## Current deployment status
 
-The local production build, live Supabase migration, Auth bootstrap, and
-target-project RLS/Auth checks have passed. This application is **not yet
-marked production-ready** until the backup restore/PITR evidence and the
-existing Cloudflare Pages preview browser checks are recorded.
+The local production build, live Supabase migration, Auth bootstrap,
+target-project RLS/Auth checks, and isolated application-schema restore have
+passed. This application is **not yet marked production-ready** until
+provider-managed backup/PITR evidence and the existing Cloudflare Pages
+preview browser checks are recorded.
 
 No Cloudflare Pages configuration, Wrangler file, or existing Pages project
 identifier is present in this checkout. Do not create a new project or Worker.
