@@ -2,10 +2,10 @@
 
 ## Current deployment status
 
-The local production build and a full logical backup checkpoint succeed, but
-this application is **not yet marked production-ready**. No live migration,
-Cloudflare Pages deployment preview, or target-project RLS/Auth acceptance test
-has been performed.
+The local production build, live Supabase migration, Auth bootstrap, and
+target-project RLS/Auth checks have passed. This application is **not yet
+marked production-ready** until the backup restore/PITR evidence and the
+existing Cloudflare Pages preview browser checks are recorded.
 
 No Cloudflare Pages configuration, Wrangler file, or existing Pages project
 identifier is present in this checkout. Do not create a new project or Worker.
@@ -90,6 +90,8 @@ Production release requires all of the following:
 - The admin bootstrap dry run and explicit `--apply` output are retained with
   the change record; no new Auth account is created.
 - Anonymous, student, and admin RLS tests passed against the target.
+- Live Bootcamp row counts remained unchanged after migration; no historical
+  grades, attendance, submissions, quiz results, or memberships were rewritten.
 - `npm run lint`, `npm test`, `npx tsc --noEmit`, and `npm run build` passed.
 - `npm audit --omit=dev --audit-level=high` reports zero production dependency
   vulnerabilities after the targeted Next.js security update.

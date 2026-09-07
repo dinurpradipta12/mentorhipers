@@ -150,10 +150,10 @@ migration must first snapshot existing calculated values, record the source and
 timestamp, provide a rollback path, and obtain explicit product approval for
 the formula.
 
-## Staged isolated Webinar schema
+## Isolated Webinar schema
 
-The un-applied additive migration
-`20260906121000_webinar_lms.sql` creates its own tables:
+The additive migration `20260906121000_webinar_lms.sql` created its own
+tables:
 
 - `public_webinars`
 - `webinar_sections`
@@ -166,11 +166,12 @@ supporting indexes, status/provider/source constraints, updated-at triggers,
 private `webinar-media` Storage, and RLS. It will not use `v2_workspaces`,
 `v2_memberships`, or any `v2_agency_*` table. The preceding
 `20260906120000_platform_roles.sql` adds a separate database-backed role
-assignment table. The staged `20260906120500_bootcamp_grade_audit.sql` adds
+assignment table. The applied `20260906120500_bootcamp_grade_audit.sql` adds
 `bootcamp_grade_audit_logs` and an audited grading RPC; it does not modify any
-existing grade until an authorized mentor/admin explicitly uses it. The staged
+existing grade until an authorized mentor/admin explicitly uses it. The applied
 `20260906121500_bootcamp_rls_hardening.sql` replaces the ineffective legacy
 Bootcamp policies, enables RLS on every preserved Bootcamp table, adds safe
 membership helpers and write guards, and provides a one-attempt server-side
-quiz submission RPC. It does not recalculate existing values. None of these
-migrations has been applied to the live project.
+quiz submission RPC. It does not recalculate existing values. These migrations
+are recorded in the live project's migration history, and no historical values
+were recalculated during application.

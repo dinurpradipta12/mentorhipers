@@ -48,11 +48,10 @@ characters, unique, and protected by a database trigger against later changes.
 
 ## RLS status and migration boundary
 
-The live Bootcamp schema had incomplete RLS at audit time: RLS is enabled only
-on a subset of `v2_*` tables and several old policies are overly broad. The
-staged `20260906121500_bootcamp_rls_hardening.sql` replaces those policies only
-after a backup, dry run, and explicit approval. It changes authorization
-behavior but does not modify historical rows.
+The live Bootcamp schema was hardened on 2026-09-07 after a backup, target
+transaction dry-run, and explicit operator approval. RLS is now enabled on all
+preserved Bootcamp tables, and the old broad policies were replaced. The
+migration changed authorization behavior but did not modify historical rows.
 
 Before a Bootcamp RLS-hardening migration is approved, it must be tested using
 three real contexts:
@@ -101,12 +100,12 @@ Supabase service-role/database credentials, remove or archive sensitive dumps
 from the repository under an approved retention plan, and review Git history
 with the project owner.
 
-## Validation still required on the target
+## Validation completed and remaining release checks
 
-The migration is intentionally not applied yet. The following are release
-blockers: a tested full backup, a confirmed initial admin Auth UUID, real RLS
-tests for anonymous/student/admin, a migration dry run on a safe environment,
-and a Cloudflare preview browser test.
+The target migration, `arunika` admin assignment, and anonymous/student/admin
+RLS harness have passed. The remaining release checks are a tested restore of
+the backup, provider-managed PITR confirmation, and a Cloudflare Pages preview
+browser test.
 
 Next.js and `eslint-config-next` are pinned to the patched `16.3.4` release.
 `npm audit --omit=dev --audit-level=high` currently reports zero production

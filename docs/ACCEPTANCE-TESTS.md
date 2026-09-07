@@ -78,5 +78,7 @@ Compare the preflight snapshots with live data before and after deployment:
   locally.
 - Public unknown Webinar routing, login branding, Agency retired routing, and
   anonymous admin-API denial were smoke-tested locally.
-- The migration, real Auth accounts, target RLS contexts, published Webinar,
-  Cloudflare preview, and target browser acceptance remain unverified.
+- The live migration, `arunika` Auth/admin account, target RLS contexts, and a
+  temporary draft→lesson→publish→public Webinar flow have been verified. The
+  temporary Webinar test data was removed after verification. Cloudflare
+  preview and a real existing-student browser login remain unverified.

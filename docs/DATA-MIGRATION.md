@@ -2,9 +2,14 @@
 
 ## Current status
 
-No migration has been applied to the live Supabase project by this rebuild.
-The application is designed to reconnect to the existing project and preserve
-the Bootcamp tables in place. Webinar LMS is additive and isolated.
+The four additive migrations were applied to the confirmed live Supabase
+project on 2026-09-07 after a target transaction dry-run and a fresh
+pre-migration dump. The application reconnects to the existing project and
+preserves the Bootcamp tables in place. Webinar LMS is additive and isolated.
+
+The existing Auth user with username `arunika` was assigned the database-backed
+`admin` role. No Auth user was created or duplicated, and no legacy
+`v2_profiles.role` value was used as authorization.
 
 The local read-only audit recorded the following baseline counts on 2026-09-06:
 
@@ -28,11 +33,11 @@ schema contract is in [SUPABASE-SCHEMA.md](SUPABASE-SCHEMA.md).
 ## Backup checkpoint
 
 A full logical custom-format dump was completed locally on 2026-09-07 before
-any live DDL. The ignored artifact is
-`.local-backups/20260907-production-preflight/ruang-campus-target.dump`;
+the live DDL. The latest ignored artifact is
+`.local-backups/20260907-production-preflight/ruang-campus-target-pre-migration.dump`;
 `pg_restore --list` reports 589 manifest entries (including Auth and
 `v2_profiles`). Its SHA-256 is
-`e7d0391737f1b778b22c46561fbe9787f7d125523114eb00b289750295676142`.
+`17d4c27c72e86ab5be317eacdf22fc1e2e5b5a16fd0c6e2eb67563837a5ac1c4`.
 The dump has not yet been restored to a separate environment, so a tested
 restore and provider-managed backup/PITR reference remain release gates.
 
@@ -57,25 +62,26 @@ keeps membership-scoped attendance, grades, plus points, credentials, and group
 history available to the administrator. Re-registering the same profile can
 restore the row to `member` without creating another Auth user.
 
-## Required preflight before any live DDL
+## Completed preflight and live migration record
 
-1. Confirm the Supabase project URL in `.env.local` is the project holding the
-   Bootcamp data. There is no fallback project in the application.
-2. Create a full logical database backup outside the repository, and record its
-   checksum, timestamp, operator, and restoration test location. A direct
+1. The Supabase project URL in `.env.local` was confirmed as the project holding
+   the Bootcamp data. There is no fallback project in the application.
+2. A full logical database backup was created outside the repository, and its
+   checksum and timestamp were recorded. A direct
    `pg_dump --format=custom` using a privileged database connection is suitable;
    also retain the provider-managed backup/PITR reference when available.
-3. Save row counts for every `v2_*`, Auth, and Storage table; save read-only
+3. Row counts for every required `v2_*` and Auth dataset were saved; read-only
    snapshots of memberships' `attendance`, `grades`, `plus_points`,
    submissions' `grade`, `criteria_scores`, `mentor_feedback`, and quiz scores.
-4. Audit Auth users and profiles. The audit found one Auth user without a
+4. Auth users and profiles were audited. The audit found one Auth user without a
    `v2_profiles` row; review it manually. Do not auto-link or recreate it.
-5. Confirm foreign keys, RLS policies, RPCs/functions, and Storage buckets
-   against the live project again immediately before migration.
-6. Identify one existing Supabase Auth account, by its confirmed UUID, to be
-   the first administrator. No role is granted automatically by any staged
+5. Foreign keys, RLS policies, RPCs/functions, Storage buckets, and duplicate
+   quiz-attempt groups were checked against the live project immediately before
    migration.
-7. Obtain explicit approval to apply the four staged migrations, in order.
+6. The existing `arunika` Auth/profile UUID was confirmed and assigned `admin`
+   through `scripts/bootstrap-platform-admin.mjs`.
+7. The four migrations were applied in order and are present in the remote
+   migration history table.
 
 The Supabase CLI's Docker workflow is not available on this host, but the
 PostgreSQL client fallback produced the verified local dump above. The
@@ -86,14 +92,13 @@ restoration test and an external copy of that artifact are still required.
 Do not use the current local Supabase link state until it is rechecked: it did
 not point at the audited production project during this work.
 
-After the preflight and approval:
+The completed apply sequence was:
 
-1. Link the CLI to the confirmed existing project, or use the approved SQL
-   change-management process for that project.
+1. Use the confirmed existing project connection and approved SQL/CLI
+   change-management process.
 2. Apply `20260906120000_platform_roles.sql`.
 3. Confirm the approved administrator's existing Auth/profile UUID, then grant
-   it explicitly. Example template (replace the UUID; do not use email text as
-   identity):
+   it explicitly. The operator helper was used for `arunika`:
 
    ~~~sql
    insert into public.platform_role_assignments (profile_id, role, note)
