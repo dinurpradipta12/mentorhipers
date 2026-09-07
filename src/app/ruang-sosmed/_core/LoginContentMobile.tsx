@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
-import { invalidateSessionCache } from "@/lib/authCache";
+import { getBootcampAccess, invalidateSessionCache } from "@/lib/authCache";
 import { Button } from "@/components/ui/Button";
 
 export default function LoginContentMobile() {
@@ -33,17 +33,10 @@ export default function LoginContentMobile() {
       setLoading(true);
       setError("");
 
-       //1. ARUNIKA ADMIN BYPASS
-       if (email === "arunika" && password === "ar4925") {
-          await supabase.auth.signOut();
-          localStorage.setItem("v2_legacy_admin", "true");
-          router.push('/ruang-sosmed');
-          return;
-       }
-
        try {
           // ENSURE CLEAN STATE
           await supabase.auth.signOut();
+          invalidateSessionCache();
           localStorage.removeItem("v2_legacy_admin");
           
           let loginIdentifier = email;
@@ -85,26 +78,28 @@ export default function LoginContentMobile() {
          if (data.user) {
            //Invalidate cache so the new session is picked up immediately
             invalidateSessionCache();
-            const { data: profile } = await supabase
-              .from('v2_profiles')
-              .select('role')
-              .eq('id', data.user.id)
-              .maybeSingle();
 
-            if (profile && profile.role !== 'admin') {
+            const access = await getBootcampAccess();
+            if (!access.user || access.error) {
+              setError("Sesi V2 tidak dapat diverifikasi. Silakan masuk kembali.");
+              setLoading(false);
+              return;
+            }
+
+            if (!access.isStaff) {
                const { data: memberships } = await supabase
                  .from('v2_memberships')
                  .select('workspace_id, v2_workspaces(type)')
-                 .eq('profile_id', data.user.id);
+                 .eq('profile_id', access.user.id);
 
                if (memberships && memberships.length > 0) {
                   // Jika profil Agensi, langsung ke Workspace
                   if (memberships.length === 1 && (memberships[0] as any).v2_workspaces?.type === 'agency') {
-                    router.push(`/ruang-sosmed/agency/${memberships[0].workspace_id}`);
+                    router.replace(`/ruang-sosmed/agency/${memberships[0].workspace_id}`);
                     return;
                   }
                   // Selain Agensi (Batch Akademi), ke Academy Hub
-                  router.push('/ruang-sosmed');
+                  router.replace('/ruang-sosmed');
                   return;
                } else {
                  //NO MEMBERSHIP FOUND IN NEW DB
@@ -113,7 +108,7 @@ export default function LoginContentMobile() {
                   return;
                }
             }
-            router.push('/ruang-sosmed');
+            router.replace('/ruang-sosmed');
          }
       } catch (err: any) {
         //Detect CORS/network error = server is temporarily down

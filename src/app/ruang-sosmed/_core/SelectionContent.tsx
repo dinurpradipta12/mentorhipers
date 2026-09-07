@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
-import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
+import { getBootcampAccess } from "@/lib/authCache";
 
 export default function SelectionContent() {
   const [roleChecked, setRoleChecked] = useState(false);
@@ -21,48 +21,33 @@ export default function SelectionContent() {
 
   useEffect(() => {
     const handleRoute = async () => {
-     //1. Check Legacy Admin — no network call needed
-      if (isLegacyAdmin()) {
-         setRoleChecked(true);
-         return; 
-      }
-      
-     //Use cached session — avoids network call on every mount
-      const session = await getCachedSession();
-      
-     //If no session, redirect to login
-      if (!session) {
-        router.push('/ruang-sosmed/login');
+      const access = await getBootcampAccess();
+
+      if (!access.user || access.error) {
+        router.replace('/ruang-sosmed/login');
         return;
       }
 
-      const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session.user.id).single();
-      
-      if (profile) {
-        if (profile.role === 'admin') {
-         //User is admin, show the selection screen
-          setRoleChecked(true);
-        } else {
-         //User is student, find their membership and redirect them
-          const { data: membership } = await supabase.from('v2_memberships')
-            .select('workspace_id, v2_workspaces(type)')
-            .eq('profile_id', session.user.id)
-            .maybeSingle();
+      if (access.isStaff) {
+        setRoleChecked(true);
+        return;
+      }
 
-          if (membership?.workspace_id) {
-            const type = (membership as any).v2_workspaces?.type;
-            if (type === 'agency') {
-              router.push(`/ruang-sosmed/agency/${membership.workspace_id}`);
-            } else {
-              router.push(`/ruang-sosmed/${membership.workspace_id}`);
-            }
-          } else {
-            router.push('/ruang-sosmed/login');
-          }
+      // Students are routed only to a workspace they can read through RLS.
+      const { data: membership } = await supabase.from('v2_memberships')
+        .select('workspace_id, v2_workspaces(type)')
+        .eq('profile_id', access.user.id)
+        .maybeSingle();
+
+      if (membership?.workspace_id) {
+        const type = (membership as any).v2_workspaces?.type;
+        if (type === 'agency') {
+          router.replace(`/ruang-sosmed/agency/${membership.workspace_id}`);
+        } else {
+          router.replace(`/ruang-sosmed/${membership.workspace_id}`);
         }
       } else {
-       //No profile found? Likely not a V2 user.
-        router.push('/ruang-sosmed/login');
+        router.replace('/ruang-sosmed/login');
       }
     };
     handleRoute();

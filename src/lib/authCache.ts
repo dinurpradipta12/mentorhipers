@@ -12,7 +12,7 @@
  */
 
 import { supabaseV2 as supabase } from './supabase';
-import type { Session } from '@supabase/supabase-js';
+import type { Session, User } from '@supabase/supabase-js';
 
 interface CachedSession {
   session: Session | null;
@@ -60,10 +60,42 @@ export function invalidateSessionCache(): void {
   pendingPromise = null;
 }
 
+export interface BootcampAccess {
+  user: User | null;
+  isStaff: boolean;
+  error: string | null;
+}
+
 /**
- * Check if user is a legacy admin (no auth request needed).
+ * Verifies the V2 access token with Supabase Auth, then asks the database for
+ * the Bootcamp staff role used by the live RLS policies. This only controls
+ * client navigation; RLS remains the authority for every data request.
+ */
+export async function getBootcampAccess(): Promise<BootcampAccess> {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  const user = userData.user;
+
+  if (userError || !user) {
+    return {
+      user: null,
+      isStaff: false,
+      error: userError?.message ?? 'Sesi V2 tidak ditemukan.',
+    };
+  }
+
+  const { data: isStaff, error: roleError } = await supabase.rpc('has_bootcamp_staff_role');
+
+  return {
+    user,
+    isStaff: !roleError && isStaff === true,
+    error: roleError?.message ?? null,
+  };
+}
+
+/**
+ * Kept as a compatibility export for legacy components. Browser storage is
+ * never an authority for administrative access.
  */
 export function isLegacyAdmin(): boolean {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem('v2_legacy_admin') === 'true';
+  return false;
 }

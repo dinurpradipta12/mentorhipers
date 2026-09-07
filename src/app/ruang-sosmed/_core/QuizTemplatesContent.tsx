@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
+import { getBootcampAccess } from "@/lib/authCache";
 
 // ─── Types ────────────────────────────────────────────────────
 interface Question {
@@ -78,33 +78,27 @@ export default function QuizTemplatesContent() {
   };
 
   // ─── Data ────────────────────────────────────────────────────
-  const checkAdmin = async () => {
-    const legacyAdmin = isLegacyAdmin();
-    if (legacyAdmin) {
-      setIsAuthorized(true);
-      return;
+  const checkAdmin = async (): Promise<boolean> => {
+    const access = await getBootcampAccess();
+    if (!access.user || access.error || !access.isStaff) {
+      router.replace('/ruang-sosmed/login');
+      return false;
     }
 
-    const session = await getCachedSession();
-    if (!session) {
-      router.push('/ruang-sosmed/login');
-      return;
-    }
-
-    const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session.user.id).single();
-    if (profile?.role === 'admin') {
-      setIsAuthorized(true);
-    } else {
-      router.push('/ruang-sosmed/login');
-    }
+    setIsAuthorized(true);
+    return true;
   };
 
   useEffect(() => {
     const init = async () => {
-      await checkAdmin();
-      fetchTemplates();
+      const authorized = await checkAdmin();
+      if (authorized) {
+        await fetchTemplates();
+      } else {
+        setIsLoading(false);
+      }
     };
-    init();
+    void init();
   }, []);
 
   // ─── Handlers ────────────────────────────────────────────────

@@ -27,7 +27,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
-import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
+import { getBootcampAccess } from "@/lib/authCache";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
@@ -35,6 +35,7 @@ export default function BatchListContent() {
   const [batches, setBatches] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [editingBatchId, setEditingBatchId] = useState<string | null>(null);
@@ -55,41 +56,34 @@ export default function BatchListContent() {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-   //Run auth + data fetch in PARALLEL — no more sequential blocking!
     const init = async () => {
-      await Promise.all([checkAdmin(), fetchBatches()]);
+      const authorized = await checkAdmin();
+      if (authorized) {
+        await fetchBatches();
+      }
     };
-    init();
+    void init();
   }, []);
 
-  const checkAdmin = async () => {
-   //Use cached session — avoids network call on every mount
-    const legacyAdmin = isLegacyAdmin();
-    if (legacyAdmin) {
-      setIsAuthorized(true);
-      return;
+  const checkAdmin = async (): Promise<boolean> => {
+    const access = await getBootcampAccess();
+    if (!access.user || access.error || !access.isStaff) {
+      router.replace('/ruang-sosmed/login');
+      return false;
     }
 
-    const session = await getCachedSession();
-    if (!session) {
-      router.push('/ruang-sosmed/login');
-      return;
-    }
-
-    const { data: profile } = await supabase.from('v2_profiles').select('role').eq('id', session.user.id).single();
-    if (profile?.role === 'admin') {
-      setIsAuthorized(true);
-    } else {
-      router.push('/ruang-sosmed/login');
-    }
+    setIsAuthorized(true);
+    return true;
   };
 
   const fetchBatches = async () => {
     setIsLoading(true);
+    setLoadError(null);
     
    //Safety fallback: force render after 20s to prevent infinite loading
     const safetyTimeout = setTimeout(() => {
         console.warn("⚠️ [BatchList] Fetch timeout (20s). Forcing UI render. Check RLS policies or network.");
+        setLoadError("Batch terlalu lama dimuat. Periksa koneksi lalu coba lagi.");
         setIsLoading(false);
     }, 20000);
 
@@ -108,9 +102,12 @@ export default function BatchListContent() {
 
       if (error) {
         console.error("❌ [BatchList] Supabase error:", error.code, error.message, error.hint);
+        setLoadError("Batch tidak dapat dimuat. Silakan coba lagi.");
+        return;
       }
       
       if (data) {
+        setLoadError(null);
         setBatches(data);
        //Restore last selected batch
         const savedId = localStorage.getItem('batch_list_selected');
@@ -126,6 +123,7 @@ export default function BatchListContent() {
       }
     } catch (err: any) {
       console.error("❌ [BatchList] Unexpected error:", err.message);
+      setLoadError("Batch tidak dapat dimuat. Silakan coba lagi.");
     } finally {
       clearTimeout(safetyTimeout);
       setIsLoading(false);
@@ -290,7 +288,7 @@ export default function BatchListContent() {
         <div className="lg:col-span-4 space-y-6">
           <div className="flex items-center justify-between px-2">
             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Batches</h3>
-            <span className="text-[10px] font-black text-blue-600">{batches.length} Classes</span>
+            <span className="text-[10px] font-black text-blue-600">{loadError ? "Tidak tersedia" : `${batches.length} Classes`}</span>
           </div>
 
           <div className="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar pb-20 p-1">
@@ -300,7 +298,7 @@ export default function BatchListContent() {
                 <p className="text-[10px] font-bold text-slate-400 mt-4 uppercase tracking-widest">Loading Batches...</p>
               </div>
             )}
-            {!isLoading && batches.map((batch) => (
+            {!isLoading && !loadError && batches.map((batch) => (
               <div 
                 key={batch.id} 
                 onClick={() => handleSelectBatch(batch)}
@@ -327,7 +325,20 @@ export default function BatchListContent() {
               </div>
             ))}
 
-            {batches.length === 0 && !isLoading && (
+            {loadError && !isLoading && (
+              <div className="p-6 text-center rounded-[24px] border border-rose-100 bg-rose-50/60">
+                <p className="text-rose-600 font-bold text-xs">{loadError}</p>
+                <button
+                  type="button"
+                  onClick={() => void fetchBatches()}
+                  className="mt-4 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-700"
+                >
+                  Coba lagi
+                </button>
+              </div>
+            )}
+
+            {!loadError && batches.length === 0 && !isLoading && (
               <div className="p-10 text-center rounded-[24px] border-2 border-dashed border-slate-200">
                 <p className="text-slate-400 font-bold text-xs">Belum ada batch kelas.</p>
               </div>

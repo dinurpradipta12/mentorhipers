@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
-import { invalidateSessionCache } from "@/lib/authCache";
+import { getBootcampAccess, invalidateSessionCache } from "@/lib/authCache";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import AvatarCreator from "./AvatarCreator";
@@ -44,19 +44,13 @@ export default function LoginContentDesktop() {
       try {
         // ENSURE CLEAN STATE: Clear any existing session before trying to sign in
         await supabase.auth.signOut();
+        invalidateSessionCache();
         localStorage.removeItem("v2_legacy_admin");
         
-         //INTERCEPT FOR USERNAME/ADMIN LOGIN
          let loginIdentifier = email;
          
-        //1. ARUNIKA ADMIN BYPASS (LOCAL ONLY)
-         if (email === "arunika" && password === "ar4925") {
-            localStorage.setItem("v2_legacy_admin", "true");
-            router.push('/ruang-sosmed');
-            return;
-         } 
-        //2. USERNAME MAPPING (Academy & Agency)
-         else if (email && !email.includes('@')) {
+        // Username compatibility: all users, including Arunika, must create a V2 Auth session.
+         if (email && !email.includes('@')) {
             loginIdentifier = `${email.toLowerCase().trim()}@ruangsosmed.v2.local`;
          }
 
@@ -93,20 +87,28 @@ export default function LoginContentDesktop() {
          if (data.user) {
             invalidateSessionCache();
 
-            // Fetch profile to check avatar & role
+            const access = await getBootcampAccess();
+            if (!access.user || access.error) {
+               setError("Sesi V2 tidak dapat diverifikasi. Silakan masuk kembali.");
+               setLoading(false);
+               return;
+            }
+
+            // Fetch profile to check avatar. Staff access comes from the same
+            // platform-role function that the live RLS policies use.
             const { data: profile } = await supabase
               .from('v2_profiles')
-              .select('role, avatar_url, full_name')
-              .eq('id', data.user.id)
+              .select('avatar_url, full_name')
+              .eq('id', access.user.id)
               .maybeSingle();
 
             // Determine redirect destination
             let redirectTo = '/ruang-sosmed';
-            if (profile && profile.role !== 'admin') {
+            if (!access.isStaff) {
                const { data: memberships } = await supabase
                  .from('v2_memberships')
                  .select('workspace_id, v2_workspaces(type)')
-                 .eq('profile_id', data.user.id);
+                 .eq('profile_id', access.user.id);
 
                if (memberships && memberships.length > 0) {
                   if (memberships.length === 1 && (memberships[0] as any).v2_workspaces?.type === 'agency') {
@@ -121,7 +123,7 @@ export default function LoginContentDesktop() {
 
             // If no avatar yet → show avatar picker first
             if (!profile?.avatar_url) {
-               setLoggedInUserId(data.user.id);
+               setLoggedInUserId(access.user.id);
                setLoggedInName(profile?.full_name || '');
                setPendingRedirect(redirectTo);
                setShowAvatarModal(true);
@@ -129,7 +131,7 @@ export default function LoginContentDesktop() {
                return;
             }
 
-            router.push(redirectTo);
+            router.replace(redirectTo);
          }
       } catch (err: any) {
          const isNetworkError = err?.message?.includes('fetch') || err?.message?.includes('network') || err instanceof TypeError;

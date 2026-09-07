@@ -9,7 +9,7 @@ import { supabase, supabaseV2 } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import AvatarCreator from "./_core/AvatarCreator";
 import NotificationBell from "./_core/NotificationBell";
-import { isLegacyAdmin } from "@/lib/authCache";
+import { getBootcampAccess } from "@/lib/authCache";
 
 export default function RuangSosmedLayoutContent({
   children,
@@ -35,27 +35,23 @@ export default function RuangSosmedLayoutContent({
   }, []);
 
   const checkRole = async () => {
-    const { data: { session } } = await supabaseV2.auth.getSession();
-    const user = session?.user;
+    const access = await getBootcampAccess();
+    const user = access.user;
 
-    if (user) {
-      const { data: profile } = await supabaseV2.from('v2_profiles').select('*').eq('id', user.id).single();
-      if (profile) {
-        setUserProfile(profile);
-        if (profile.role === 'admin' || isLegacyAdmin()) {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-          if (!profile.avatar_url) {
-            setShowOnboarding(true);
-          }
-        }
-      } else if (isLegacyAdmin()) {
-        setIsAdmin(true);
-        setUserProfile({ full_name: 'Admin Arunika', role: 'admin' });
-      }
-    } else {
+    if (!user || access.error) {
       setIsAdmin(false);
+      setUserProfile(null);
+      return;
+    }
+
+    const { data: profile } = await supabaseV2.from('v2_profiles').select('*').eq('id', user.id).single();
+    if (profile) {
+      setUserProfile(profile);
+    }
+
+    setIsAdmin(access.isStaff);
+    if (!access.isStaff && profile && !profile.avatar_url) {
+      setShowOnboarding(true);
     }
   };
 
