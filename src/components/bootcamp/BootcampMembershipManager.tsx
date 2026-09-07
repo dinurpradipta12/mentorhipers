@@ -25,9 +25,9 @@ function jsonObject(value: unknown): string {
   }
 }
 
-export function BootcampMembershipManager({ workspaceId, students }: { workspaceId: string; students: Student[] }) {
+export function BootcampMembershipManager({ workspaceId, students, initialStudentId }: { workspaceId: string; students: Student[]; initialStudentId?: string | null }) {
   const router = useRouter();
-  const [selectedId, setSelectedId] = useState(() => String(students[0]?.id ?? ''));
+  const [selectedId, setSelectedId] = useState(() => initialStudentId || String(students[0]?.id ?? ''));
   const selected = useMemo(() => students.find((student) => String(student.id) === selectedId) ?? null, [selectedId, students]);
   const [fullName, setFullName] = useState('');
   const [groupName, setGroupName] = useState('');
