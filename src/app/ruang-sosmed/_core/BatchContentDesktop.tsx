@@ -55,7 +55,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabaseV2 as supabase } from "@/lib/supabase";
-import { getCachedSession, isLegacyAdmin } from "@/lib/authCache";
+import { getBootcampAccess } from "@/lib/authCache";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -245,8 +245,10 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       }, 40000);
 
       try {
+        const canManageBatch = await fetchUserData();
+        if (!canManageBatch) return;
+
         await Promise.all([
-          fetchUserData(),
           fetchBatchDetail(),
           fetchCurriculum(),
           fetchStudents(),
@@ -268,7 +270,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
   }, [resolvedParams.id]);
 
   useEffect(() => {
-    if (!resolvedParams.id) return;
+    if (!resolvedParams.id || !currentUser?.id) return;
     const channel = supabase
       .channel(`batch_${resolvedParams.id}_presence`)
       .on('presence', { event: 'sync' }, () => {
@@ -329,45 +331,40 @@ export default function BatchContentDesktop({ id }: { id: string }) {
     };
   }, [resolvedParams.id, currentUser?.id]);
 
-   const fetchUserData = async () => {
-   //Use cached session — avoids network call on every mount
-    const session = await getCachedSession();
-    const user = session?.user;
-    
-   //2. CHECK LEGACY BYPASS (From localStorage)
-    const legacyAdmin = isLegacyAdmin();
-    const isArunika = (user?.email?.toLowerCase().includes('arunika')) || legacyAdmin;
+   const fetchUserData = async (): Promise<boolean> => {
+    const access = await getBootcampAccess();
 
-    if (isArunika) {
-       setCurrentUser({ full_name: 'Admin Arunika', role: 'admin', email: user?.email || 'arunika@legacy' });
-       const savedTab = typeof window !== 'undefined' ? localStorage.getItem(`batch_tab_${resolvedParams.id}`) : null;
-       if (!savedTab) setActiveTab('students');
+    if (!access.user || access.error) {
+      router.replace('/ruang-sosmed/login');
+      return false;
     }
 
-    if (!user && !legacyAdmin) return;
+    if (!access.isStaff) {
+      router.replace(`/ruang-sosmed/${resolvedParams.id}`);
+      return false;
+    }
 
     try {
-      if (user) {
-         const { data: profile } = await supabase.from('v2_profiles').select('id, full_name, username, role, updated_at').eq('id', user.id).single();
-         
-         if (profile) {
-           const updatedUser = { ...profile, email: user.email, role: isArunika ? 'admin' : profile.role };
-           setCurrentUser(updatedUser);
-           
-           if (updatedUser.role === 'student' && !isArunika) {
-              router.push(`/ruang-sosmed/${resolvedParams.id}`);
-              return;
-           }
+      const { data: profile, error } = await supabase
+        .from('v2_profiles')
+        .select('id, full_name, username, role, updated_at')
+        .eq('id', access.user.id)
+        .single();
 
-           if (updatedUser.role === 'admin' || isArunika) {
-              setActiveTab('students');
-           } else {
-              setActiveTab('learning');
-           }
-         }
+      if (error || !profile) {
+        console.error("V2 profile lookup failed:", error);
+        router.replace('/ruang-sosmed/login');
+        return false;
       }
+
+      setCurrentUser({ ...profile, email: access.user.email, role: 'admin' });
+      const savedTab = typeof window !== 'undefined' ? localStorage.getItem(`batch_tab_${resolvedParams.id}`) : null;
+      if (!savedTab) setActiveTab('students');
+      return true;
     } catch (err) {
-       console.error("V2 Auth Error:", err);
+      console.error("V2 Auth Error:", err);
+      router.replace('/ruang-sosmed/login');
+      return false;
     }
   };
 
