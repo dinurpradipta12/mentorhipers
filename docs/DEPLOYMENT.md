@@ -87,6 +87,8 @@ Production release requires all of the following:
   order: platform roles, Bootcamp grade audit, Webinar LMS, then the rehearsed
   Bootcamp RLS hardening.
 - Explicit first admin assignment linked to an existing Auth/profile UUID.
+- The admin bootstrap dry run and explicit `--apply` output are retained with
+  the change record; no new Auth account is created.
 - Anonymous, student, and admin RLS tests passed against the target.
 - `npm run lint`, `npm test`, `npx tsc --noEmit`, and `npm run build` passed.
 - `npm audit --omit=dev --audit-level=high` reports zero production dependency

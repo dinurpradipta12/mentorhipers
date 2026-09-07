@@ -114,6 +114,26 @@ After the preflight and approval:
 8. Run the access and data-integrity checks below before publishing any Webinar
    or changing a submission grade.
 
+The identity check and role grant can be performed without creating an Auth
+user by using the operator-only helper:
+
+~~~bash
+node scripts/bootstrap-platform-admin.mjs --email 'CONFIRMED_EXISTING_AUTH_EMAIL'
+node scripts/bootstrap-platform-admin.mjs --email 'CONFIRMED_EXISTING_AUTH_EMAIL' --apply
+~~~
+
+The first command is a dry run. Review the returned existing Auth UUID and
+profile before running `--apply`. The helper refuses orphan Auth users,
+duplicate matches, and missing `v2_profiles` rows. It never creates accounts,
+sets passwords, or treats the legacy `v2_profiles.role` as authorization.
+
+Before pushing the four files, validate them against the target inside a
+transaction that is always rolled back:
+
+~~~bash
+node scripts/verify-target-migrations.mjs
+~~~
+
 The first three migrations add isolated role/audit/Webinar objects. The fourth
 changes only policy/trigger behavior on existing Bootcamp tables; none of the
 migrations renames, truncates, copies, or deletes historical Bootcamp grades,
