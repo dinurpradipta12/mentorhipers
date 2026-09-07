@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
 import { redirect, notFound } from 'next/navigation';
-import { ArrowLeft, LockKeyhole } from 'lucide-react';
+import { LockKeyhole } from 'lucide-react';
 import { RetiredAgencyFeature } from '@/components/agency/RetiredFeature';
 import { AppShell } from '@/components/app/AppShell';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -66,7 +66,7 @@ export default async function Page({
     if (!slug[1]) return <AppShell viewer={viewer} active="bootcamp"><BootcampDashboard viewer={viewer} {...await getBootcampOverview(viewer)} /></AppShell>;
     const data = await getBootcampWorkspace(viewer, slug[1]);
     if (!data) notFound();
-    return <AppShell viewer={viewer} active="bootcamp"><div className="mb-6"><Link href="/ruang-sosmed/batch" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-950"><ArrowLeft aria-hidden="true" size={17} /> Semua batch</Link></div><BootcampWorkspaceView viewer={viewer} data={data} /></AppShell>;
+    return <AppShell viewer={viewer} active="bootcamp" variant="bootcamp"><BootcampWorkspaceView viewer={viewer} data={data} /></AppShell>;
   }
 
   if (slug[0] === 'admin' && slug[1] === 'templates') {
@@ -77,7 +77,7 @@ export default async function Page({
   if (slug.length === 1) {
     const data = await getBootcampWorkspace(viewer, slug[0]);
     if (!data) notFound();
-    return <AppShell viewer={viewer} active="bootcamp"><BootcampWorkspaceView viewer={viewer} data={data} /></AppShell>;
+    return <AppShell viewer={viewer} active="bootcamp" variant="bootcamp"><BootcampWorkspaceView viewer={viewer} data={data} /></AppShell>;
   }
 
   notFound();

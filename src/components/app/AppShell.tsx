@@ -40,14 +40,43 @@ function Initials({ name }: { name: string | null }) {
 export function AppShell({
   viewer,
   active,
+  variant = 'default',
   children,
 }: {
   viewer: Viewer;
   active: string;
+  variant?: 'default' | 'bootcamp';
   children: ReactNode;
 }) {
   const navigation = viewer.isAdmin ? adminNavigation : studentNavigation;
   const displayName = viewer.fullName || viewer.email || 'Pengguna Ruang Campus';
+
+  if (variant === 'bootcamp') {
+    return (
+      <div className="min-h-dvh bg-[#f8fafc] text-slate-950">
+        <header className="sticky top-0 z-30 flex min-h-20 flex-wrap items-center justify-between gap-4 border-b border-slate-100 bg-white px-5 py-3 shadow-sm sm:min-h-24 sm:px-8 lg:px-10">
+          <Link href="/ruang-sosmed/batch" className="group flex items-center" aria-label="Ruang Campus Bootcamp">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-blue-600 text-sm font-black text-white shadow-lg shadow-blue-600/20 transition group-hover:scale-[1.02] sm:h-12 sm:w-12">RC</span>
+            <span className="ml-3"><span className="block text-sm font-extrabold tracking-tight text-slate-950 sm:text-base">Ruang Campus</span><span className="block text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400 sm:text-[10px]">Platform Edukasi LMS Sosmed</span></span>
+          </Link>
+          <div className="flex items-center gap-3 sm:gap-5">
+            <Link href="/ruang-sosmed" className="hidden rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 sm:inline-flex">Kembali ke workspace</Link>
+            <div className="hidden h-8 w-px bg-slate-100 sm:block" />
+            <div className="hidden text-right sm:block"><p className="text-[11px] font-black leading-none text-slate-800">{displayName}</p><p className="mt-1 text-[9px] font-bold uppercase tracking-widest text-emerald-500">{viewer.isAdmin ? 'Administrator' : 'Peserta Bootcamp'}</p></div>
+            {viewer.avatarUrl ? (
+              <>
+                <span className="sr-only">Avatar profil</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={viewer.avatarUrl} alt="Avatar profil" className="h-10 w-10 rounded-2xl border border-slate-100 object-cover shadow-sm sm:h-12 sm:w-12" />
+              </>
+            ) : <span className="grid h-10 w-10 place-items-center rounded-2xl bg-slate-900 text-xs font-black text-white sm:h-12 sm:w-12"><Initials name={viewer.fullName} /></span>}
+            <form action="/api/auth/logout" method="post"><button type="submit" className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-slate-300 hover:text-slate-950">Keluar</button></form>
+          </div>
+        </header>
+        <main className="min-h-dvh"><div className="mx-auto w-full max-w-[1700px] px-5 py-7 pb-16 sm:px-8 sm:py-9 lg:px-10">{children}</div></main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-dvh bg-[#f7fafc] text-slate-950">
