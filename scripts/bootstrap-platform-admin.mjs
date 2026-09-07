@@ -26,16 +26,17 @@ function getArg(name) {
 const localEnv = loadLocalEnv();
 const env = { ...localEnv, ...process.env };
 const email = getArg('--email')?.trim().toLowerCase() || null;
+const username = getArg('--username')?.trim().toLowerCase() || null;
 const profileId = getArg('--profile-id')?.trim() || null;
 const note = (getArg('--note')?.trim() || 'Initial Ruang Campus administrator').slice(0, 1000);
 const apply = process.argv.includes('--apply');
 
-if (!email && !profileId) {
-  console.error('Provide --email existing-auth-email or --profile-id existing-auth-uuid.');
+if (![email, username, profileId].filter(Boolean).length) {
+  console.error('Provide --email existing-auth-email, --username existing-profile-username, or --profile-id existing-auth-uuid.');
   process.exit(2);
 }
-if (email && profileId) {
-  console.error('Provide only one of --email or --profile-id.');
+if ([email, username, profileId].filter(Boolean).length > 1) {
+  console.error('Provide only one identity selector: --email, --username, or --profile-id.');
   process.exit(2);
 }
 if (profileId && !UUID_PATTERN.test(profileId)) {
@@ -71,9 +72,9 @@ try {
             ) as already_admin
        from auth.users u
        left join public.v2_profiles p on p.id = u.id
-      where ${email ? 'lower(u.email) = $1' : 'u.id = $1'}
+      where ${email ? 'lower(u.email) = $1' : username ? 'lower(p.username) = $1' : 'u.id = $1'}
       limit 2`,
-    [email ?? profileId],
+    [email ?? username ?? profileId],
   );
 
   if (result.rowCount === 0) {

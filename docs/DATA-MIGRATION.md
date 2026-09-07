@@ -120,6 +120,8 @@ user by using the operator-only helper:
 ~~~bash
 node scripts/bootstrap-platform-admin.mjs --email 'CONFIRMED_EXISTING_AUTH_EMAIL'
 node scripts/bootstrap-platform-admin.mjs --email 'CONFIRMED_EXISTING_AUTH_EMAIL' --apply
+# A confirmed existing username is also supported:
+node scripts/bootstrap-platform-admin.mjs --username 'CONFIRMED_EXISTING_USERNAME' --apply
 ~~~
 
 The first command is a dry run. Review the returned existing Auth UUID and

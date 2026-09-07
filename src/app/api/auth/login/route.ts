@@ -32,14 +32,21 @@ export async function POST(request: Request) {
     if (!identifier.includes('@')) {
       const { data: profile, error } = await getSupabaseAdminClient()
         .from('v2_profiles')
-        .select('email')
+        .select('id')
         .eq('username', identifier)
         .maybeSingle();
 
-      if (error || !profile?.email) {
+      if (error || !profile?.id) {
         return loginFailure(request, nextPath, 'invalid');
       }
-      email = profile.email;
+      // The legacy profile email field is nullable and may not match the
+      // Auth identity. Resolve the existing Auth user by the immutable
+      // profile/Auth UUID, then let Supabase Auth validate the password.
+      const { data: authUser, error: authUserError } = await getSupabaseAdminClient().auth.admin.getUserById(profile.id);
+      if (authUserError || !authUser.user?.email) {
+        return loginFailure(request, nextPath, 'invalid');
+      }
+      email = authUser.user.email;
     }
 
     const destination = new URL(nextPath, request.url);

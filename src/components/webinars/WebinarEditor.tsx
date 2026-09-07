@@ -79,6 +79,7 @@ export function WebinarEditor({ initial }: { initial: WebinarEditorData }) {
       const payload = await api(`/api/admin/webinars/${webinar.id}/content`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ entity: 'section', action, id: sectionDraft.id, input: sectionDraft }) });
       const item = payload.item as WebinarSection;
       setWebinar((current) => ({ ...current, sections: action === 'create' ? [...current.sections, item] : current.sections.map((section) => section.id === item.id ? item : section) }));
+      if (action === 'create') setLessonDraft((current) => ({ ...current, sectionId: item.id }));
       setSectionDraft(blankSection(webinar.sections.length + (action === 'create' ? 1 : 0))); setMessage(action === 'create' ? 'Section dibuat.' : 'Section diperbarui.');
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Section tidak tersimpan.'); } finally { setPending(null); }
   }
