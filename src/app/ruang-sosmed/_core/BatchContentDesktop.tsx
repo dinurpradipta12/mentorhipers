@@ -416,6 +416,51 @@ export default function BatchContentDesktop({ id }: { id: string }) {
     return payload.submission;
   };
 
+  /**
+   * Group submissions may need a protected server-side clone for a member who
+   * has not submitted separately. The browser only supplies the selected
+   * membership ids; the route rechecks the actual group before it writes.
+   */
+  const applyAuditedGroupGrade = async (
+    sourceSubmissionId: string,
+    targetProfileIds: string[],
+    update: {
+      grade: number;
+      status: 'completed';
+      mentorFeedback?: string | null;
+      criteriaScores?: Record<string, number> | null;
+    },
+  ): Promise<{ gradedCount: number; createdCount: number; updatedCount: number }> => {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (sessionError || !accessToken) {
+      throw new Error('Sesi V2 telah berakhir. Silakan masuk kembali.');
+    }
+
+    const response = await fetch(`/api/v2/submissions/${encodeURIComponent(sourceSubmissionId)}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        workspaceId: resolvedParams.id,
+        targetProfileIds,
+        ...update,
+      }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload?.success) {
+      throw new Error(typeof payload?.error === 'string' ? payload.error : 'Nilai kelompok belum dapat disimpan.');
+    }
+
+    return {
+      gradedCount: Number(payload.gradedCount) || 0,
+      createdCount: Number(payload.createdCount) || 0,
+      updatedCount: Number(payload.updatedCount) || 0,
+    };
+  };
+
   const handleShare = () => {
     const shareUrl = `${window.location.origin}/ruang-sosmed/${resolvedParams.id}`;
     navigator.clipboard.writeText(shareUrl);
@@ -899,48 +944,23 @@ export default function BatchContentDesktop({ id }: { id: string }) {
            throw new Error('Nilai harus berada pada rentang 0–100.');
         }
 
-        // Only grade rows that already represent a real student submission.
-        // Creating score-only rows here would bypass the protected submission
-        // workflow and produces records without student work.
         const targetProfileIds = selectedMembers.map(m => m.profile_id);
-        const { data: existingSubs, error: existingError } = await supabase
-           .from('v2_submissions')
-           .select('id, profile_id')
-           .eq('curriculum_id', sub.curriculum_id)
-           .in('profile_id', targetProfileIds);
-        if (existingError) throw existingError;
-
-        const existingMap = new Map(existingSubs?.map(s => [s.profile_id, s.id]));
-
-        const targets = selectedMembers
-           .map(member => ({ member, submissionId: existingMap.get(member.profile_id) }))
-           .filter((target): target is { member: any; submissionId: string } => Boolean(target.submissionId));
-        if (targets.length === 0) {
-           throw new Error('Belum ada submission dari anggota yang dipilih.');
-        }
-
-        const results = await Promise.allSettled(targets.map(({ member, submissionId }) =>
-           saveAuditedSubmissionAssessment(submissionId, {
-              grade: Math.round(gradeNum),
-              criteriaScores: sub.criteria_scores ?? null,
-              status: 'completed',
-              mentorFeedback: member.profile_id === sub.profile_id
-                 ? sub.mentor_feedback ?? null
-                 : `[GROUP SYNC] Nilai kelompok disinkronkan dari hasil evaluasi ${sub.v2_profiles?.full_name || 'Ketua Tim'}!`,
-           }),
-        ));
-        const failedCount = results.filter(result => result.status === 'rejected').length;
-        const missingCount = selectedMembers.length - targets.length;
+        const result = await applyAuditedGroupGrade(sub.id, targetProfileIds, {
+           grade: Math.round(gradeNum),
+           criteriaScores: sub.criteria_scores ?? null,
+           status: 'completed',
+           mentorFeedback: sub.mentor_feedback ?? null,
+        });
 
         await fetchAllSubmissions(); // Await global matrix refresh
         if (viewingCurriculum) {
            await handleViewSubmissions(viewingCurriculum); // Refresh the current modal view
         }
 
-        const savedCount = targets.length - failedCount;
-        const messages = [`Nilai tersimpan untuk ${savedCount} anggota.`];
-        if (missingCount > 0) messages.push(`${missingCount} anggota belum memiliki submission sehingga dilewati.`);
-        if (failedCount > 0) messages.push(`${failedCount} submission belum dapat disimpan.`);
+        const messages = [`Nilai tersimpan untuk ${result.gradedCount} anggota.`];
+        if (result.createdCount > 0) {
+           messages.push(`${result.createdCount} submission anggota dibuat dari submission kelompok secara aman.`);
+        }
         alert(messages.join(' '));
         setIsBulkGradeModalOpen(false);
      } catch (err: any) {
