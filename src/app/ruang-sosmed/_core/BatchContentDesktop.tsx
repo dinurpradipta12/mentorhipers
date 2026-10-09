@@ -461,6 +461,39 @@ export default function BatchContentDesktop({ id }: { id: string }) {
     };
   };
 
+  const forceCloneGroupSubmission = async (
+    sourceSubmissionId: string,
+    assignmentGroupId: string,
+  ): Promise<{ clonedCount: number; refreshedCount: number; recipientCount: number }> => {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (sessionError || !accessToken) {
+      throw new Error('Sesi V2 telah berakhir. Silakan masuk kembali.');
+    }
+
+    const response = await fetch(`/api/v2/submissions/${encodeURIComponent(sourceSubmissionId)}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        workspaceId: resolvedParams.id,
+        assignmentGroupId,
+      }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload?.success) {
+      throw new Error(typeof payload?.error === 'string' ? payload.error : 'Force Clone belum dapat disimpan.');
+    }
+
+    return {
+      clonedCount: Number(payload.clonedCount) || 0,
+      refreshedCount: Number(payload.refreshedCount) || 0,
+      recipientCount: Number(payload.recipientCount) || 0,
+    };
+  };
+
   const handleShare = () => {
     const shareUrl = `${window.location.origin}/ruang-sosmed/${resolvedParams.id}`;
     navigator.clipboard.writeText(shareUrl);
@@ -982,34 +1015,17 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       if (!groupId) { alert("Pilih stempel grup terlebih dahulu untuk melakukan override!"); return; }
       setIsLoading(true);
       try {
-          await supabase.from('v2_submissions').update({ assignment_group_id: groupId }).eq('id', subId);
-          
-          const { data: members } = await supabase.from('v2_assignment_group_members').select('profile_id').eq('group_id', groupId);
-          if (members && members.length > 0) {
-              const currentSub = submissionsData.find(s => s.id === subId);
-              const membersToClone = members.map(m => m.profile_id).filter(id => id !== currentSub?.profile_id);
-              
-              if (membersToClone.length > 0) {
-                  const clonePayload = membersToClone.map((id) => ({
-                      curriculum_id: currentSub.curriculum_id,
-                      profile_id: id,
-                      workspace_id: resolvedParams.id,
-                      file_link: currentSub.file_link,
-                      status: currentSub.status,
-                      is_cloned: true,
-                      cloned_from_submission_id: currentSub.id,
-                      submitted_by_profile_id: currentSub.profile_id,
-                      assignment_group_id: groupId,
-                      grade: currentSub.grade || 0,
-                      mentor_feedback: `[AUTO-SYNC] Didistribusikan via Admin Override dari jawaban Ketua Tim!`
-                  }));
-                  
-                  await supabase.from('v2_submissions').insert(clonePayload);
-                  alert(`Berhasil melakukan Force-Clone ke ${membersToClone.length} anggota! 🚀`);
-                  handleViewSubmissions(viewingCurriculum); 
-              } else {
-                  alert("Grup ini hanya berisi anak tersebut, tidak ada yang perlu di-clone.");
-              }
+          const result = await forceCloneGroupSubmission(subId, groupId);
+          await fetchAllSubmissions();
+          if (viewingCurriculum) await handleViewSubmissions(viewingCurriculum);
+
+          if (result.recipientCount === 0) {
+              alert("Stempel grup tersimpan. Grup ini belum memiliki anggota lain untuk di-clone.");
+          } else {
+              const detail = result.clonedCount > 0
+                  ? ` ${result.clonedCount} salinan baru dibuat.`
+                  : '';
+              alert(`Force Clone berhasil menyinkronkan nilai ke ${result.recipientCount} anggota.${detail} 🚀`);
           }
       } catch (err: any) {
           alert("Gagal melakukan sync: " + err.message);
@@ -3467,9 +3483,10 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                        {sub.assignment_group_id && (
                                            <button 
                                                onClick={() => handleForceGroupSync(sub.id, sub.assignment_group_id)}
-                                               className="w-full md:w-auto h-14 px-8 rounded-2xl bg-[#0F172A] text-white font-black text-xs uppercase shadow-xl shadow-slate-900/10 hover:bg-blue-600 hover:shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                               disabled={isLoading}
+                                               className="w-full md:w-auto h-14 px-8 rounded-2xl bg-[#0F172A] text-white font-black text-xs uppercase shadow-xl shadow-slate-900/10 hover:bg-blue-600 hover:shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:cursor-wait disabled:opacity-60"
                                            >
-                                               <Zap size={16}/> Force Clone!
+                                               <Zap size={16}/> {isLoading ? 'Syncing...' : 'Force Clone!'}
                                            </button>
                                        )}
                                    </div>

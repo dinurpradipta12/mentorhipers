@@ -16,6 +16,11 @@ type GradeUpdate = {
   criteriaScores: Record<string, number> | null;
 };
 
+type ForceCloneInput = {
+  workspaceId: string;
+  assignmentGroupId: string;
+};
+
 type GradingStaff = {
   admin: NonNullable<typeof supabaseAdminV2>;
   userId: string;
@@ -156,6 +161,42 @@ function parseTargetProfileIds(value: unknown) {
   }
 
   return ids;
+}
+
+function parseForceCloneInput(value: unknown): ForceCloneInput {
+  if (!isRecord(value)) throw new InputError('Data force clone tidak valid.');
+
+  const workspaceId = value.workspaceId;
+  const assignmentGroupId = value.assignmentGroupId;
+  if (typeof workspaceId !== 'string' || !UUID_PATTERN.test(workspaceId)) {
+    throw new InputError('Batch tidak valid.');
+  }
+  if (typeof assignmentGroupId !== 'string' || !UUID_PATTERN.test(assignmentGroupId)) {
+    throw new InputError('Grup tugas tidak valid.');
+  }
+
+  return { workspaceId, assignmentGroupId };
+}
+
+function assessmentFromSourceSubmission(
+  workspaceId: string,
+  source: { grade?: unknown; status?: unknown; criteria_scores?: unknown },
+): GradeUpdate {
+  if (typeof source.status !== 'string' || !VALID_STATUSES.has(source.status)) {
+    throw new InputError('Status submission sumber tidak valid.');
+  }
+
+  const update: Record<string, unknown> = {
+    workspaceId,
+    status: source.status,
+    mentorFeedback: '[FORCE CLONE] Submission kelompok disinkronkan oleh mentor/admin.',
+    criteriaScores: source.criteria_scores ?? null,
+  };
+  if (source.grade !== null && source.grade !== undefined) {
+    update.grade = source.grade;
+  }
+
+  return parseGradeUpdate(update);
 }
 
 async function requireGradingStaff(request: NextRequest): Promise<GradingStaff | { response: NextResponse }> {
@@ -486,5 +527,253 @@ export async function POST(
     gradedCount,
     createdCount,
     updatedCount,
+  }, 200);
+}
+
+/**
+ * Admin fallback for a custom assignment group. A staff member can stamp a
+ * source submission with one custom group and distribute that submission to
+ * every other member. Sensitive grade fields are still changed only via the
+ * audited database RPC.
+ */
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const staff = await requireGradingStaff(request);
+  if ('response' in staff) return staff.response;
+
+  const { id: sourceSubmissionId } = await params;
+  if (!UUID_PATTERN.test(sourceSubmissionId)) {
+    return json({ success: false, error: 'Submission sumber tidak valid.' }, 400);
+  }
+
+  let input: ForceCloneInput;
+  try {
+    input = parseForceCloneInput(await request.json());
+  } catch (error) {
+    const message = error instanceof InputError ? error.message : 'Data force clone tidak valid.';
+    return json({ success: false, error: message }, 400);
+  }
+
+  const { data: source, error: sourceError } = await staff.admin
+    .from('v2_submissions')
+    .select('id, workspace_id, curriculum_id, profile_id, file_link, status, grade, criteria_scores')
+    .eq('id', sourceSubmissionId)
+    .eq('workspace_id', input.workspaceId)
+    .maybeSingle();
+
+  if (sourceError) {
+    console.error('Unable to read force-clone source submission', sourceError);
+    return json({ success: false, error: 'Submission sumber belum dapat dimuat.' }, 500);
+  }
+  if (!source) {
+    return json({ success: false, error: 'Submission sumber tidak ditemukan pada batch ini.' }, 404);
+  }
+  if (!isSafeSubmissionUrl(source.file_link)) {
+    return json({ success: false, error: 'Tautan submission sumber tidak valid untuk di-clone.' }, 400);
+  }
+
+  const { data: assignmentGroup, error: groupError } = await staff.admin
+    .from('v2_assignment_groups')
+    .select('id')
+    .eq('id', input.assignmentGroupId)
+    .eq('workspace_id', input.workspaceId)
+    .maybeSingle();
+
+  if (groupError) {
+    console.error('Unable to verify force-clone assignment group', groupError);
+    return json({ success: false, error: 'Grup tugas belum dapat diverifikasi.' }, 500);
+  }
+  if (!assignmentGroup) {
+    return json({ success: false, error: 'Grup tugas tidak ditemukan pada batch ini.' }, 404);
+  }
+
+  const { data: groupMembers, error: membersError } = await staff.admin
+    .from('v2_assignment_group_members')
+    .select('profile_id')
+    .eq('group_id', input.assignmentGroupId);
+
+  if (membersError) {
+    console.error('Unable to load force-clone group members', membersError);
+    return json({ success: false, error: 'Anggota grup belum dapat dimuat.' }, 500);
+  }
+
+  const memberProfileIds = Array.from(new Set(
+    (groupMembers || [])
+      .map((member) => member.profile_id)
+      .filter((profileId): profileId is string => typeof profileId === 'string' && UUID_PATTERN.test(profileId)),
+  ));
+  if (memberProfileIds.length === 0) {
+    return json({ success: false, error: 'Grup tugas belum memiliki anggota.' }, 400);
+  }
+  if (memberProfileIds.length > 50) {
+    return json({ success: false, error: 'Maksimal 50 anggota dapat di-force clone sekaligus.' }, 400);
+  }
+
+  const { data: batchMemberships, error: batchMembershipsError } = await staff.admin
+    .from('v2_memberships')
+    .select('profile_id, role')
+    .eq('workspace_id', input.workspaceId)
+    .in('profile_id', memberProfileIds);
+
+  if (batchMembershipsError) {
+    console.error('Unable to verify force-clone batch memberships', batchMembershipsError);
+    return json({ success: false, error: 'Keanggotaan batch belum dapat diverifikasi.' }, 500);
+  }
+
+  const batchMembershipByProfile = new Map(
+    (batchMemberships || [])
+      .filter((membership) => typeof membership.profile_id === 'string')
+      .map((membership) => [membership.profile_id, membership]),
+  );
+  const invalidBatchMember = memberProfileIds.some((profileId) => {
+    const membership = batchMembershipByProfile.get(profileId);
+    return !membership || membership.role === 'removed';
+  });
+  if (invalidBatchMember) {
+    return json({
+      success: false,
+      error: 'Semua anggota grup tugas harus merupakan anggota aktif pada batch ini.',
+    }, 400);
+  }
+
+  let sourceAssessment: GradeUpdate;
+  try {
+    sourceAssessment = assessmentFromSourceSubmission(input.workspaceId, source);
+  } catch (error) {
+    const message = error instanceof InputError ? error.message : 'Nilai submission sumber tidak valid.';
+    return json({ success: false, error: message }, 400);
+  }
+
+  const { error: sourceStampError } = await staff.admin
+    .from('v2_submissions')
+    .update({ assignment_group_id: input.assignmentGroupId })
+    .eq('id', source.id)
+    .eq('workspace_id', input.workspaceId);
+
+  if (sourceStampError) {
+    console.error('Unable to stamp force-clone source submission', sourceStampError);
+    return json({ success: false, error: 'Stempel grup submission sumber belum dapat disimpan.' }, 500);
+  }
+
+  const recipientProfileIds = memberProfileIds.filter((profileId) => profileId !== source.profile_id);
+  if (recipientProfileIds.length === 0) {
+    return json({ success: true, clonedCount: 0, refreshedCount: 0, recipientCount: 0 }, 200);
+  }
+
+  const { data: existingClones, error: existingClonesError } = await staff.admin
+    .from('v2_submissions')
+    .select('id, profile_id, created_at')
+    .eq('workspace_id', input.workspaceId)
+    .eq('curriculum_id', source.curriculum_id)
+    .eq('cloned_from_submission_id', source.id)
+    .in('profile_id', recipientProfileIds)
+    .order('created_at', { ascending: false });
+
+  if (existingClonesError) {
+    console.error('Unable to read existing force-clone submissions', existingClonesError);
+    return json({ success: false, error: 'Salinan submission sebelumnya belum dapat dimuat.' }, 500);
+  }
+
+  const cloneIdsByProfile = new Map<string, string[]>();
+  for (const clone of existingClones || []) {
+    if (typeof clone.profile_id !== 'string' || typeof clone.id !== 'string') continue;
+    const current = cloneIdsByProfile.get(clone.profile_id) || [];
+    current.push(clone.id);
+    cloneIdsByProfile.set(clone.profile_id, current);
+  }
+
+  let clonedCount = 0;
+  let refreshedCount = 0;
+  let recipientCount = 0;
+
+  for (const profileId of recipientProfileIds) {
+    const cloneIds = cloneIdsByProfile.get(profileId) || [];
+    if (cloneIds.length === 0) {
+      const { data: clone, error: cloneError } = await staff.admin
+        .from('v2_submissions')
+        .insert({
+          workspace_id: input.workspaceId,
+          curriculum_id: source.curriculum_id,
+          profile_id: profileId,
+          file_link: source.file_link,
+          status: 'pending',
+          is_cloned: true,
+          cloned_from_submission_id: source.id,
+          submitted_by_profile_id: source.profile_id,
+          assignment_group_id: input.assignmentGroupId,
+        })
+        .select('id')
+        .single();
+
+      if (cloneError || !clone?.id) {
+        console.error('Unable to create force-clone submission', cloneError);
+        return json({
+          success: false,
+          error: `Force Clone berhenti setelah ${recipientCount} anggota. Silakan coba lagi untuk melanjutkan.`,
+          clonedCount,
+          refreshedCount,
+          recipientCount,
+        }, 500);
+      }
+
+      cloneIds.push(clone.id);
+      clonedCount += 1;
+    }
+
+    for (const cloneId of cloneIds) {
+      const { error: cloneMetadataError } = await staff.admin
+        .from('v2_submissions')
+        .update({
+          file_link: source.file_link,
+          is_cloned: true,
+          cloned_from_submission_id: source.id,
+          submitted_by_profile_id: source.profile_id,
+          assignment_group_id: input.assignmentGroupId,
+        })
+        .eq('id', cloneId)
+        .eq('workspace_id', input.workspaceId);
+
+      if (cloneMetadataError) {
+        console.error('Unable to refresh force-clone metadata', cloneMetadataError);
+        return json({
+          success: false,
+          error: `Force Clone berhenti setelah ${recipientCount} anggota. Silakan coba lagi untuk melanjutkan.`,
+          clonedCount,
+          refreshedCount,
+          recipientCount,
+        }, 500);
+      }
+
+      const gradeError = await recordAuditedGrade(
+        staff,
+        cloneId,
+        sourceAssessment,
+        'Force Clone submission kelompok dari Batch Management',
+      );
+      if (gradeError) {
+        console.error('Audited force-clone grading failed', gradeError);
+        const failure = auditedGradeFailure(gradeError);
+        return json({
+          success: false,
+          error: `Force Clone berhenti setelah ${recipientCount} anggota: ${failure.error}`,
+          clonedCount,
+          refreshedCount,
+          recipientCount,
+        }, failure.status);
+      }
+
+      refreshedCount += 1;
+    }
+
+    recipientCount += 1;
+  }
+
+  return json({
+    success: true,
+    clonedCount,
+    refreshedCount,
+    recipientCount,
   }, 200);
 }
