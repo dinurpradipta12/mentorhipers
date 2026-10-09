@@ -379,6 +379,43 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      setAllSubmissions(combined);
   };
 
+  /**
+   * Grades, review status, feedback, and rubric values are deliberately not
+   * writable from the browser through PostgREST. Send the current V2 session
+   * to the server route instead, which verifies the real staff role and uses
+   * the database's audited grading RPC.
+   */
+  const saveAuditedSubmissionAssessment = async (
+    submissionId: string,
+    update: {
+      grade?: number;
+      status?: 'pending' | 'in_review' | 'completed';
+      mentorFeedback?: string | null;
+      criteriaScores?: Record<string, number> | null;
+    },
+  ) => {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (sessionError || !accessToken) {
+      throw new Error('Sesi V2 telah berakhir. Silakan masuk kembali.');
+    }
+
+    const response = await fetch(`/api/v2/submissions/${encodeURIComponent(submissionId)}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ workspaceId: resolvedParams.id, ...update }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload?.success) {
+      throw new Error(typeof payload?.error === 'string' ? payload.error : 'Nilai belum dapat disimpan.');
+    }
+
+    return payload.submission;
+  };
+
   const handleShare = () => {
     const shareUrl = `${window.location.origin}/ruang-sosmed/${resolvedParams.id}`;
     navigator.clipboard.writeText(shareUrl);
@@ -759,96 +796,68 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      }
   };
 
-  const handleSaveFeedback = async (subId: string, feedback: string) => {
-     try {
-        const { error } = await supabase
-           .from('v2_submissions')
-           .update({ 
-              mentor_feedback: feedback,
-              status: 'completed' 
-           })
-           .eq('id', subId);
-        if (error) throw error;
-        
-        setSubmissionsData(prev => prev.map(s => s.id === subId ? { ...s, mentor_feedback: feedback, status: 'completed' } : s));
-        fetchAllSubmissions();//Update global state
-     } catch (err: any) {
-        alert("Failed to save feedback: " + err.message);
+  const handleSaveAssessment = async (sub: any) => {
+     const gradeNum = Number(sub.grade);
+     if (!Number.isFinite(gradeNum) || gradeNum < 0 || gradeNum > 100) {
+        alert('Nilai harus berada pada rentang 0–100.');
+        return;
      }
-  };
 
-  const handleSaveGrade = async (subId: string, grade: string, criteria: any = null) => {
-     const gradeNum = parseInt(grade);
-     if (isNaN(gradeNum)) return;
-     
+     setIsLoading(true);
      try {
-        const { error } = await supabase
-           .from('v2_submissions')
-           .update({ 
-              grade: gradeNum,
-              criteria_scores: criteria,
-              status: 'completed'
-           })
-           .eq('id', subId);
-        if (error) throw error;
-        
-        setSubmissionsData(prev => prev.map(s => s.id === subId ? { ...s, grade: gradeNum, criteria_scores: criteria, status: 'completed' } : s));
-        fetchAllSubmissions();//Update global state
+        const saved = await saveAuditedSubmissionAssessment(sub.id, {
+           grade: Math.round(gradeNum),
+           criteriaScores: sub.criteria_scores ?? null,
+           status: 'completed',
+           mentorFeedback: sub.mentor_feedback ?? null,
+        });
 
-        // ==========================================
-        // AUTO-GRADING FOR CLONED ALL GROUP MEMBERS
-        // ==========================================
-        const currentSub = submissionsData.find(s => s.id === subId);
-        const task = curriculum.find(t => t.id === currentSub?.curriculum_id);
-        
+        setSubmissionsData(prev => prev.map(item => item.id === sub.id ? { ...item, ...saved } : item));
+
+        // Existing group copies receive their own audited grade records. We do
+        // not create synthetic scored submissions here: the database requires
+        // a student submission before a protected grade can exist.
+        const task = curriculum.find(item => item.id === sub.curriculum_id);
+        let syncNotice = '';
         if (task?.grading_mode !== 'manual' && (task?.type === 'challenge' || task?.type === 'group_assignment' || task?.assignment_group_id)) {
-           // Cari semua submission hasil clone yang mereferensikan submission ketua
-           const clonedSubs = submissionsData.filter(s => s.cloned_from_submission_id === subId || (s.is_cloned && s.submitted_by_profile_id === currentSub?.profile_id && s.curriculum_id === task.id));
-           
+           const clonedSubs = submissionsData.filter(item => item.id !== sub.id && (
+              item.cloned_from_submission_id === sub.id
+              || (item.is_cloned && item.submitted_by_profile_id === sub.profile_id && item.curriculum_id === task.id)
+           ));
+
            if (clonedSubs.length > 0) {
-              const updates = clonedSubs.map(cSub => ({
-                  id: cSub.id,
-                  grade: gradeNum,
-                  criteria_scores: criteria,
-                  status: 'completed',
-                  mentor_feedback: `[AUTO-SYNC] Nilai kelompok disinkronkan otomatis berkat ${currentSub?.v2_profiles?.full_name || 'Ketua Tim'}!`
-              }));
-              
-              for (const u of updates) {
-                 await supabase.from('v2_submissions').update({
-                    grade: u.grade,
-                    criteria_scores: u.criteria_scores,
-                    status: u.status,
-                    mentor_feedback: u.mentor_feedback
-                 }).eq('id', u.id);
+              const syncedFeedback = `[AUTO-SYNC] Nilai kelompok disinkronkan otomatis berkat ${sub.v2_profiles?.full_name || 'Ketua Tim'}!`;
+              const results = await Promise.allSettled(clonedSubs.map(clone =>
+                 saveAuditedSubmissionAssessment(clone.id, {
+                    grade: Math.round(gradeNum),
+                    criteriaScores: sub.criteria_scores ?? null,
+                    status: 'completed',
+                    mentorFeedback: syncedFeedback,
+                 }),
+              ));
+              const failedCount = results.filter(result => result.status === 'rejected').length;
+              if (failedCount > 0) {
+                 syncNotice = ` Nilai utama tersimpan, tetapi ${failedCount} salinan tugas kelompok belum tersinkron.`;
+              } else {
+                 setSubmissionsData(prev => prev.map(item => clonedSubs.some(clone => clone.id === item.id)
+                    ? { ...item, grade: Math.round(gradeNum), criteria_scores: sub.criteria_scores ?? null, status: 'completed', mentor_feedback: syncedFeedback }
+                    : item,
+                 ));
               }
-              
-              // Refresh state
-              setSubmissionsData(prev => prev.map(s => {
-                 const match = updates.find(u => u.id === s.id);
-                 if (match) return { ...s, grade: match.grade, criteria_scores: match.criteria_scores, status: match.status, mentor_feedback: match.mentor_feedback };
-                 return s;
-              }));
            } else {
-               // Fallback: Kombinasi logikal lama jika data clone tidak ditemukan tapi dia adalah leader
-               const studentMembership = students.find(s => s.profile_id === currentSub?.profile_id);
-               if (studentMembership?.is_leader && studentMembership.group_name) {
-                  const members = students.filter(s => s.group_name === studentMembership.group_name && !s.is_leader);
-                  for (const m of members) {
-                     await supabase.from('v2_submissions').upsert({
-                           curriculum_id: task.id,
-                           profile_id: m.profile_id,
-                           workspace_id: resolvedParams.id,
-                           grade: gradeNum,
-                           status: 'completed',
-                           mentor_feedback: `Auto-graded from Group Leader (${studentMembership.group_name})`
-                     }, { onConflict: 'curriculum_id,profile_id' });
-                  }
-               }
+              const studentMembership = students.find(student => student.profile_id === sub.profile_id);
+              if (studentMembership?.is_leader && studentMembership.group_name) {
+                 syncNotice = ' Nilai utama tersimpan. Anggota kelompok yang belum memiliki submission tidak dibuatkan nilai otomatis.';
+              }
            }
         }
+
+        await fetchAllSubmissions();
+        alert(`Assessment berhasil disimpan.${syncNotice}`);
      } catch (err: any) {
-        alert("Failed to save grade: " + err.message);
+        alert('Gagal menyimpan assessment: ' + (err?.message || 'Terjadi kesalahan.'));
+     } finally {
+        setIsLoading(false);
      }
   };
 
@@ -885,61 +894,54 @@ export default function BatchContentDesktop({ id }: { id: string }) {
 
      setIsLoading(true);
      try {
-        const gradeNum = sub.grade || 0;
-        const criteria = sub.criteria_scores;
+        const gradeNum = Number(sub.grade);
+        if (!Number.isFinite(gradeNum) || gradeNum < 0 || gradeNum > 100) {
+           throw new Error('Nilai harus berada pada rentang 0–100.');
+        }
 
-        // 1. Ambil data submission yang sudah ada untuk member terpilih pada curriculum ini
+        // Only grade rows that already represent a real student submission.
+        // Creating score-only rows here would bypass the protected submission
+        // workflow and produces records without student work.
         const targetProfileIds = selectedMembers.map(m => m.profile_id);
-        const { data: existingSubs } = await supabase
+        const { data: existingSubs, error: existingError } = await supabase
            .from('v2_submissions')
            .select('id, profile_id')
            .eq('curriculum_id', sub.curriculum_id)
            .in('profile_id', targetProfileIds);
+        if (existingError) throw existingError;
 
         const existingMap = new Map(existingSubs?.map(s => [s.profile_id, s.id]));
 
-        // 2. Pisahkan mana yang harus di-update (punya ID) dan mana yang insert baru
-        const finalPayloads = selectedMembers.map(m => {
-           const isOriginalUploader = m.profile_id === sub.profile_id;
-           const payload: any = {
-              curriculum_id: sub.curriculum_id,
-              profile_id: m.profile_id,
-              workspace_id: resolvedParams.id,
-              grade: gradeNum,
-              criteria_scores: criteria,
+        const targets = selectedMembers
+           .map(member => ({ member, submissionId: existingMap.get(member.profile_id) }))
+           .filter((target): target is { member: any; submissionId: string } => Boolean(target.submissionId));
+        if (targets.length === 0) {
+           throw new Error('Belum ada submission dari anggota yang dipilih.');
+        }
+
+        const results = await Promise.allSettled(targets.map(({ member, submissionId }) =>
+           saveAuditedSubmissionAssessment(submissionId, {
+              grade: Math.round(gradeNum),
+              criteriaScores: sub.criteria_scores ?? null,
               status: 'completed',
-              mentor_feedback: isOriginalUploader ? sub.mentor_feedback : `[GROUP SYNC] Nilai kelompok disinkronkan dari hasil evaluasi ${sub.v2_profiles?.full_name || 'Ketua Tim'}!`,
-              is_cloned: !isOriginalUploader // Tandai sebagai clone jika bukan pengumpul asli
-           };
-           
-           // Jika sudah ada, sertakan ID agar disinkronkan (update)
-           if (existingMap.has(m.profile_id)) {
-              payload.id = existingMap.get(m.profile_id);
-           }
-           
-           return payload;
-        });
-
-        // 3. Eksekusi pemisahan (Update vs Insert) untuk menghindari error PK Null
-        const toUpdate = finalPayloads.filter(p => p.id);
-        const toInsert = finalPayloads.filter(p => !p.id);
-
-        if (toUpdate.length > 0) {
-           const { error: updErr } = await supabase.from('v2_submissions').upsert(toUpdate);
-           if (updErr) throw updErr;
-        }
-
-        if (toInsert.length > 0) {
-           const { error: insErr } = await supabase.from('v2_submissions').insert(toInsert);
-           if (insErr) throw insErr;
-        }
+              mentorFeedback: member.profile_id === sub.profile_id
+                 ? sub.mentor_feedback ?? null
+                 : `[GROUP SYNC] Nilai kelompok disinkronkan dari hasil evaluasi ${sub.v2_profiles?.full_name || 'Ketua Tim'}!`,
+           }),
+        ));
+        const failedCount = results.filter(result => result.status === 'rejected').length;
+        const missingCount = selectedMembers.length - targets.length;
 
         await fetchAllSubmissions(); // Await global matrix refresh
         if (viewingCurriculum) {
            await handleViewSubmissions(viewingCurriculum); // Refresh the current modal view
         }
 
-        alert(`Berhasil sinkronisasi nilai ke ${selectedMembers.length} anggota! 🛸`);
+        const savedCount = targets.length - failedCount;
+        const messages = [`Nilai tersimpan untuk ${savedCount} anggota.`];
+        if (missingCount > 0) messages.push(`${missingCount} anggota belum memiliki submission sehingga dilewati.`);
+        if (failedCount > 0) messages.push(`${failedCount} submission belum dapat disimpan.`);
+        alert(messages.join(' '));
         setIsBulkGradeModalOpen(false);
      } catch (err: any) {
         alert("Gagal sinkronisasi nilai kelompok: " + err.message);
@@ -1017,13 +1019,9 @@ export default function BatchContentDesktop({ id }: { id: string }) {
      window.open(sub.file_link, '_blank');
      if (sub.status === 'pending') {
         try {
-           const { error } = await supabase
-             .from('v2_submissions')
-             .update({ status: 'in_review' })
-             .eq('id', sub.id);
-           if (error) throw error;
-           setSubmissionsData(prev => prev.map(s => s.id === sub.id ? { ...s, status: 'in_review' } : s));
-           fetchAllSubmissions();
+           const saved = await saveAuditedSubmissionAssessment(sub.id, { status: 'in_review' });
+           setSubmissionsData(prev => prev.map(item => item.id === sub.id ? { ...item, ...saved } : item));
+           await fetchAllSubmissions();
         } catch (err) {
            console.error("Failed to update status to in_review", err);
         }
@@ -1097,36 +1095,26 @@ export default function BatchContentDesktop({ id }: { id: string }) {
       }
   };
 
-   const handleMatrixEdit = async (type: string, id: string | null, curriculumId: string, profileId: string, value: string) => {
-      const valNum = parseInt(value) || 0;
+   const handleMatrixEdit = async (type: string, id: string | null, _curriculumId: string, _profileId: string, value: string) => {
+      const valNum = Number(value);
+      if (!Number.isFinite(valNum) || valNum < 0 || valNum > 100) {
+         alert('Nilai harus berada pada rentang 0–100.');
+         return;
+      }
       try {
          if (type === 'post_test') {
-            if (id) {
-               await supabase.from('v2_quiz_results').update({ score: valNum }).eq('id', id);
-            } else {
-               await supabase.from('v2_quiz_results').insert({
-                  curriculum_id: curriculumId,
-                  profile_id: profileId,
-                  workspace_id: resolvedParams.id,
-                  score: valNum
-               });
-            }
-         } else {
-            if (id) {
-                await supabase.from('v2_submissions').update({ grade: valNum, status: 'completed' }).eq('id', id);
-            } else {
-                await supabase.from('v2_submissions').insert({
-                    curriculum_id: curriculumId,
-                    profile_id: profileId,
-                    workspace_id: resolvedParams.id,
-                    grade: valNum,
-                    status: 'completed'
-                });
-            }
+            alert('Nilai post-test dihitung oleh workflow kuis dan tidak dapat diubah dari matriks.');
+            return;
          }
-         fetchAllSubmissions();
-      } catch (err) {
+         if (!id) {
+            alert('Siswa belum mengirim tugas. Nilai hanya dapat diberikan pada submission yang sudah ada.');
+            return;
+         }
+         await saveAuditedSubmissionAssessment(id, { grade: Math.round(valNum), status: 'completed' });
+         await fetchAllSubmissions();
+      } catch (err: any) {
          console.error("Matrix edit failed", err);
+         alert('Gagal menyimpan nilai matriks: ' + (err?.message || 'Terjadi kesalahan.'));
       }
    };
 
@@ -3551,11 +3539,7 @@ export default function BatchContentDesktop({ id }: { id: string }) {
                                    
                                    {viewingCurriculum?.type !== 'challenge' && (
                                       <button 
-                                        onClick={() => {
-                                           handleSaveGrade(sub.id, (sub.grade || 0).toString());
-                                           handleSaveFeedback(sub.id, sub.mentor_feedback);
-                                           alert("Assessment Saved! ✨");
-                                        }}
+                                        onClick={() => handleSaveAssessment(sub)}
                                         className="w-full h-14 rounded-3xl bg-slate-900 text-white font-black text-xs uppercase shadow-xl active:scale-95 transition-all"
                                       >
                                          Save Assessment
